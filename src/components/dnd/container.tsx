@@ -83,8 +83,14 @@ export const Container = forwardRef<HTMLDivElement, Props>(
               ) : (
                 <>
                   {(() => {
+                    const iconKey =
+                      options.includes(label)
+                        ? label
+                        : options.find(
+                            (opt) => t(`task_manager.categories.${opt}`) === label
+                          ) ?? label;
                     const style =
-                      CATEGORY_STYLE[label] || DEFAULT_CATEGORY_STYLE;
+                      (iconKey && CATEGORY_STYLE[iconKey]) || DEFAULT_CATEGORY_STYLE;
                     const Icon = style.icon;
                     return (
                       <label

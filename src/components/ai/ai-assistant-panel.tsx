@@ -24,6 +24,7 @@ import { useTranslation } from "react-i18next";
 import { paresSecondToTime } from "@/utils/time.util";
 import { toast } from "sonner";
 import { SuggestedTasksPreview } from "./suggested-tasks-preview";
+import { QuickStartOnboarding } from "./quick-start-onboarding";
 
 const AI_HISTORY_KEY = "chrono-ai-assistant-history";
 const MAX_HISTORY_ITEMS = 50;
@@ -63,14 +64,14 @@ function advisorTasksToItems(
   tasks: AdvisorTask[],
   t: (key: string) => string
 ): Items {
-  const byCategory = new Map<string, ItemTask[]>();
+  const byCategory = new Map<string, (ItemTask & { __advisorTask?: AdvisorTask })[]>();
 
   for (const tsk of tasks) {
     const cat =
       tsk.category && CATEGORY_OPTIONS.includes(tsk.category)
         ? tsk.category
         : DEFAULT_CATEGORY;
-    const itemTask: ItemTask = createTask(
+    const itemTask = createTask(
       tsk.title,
       tsk.priority,
       tsk.time * 60, // minutes -> seconds
@@ -78,7 +79,8 @@ function advisorTasksToItems(
       0,
       (tsk.whenDo ?? []) as import("@/types/drag-and-drop.model").DayNumber[],
       false
-    );
+    ) as ItemTask & { __advisorTask?: AdvisorTask };
+    itemTask.__advisorTask = tsk;
     if (!byCategory.has(cat)) byCategory.set(cat, []);
     byCategory.get(cat)!.push(itemTask);
   }
@@ -102,6 +104,16 @@ function advisorTasksToItems(
 type AiAssistantPanelProps = {
   templateTasks: Items;
   onReplaceTasks?: (items: Items) => void;
+  /** When true, Quick Start is rendered elsewhere (e.g. center); only show chat */
+  hideQuickStart?: boolean;
+  /** Ref to register remove-from-suggestions handler (called when task is dropped to template) */
+  onRemoveSuggestedTaskRef?: React.MutableRefObject<
+    ((advisorTask: AdvisorTask) => void) | null
+  >;
+  /** Ref for Quick Start to trigger prompt+ask from outside */
+  onPromptFromQuickStartRef?: React.MutableRefObject<
+    ((prompt: string) => void) | null
+  >;
 };
 
 function formatTasksForContext(items: Items, t: (key: string) => string): string {
@@ -127,7 +139,21 @@ function formatTasksForContext(items: Items, t: (key: string) => string): string
     .join("\n");
 }
 
-export function AiAssistantPanel({ templateTasks, onReplaceTasks }: AiAssistantPanelProps) {
+function matchAdvisorTask(a: AdvisorTask, b: AdvisorTask): boolean {
+  return (
+    a.title === b.title &&
+    a.time === b.time &&
+    (a.category ?? "") === (b.category ?? "")
+  );
+}
+
+export function AiAssistantPanel({
+  templateTasks,
+  onReplaceTasks,
+  hideQuickStart = false,
+  onRemoveSuggestedTaskRef,
+  onPromptFromQuickStartRef,
+}: AiAssistantPanelProps) {
   const [prompt, setPrompt] = useState("");
   const [answer, setAnswer] = useState<string | null>(null);
   const [suggestedTasks, setSuggestedTasks] = useState<AdvisorTask[]>([]);
@@ -141,11 +167,50 @@ export function AiAssistantPanel({ templateTasks, onReplaceTasks }: AiAssistantP
     saveHistory(history);
   }, [history]);
 
-  const presetPrompts = [
-    "ai_assistant.preset_evaluate",
-    "ai_assistant.preset_from_problems",
-    "ai_assistant.preset_optimize",
-  ];
+  useEffect(() => {
+    if (!onRemoveSuggestedTaskRef) return;
+    onRemoveSuggestedTaskRef.current = (advisorTask: AdvisorTask) => {
+      setSuggestedTasks((prev) =>
+        prev.filter((task) => !matchAdvisorTask(task, advisorTask))
+      );
+      if (selectedHistoryId) {
+        setHistory((prev) =>
+          prev.map((h) =>
+            h.id === selectedHistoryId && h.suggestedTasks
+              ? {
+                  ...h,
+                  suggestedTasks: h.suggestedTasks.filter(
+                    (task) => !matchAdvisorTask(task, advisorTask)
+                  ),
+                }
+              : h
+          )
+        );
+      }
+    };
+    return () => {
+      onRemoveSuggestedTaskRef.current = null;
+    };
+  }, [
+    onRemoveSuggestedTaskRef,
+    selectedHistoryId,
+  ]);
+
+  const isEmpty = templateTasks.length === 0;
+  const presetPrompts = isEmpty
+    ? [
+        "quick_start.quick_chips.week_plan",
+        "quick_start.quick_chips.time_30",
+        "quick_start.quick_chips.low_energy",
+        "quick_start.quick_chips.no_burnout",
+        "quick_start.quick_chips.train_3",
+        "quick_start.quick_chips.balance",
+      ]
+    : [
+        "ai_assistant.preset_evaluate",
+        "ai_assistant.preset_from_problems",
+        "ai_assistant.preset_optimize",
+      ];
 
   const setPreset = (key: string) => {
     setPrompt(t(key));
@@ -177,14 +242,15 @@ export function AiAssistantPanel({ templateTasks, onReplaceTasks }: AiAssistantP
     []
   );
 
-  const handleAsk = async () => {
-    const text = prompt.trim();
+  const handleAsk = async (overridePrompt?: string) => {
+    const text = (overridePrompt ?? prompt).trim();
     if (!text) {
       setAnswer(null);
       setSuggestedTasks([]);
       return;
     }
 
+    setPrompt(text);
     setLoading(true);
     setAnswer(null);
     setSuggestedTasks([]);
@@ -271,8 +337,29 @@ export function AiAssistantPanel({ templateTasks, onReplaceTasks }: AiAssistantP
     ? (selectedItem.suggestedTasks ?? [])
     : suggestedTasks;
 
+  const handlePromptFromQuickStart = (builtPrompt: string) => {
+    setPrompt(builtPrompt);
+    handleAsk(builtPrompt);
+  };
+
+  useEffect(() => {
+    if (!onPromptFromQuickStartRef) return;
+    onPromptFromQuickStartRef.current = handlePromptFromQuickStart;
+    return () => {
+      onPromptFromQuickStartRef.current = null;
+    };
+  }, [onPromptFromQuickStartRef, handlePromptFromQuickStart]);
+
   return (
-    <div className="mt-6 flex flex-col gap-4">
+    <div className={`flex w-full flex-col gap-4 ${isEmpty && !hideQuickStart ? "max-w-2xl" : ""}`}>
+      {!hideQuickStart && (
+        <QuickStartOnboarding
+          isEmpty={isEmpty}
+          onPromptFromQuickStart={handlePromptFromQuickStart}
+          onReplaceTasks={onReplaceTasks}
+        />
+      )}
+
       {/* Чат — тільки ввід, історія та текстова відповідь */}
       <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
         <div className="flex items-start justify-between gap-4">
@@ -335,7 +422,7 @@ export function AiAssistantPanel({ templateTasks, onReplaceTasks }: AiAssistantP
                   </div>
                   <button
                     type="button"
-                    onClick={handleAsk}
+                    onClick={() => handleAsk()}
                     disabled={loading}
                     className="inline-flex items-center gap-2 rounded-md border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-zinc-200 transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
                   >
@@ -480,6 +567,7 @@ export function AiAssistantPanel({ templateTasks, onReplaceTasks }: AiAssistantP
           <div className="max-h-[420px] overflow-y-auto pr-1">
             <SuggestedTasksPreview
               items={advisorTasksToItems(currentSuggestedTasks, t)}
+              draggable={!!onReplaceTasks}
             />
           </div>
         </div>

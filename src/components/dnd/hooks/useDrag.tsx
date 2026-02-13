@@ -1,6 +1,8 @@
 import { Active, Over, UniqueIdentifier } from "@dnd-kit/core";
 import { TRASH_ID } from "../config/dnd.config";
-import { Items } from "@/types/drag-and-drop.model";
+import type { AdvisorTask } from "@/services/ai/gemini.types";
+import { ItemTask, Items } from "@/types/drag-and-drop.model";
+import { mergeOrAddTask, mergeOrInsertAt } from "../utils/merge-task-by-title";
 import { arrayMove } from "@dnd-kit/sortable";
 import { useState } from "react";
 import { useHoverStore } from "@/storage/hoverStore";
@@ -14,6 +16,7 @@ const useDrag = ({
   setActiveId,
   onDeletePlannedTask,
   onChangeTasks,
+  onSuggestedTaskMovedToTemplate,
 }: {
   items: Items;
   setItems: React.Dispatch<React.SetStateAction<Items>>;
@@ -22,6 +25,7 @@ const useDrag = ({
   activeId: UniqueIdentifier | null;
   onDeletePlannedTask?: (taskId: UniqueIdentifier) => void;
   onChangeTasks: (items: Items) => void;
+  onSuggestedTaskMovedToTemplate?: (advisorTask: AdvisorTask) => void;
 }) => {
   const [clonedItems, setClonedItems] = useState<Items | null>(null);
   const setHover = useHoverStore((s) => s.setHover);
@@ -36,6 +40,9 @@ const useDrag = ({
   const onDragOver = (active: Active, over: Over | null) => {
     const overId = over?.id;
     if (!overId || overId === TRASH_ID) return;
+    // Suggested tasks are added only in onDragEnd, no preview during drag
+    const isSuggested = (active.data?.current as { type?: string })?.type === "suggested";
+    if (isSuggested) return;
     const activeTaskId = active.id;
     const overTaskId = overId;
 
@@ -76,11 +83,7 @@ const useDrag = ({
             overItemIndex >= 0 ? overItemIndex + 1 : cat.tasks.length;
           return {
             ...cat,
-            tasks: [
-              ...cat.tasks.slice(0, newIndex),
-              activeTask,
-              ...cat.tasks.slice(newIndex),
-            ],
+            tasks: mergeOrInsertAt(cat.tasks, activeTask, newIndex),
           };
         }
         return cat;
@@ -143,6 +146,39 @@ const useDrag = ({
         return updated;
       });
 
+      setActiveId(null);
+      return;
+    }
+
+    // ✨ Drop from suggested tasks (AI panel) — add task to target category, remove from suggestions
+    const suggestedData = active.data?.current as {
+      type?: string;
+      task?: ItemTask;
+      advisorTask?: AdvisorTask;
+    } | undefined;
+    if (!activeCategory && over && suggestedData?.type === "suggested" && suggestedData?.task) {
+      const targetCategory = items.find(
+        (cat) =>
+          cat.id === over.id || cat.tasks.some((t) => t.id === over.id)
+      );
+      if (targetCategory) {
+        const task: ItemTask = {
+          ...suggestedData.task,
+          id: `${suggestedData.task.title}-${Date.now()}`,
+        };
+        setItems((prev) => {
+          const updated = prev.map((cat) =>
+            cat.id === targetCategory.id
+              ? { ...cat, tasks: mergeOrAddTask(cat.tasks, task) }
+              : cat
+          );
+          onChangeTasks(updated);
+          return updated;
+        });
+        if (suggestedData.advisorTask) {
+          onSuggestedTaskMovedToTemplate?.(suggestedData.advisorTask);
+        }
+      }
       setActiveId(null);
       return;
     }

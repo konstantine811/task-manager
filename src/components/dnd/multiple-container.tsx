@@ -47,8 +47,11 @@ import { useTaskManager } from "./context/use-task-manger-context";
 import { CATEGORY_OPTIONS } from "./config/category-options";
 import useCategoryHandle from "./hooks/useCategoryHandle";
 import DialogAgree from "../ui-abc/dialog/dialog-agree";
+import { mergeOrAddTask } from "./utils/merge-task-by-title";
 import { AddTasksWithAIDialog } from "@/components/ai/add-tasks-with-ai-dialog";
 import { AnimatePresence, motion } from "framer-motion";
+import { SUGGESTED_TASK_PREFIX } from "./config/dnd.config";
+import { TaskItem } from "./task-item";
 
 interface Props {
   adjustScale?: boolean;
@@ -73,6 +76,14 @@ interface Props {
   onChangeTasks: (items: Items) => void;
   onEditPlannedTask?: (task: ItemTask) => void;
   onDeletePlannedTask?: (taskId: UniqueIdentifier) => void;
+  /** Rendered inside DndContext so suggested tasks can be dragged to template */
+  sidePanel?: React.ReactNode;
+  /** When template empty, shown centered in the tasks area. AI chat stays on the right. */
+  emptyStateCenter?: React.ReactNode;
+  /** When true, template has no tasks */
+  isEmptyTemplate?: boolean;
+  /** Called when a suggested task is dropped into template — remove it from AI list */
+  onSuggestedTaskMovedToTemplate?: (advisorTask: import("@/services/ai/gemini.types").AdvisorTask) => void;
 }
 
 export function MultipleContainers({
@@ -96,6 +107,10 @@ export function MultipleContainers({
   onChangeTasks = () => {},
   onEditPlannedTask,
   onDeletePlannedTask,
+  sidePanel,
+  emptyStateCenter,
+  isEmptyTemplate = false,
+  onSuggestedTaskMovedToTemplate,
 }: Props) {
   const [t] = useTranslation();
   const [items, setItems] = useState<Items>(initialItems);
@@ -124,6 +139,8 @@ export function MultipleContainers({
   const [aiDialogContainerId, setAiDialogContainerId] =
     useState<UniqueIdentifier | null>(null);
   const lastUpdatedTaskRef = useRef<UniqueIdentifier | null>(null);
+  const [activeSuggestedTask, setActiveSuggestedTask] =
+    useState<ItemTask | null>(null);
   const collisionDetectionStrategy: CollisionDetection =
     useCollisionDectionStrategy({
       activeId,
@@ -140,6 +157,7 @@ export function MultipleContainers({
     activeId,
     onDeletePlannedTask,
     onChangeTasks,
+    onSuggestedTaskMovedToTemplate,
   });
 
   const { handleAddColumn, handleRemove } = useCategoryHandle({
@@ -212,7 +230,7 @@ export function MultipleContainers({
       setItems((prev) => {
         const updated = prev.map((category) =>
           category.id === id
-            ? { ...category, tasks: [...category.tasks, newTask] }
+            ? { ...category, tasks: mergeOrAddTask(category.tasks, newTask) }
             : category
         );
         onChangeTasks(updated);
@@ -226,11 +244,14 @@ export function MultipleContainers({
     (newTasks: ItemTask[], id: UniqueIdentifier) => {
       if (!setItems || newTasks.length === 0) return;
       setItems((prev) => {
-        const updated = prev.map((category) =>
-          category.id === id
-            ? { ...category, tasks: [...category.tasks, ...newTasks] }
-            : category
-        );
+        const updated = prev.map((category) => {
+          if (category.id !== id) return category;
+          let tasks = category.tasks;
+          for (const t of newTasks) {
+            tasks = mergeOrAddTask(tasks, t);
+          }
+          return { ...category, tasks };
+        });
         onChangeTasks(updated);
         return updated;
       });
@@ -363,19 +384,39 @@ export function MultipleContainers({
         }}
         onDragStart={({ active }) => {
           onDragStart(active);
+          const data = active.data?.current as { type?: string; task?: ItemTask };
+          if (data?.type === "suggested" && data?.task) {
+            setActiveSuggestedTask(data.task);
+          } else {
+            setActiveSuggestedTask(null);
+          }
         }}
         onDragOver={({ active, over }) => {
           return onDragOver(active, over);
         }}
         onDragEnd={({ active, over }) => {
-          return onDragEnd(active, over);
+          onDragEnd(active, over);
+          setActiveSuggestedTask(null);
         }}
         cancelDrop={cancelDrop}
-        onDragCancel={onDragCancel}
+        onDragCancel={() => {
+          onDragCancel();
+          setActiveSuggestedTask(null);
+        }}
         modifiers={modifiers}
       >
-        <div className={`${templated && "mt-5"}`}>
-          <SortableContext
+        <div
+          className={
+            sidePanel
+              ? "grid w-full flex-1 min-w-0 min-h-0 grid-cols-2 gap-4 items-start"
+              : `${templated && "mt-5"}`
+          }
+        >
+          <div className="flex min-w-0 flex-col gap-4">
+            <div
+              className={`flex flex-col w-full min-w-0 items-stretch justify-start ${templated ? "mt-5" : ""}`}
+            >
+              <SortableContext
             items={[...containers, PLACEHOLDER_ID]}
             strategy={
               vertical
@@ -519,12 +560,35 @@ export function MultipleContainers({
                 </div>
               </DroppableContainer>
             )}
-          </SortableContext>
+            </SortableContext>
+            </div>
+            {isEmptyTemplate && emptyStateCenter && (
+              <div className="flex min-w-0 justify-center overflow-auto">
+                {emptyStateCenter}
+              </div>
+            )}
+          </div>
+          {sidePanel && (
+            <div className="min-w-0 overflow-auto pt-5">
+              {sidePanel}
+            </div>
+          )}
         </div>
         {createPortal(
           <DragOverlay adjustScale={adjustScale} dropAnimation={dropAnimation}>
             {activeId ? (
-              containers.includes(activeId) ? (
+              String(activeId).startsWith(SUGGESTED_TASK_PREFIX) &&
+              activeSuggestedTask ? (
+                <div className="rounded-lg border border-white/10 bg-white/5 shadow-lg p-2 w-full max-w-[280px]">
+                  <TaskItem
+                    index=""
+                    task={activeSuggestedTask}
+                    templated
+                    readOnly
+                    dragging
+                  />
+                </div>
+              ) : containers.includes(activeId) ? (
                 <ContainerDragOverlay
                   items={items}
                   getItemStyles={getItemStyles}
