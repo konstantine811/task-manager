@@ -1,0 +1,410 @@
+@import "tailwindcss";
+
+/* Default: dark theme (overridden by useSetTheme from ThemePalette) */
+:root {
+  --radius: 0.625rem;
+  --background: #000000;
+  --foreground: #d4d4d4;
+  --card: #0a0a0a;
+  --card-foreground: #d4d4d4;
+  --popover: #000000;
+  --popover-foreground: #d4d4d4;
+  --primary: #4a80e8;
+  --primary-foreground: #d4d4d4;
+  --secondary: #e6e6e6;
+  --secondary-foreground: #666666;
+  --muted: #0a0a0a;
+  --muted-foreground: #666666;
+  --accent: #4a80e8;
+  --accent-foreground: #d4d4d4;
+  --destructive: #ff3333;
+  --border: #2a2a2a;
+  --input: #333333;
+  --ring: #4a80e8;
+  --chart-1: #4a80e8;
+  --chart-2: #65e396;
+  --chart-3: #5b9bd5;
+  --chart-4: #7eb8e8;
+  --chart-5: #fffe00;
+}
+
+html,
+body {
+  height: 100%;
+  -webkit-overflow-scrolling: touch;
+  background-color: #050505;
+  color: var(--foreground);
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Landing page styles */
+.bg-grid {
+  background-size: 40px 40px;
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
+  -webkit-mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
+}
+.hero-perspective {
+  perspective: 2000px;
+}
+.hero-rotate {
+  transform: rotateX(20deg) scale(0.9);
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.hero-perspective:hover .hero-rotate {
+  transform: rotateX(0deg) scale(1);
+}
+.glass-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+}
+.dropdown-glass {
+  background: rgba(10, 10, 12, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+}
+.text-glow {
+  text-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+}
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+.animate-fade-in-up {
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* Chrono design system - shared with Landing & Tasks */
+/* Subtle borders like Landing: border-white/5, minimal visibility */
+.chrono-task-card {
+  background: rgba(24, 24, 27, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: border-color 0.2s, background-color 0.2s;
+}
+.chrono-task-card:hover {
+  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(39, 39, 42, 0.9);
+}
+.chrono-task-card-done {
+  background: rgba(99, 102, 241, 0.08);
+  border-color: rgba(99, 102, 241, 0.15);
+}
+.chrono-task-card-done:hover {
+  border-color: rgba(99, 102, 241, 0.25);
+}
+.chrono-card {
+  background: rgba(24, 24, 27, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background-color 0.2s;
+}
+.chrono-card:hover {
+  background: rgba(39, 39, 42, 0.6);
+}
+.chrono-btn-icon {
+  background: rgba(24, 24, 27, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+.chrono-btn-icon:hover {
+  background: rgba(39, 39, 42, 0.9);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+.chrono-btn-secondary {
+  background: rgba(24, 24, 27, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  color: #a1a1aa;
+  font-size: 0.75rem;
+  transition: color 0.2s, background-color 0.2s, border-color 0.2s;
+}
+.chrono-btn-secondary:hover {
+  color: white;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+/* Chrono day badge - subtle border */
+.chrono-day-badge {
+  background: rgba(24, 24, 27, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  color: #a1a1aa;
+  transition: all 0.2s;
+}
+.chrono-day-badge.selected {
+  background: rgba(99, 102, 241, 0.15);
+  border-color: rgba(99, 102, 241, 0.25);
+  color: #c7d2fe;
+}
+/* Chrono chart toggle - checkbox row */
+.chrono-chart-toggle {
+  background: rgba(24, 24, 27, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.2s;
+}
+.chrono-chart-toggle.selected {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: rgba(99, 102, 241, 0.2);
+}
+.chrono-page-bg {
+  background-color: #050505;
+}
+.chrono-page-bg::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-size: 40px 40px;
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, black 40%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, black 40%, transparent 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+/* Softer checkboxes in Chrono context */
+.chrono-page-bg [data-slot="checkbox"] {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+.chrono-page-bg [data-slot="checkbox"][data-state="checked"] {
+  border-color: rgba(99, 102, 241, 0.5);
+  background: rgba(99, 102, 241, 0.3);
+}
+
+/* Chrono table - subtle borders, soft header */
+.chrono-table {
+  background: rgba(24, 24, 27, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.chrono-table table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+.chrono-table thead tr {
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.chrono-table thead th {
+  color: #a1a1aa;
+  font-weight: 500;
+  padding: 12px 16px;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+.chrono-table thead th:last-child {
+  border-right: none;
+}
+.chrono-table tbody tr {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background-color 0.15s;
+}
+.chrono-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+.chrono-table tbody tr:last-child {
+  border-bottom: none;
+}
+.chrono-table tbody td {
+  color: #d4d4d8;
+  padding: 12px 16px;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+.chrono-table tbody td:last-child {
+  border-right: none;
+}
+
+/* Chrono Select & Dropdown - soft borders, glass background */
+.chrono-select-trigger {
+  background: rgba(24, 24, 27, 0.8) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #d4d4d8;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+.chrono-select-trigger:hover {
+  background: rgba(39, 39, 42, 0.9) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+.chrono-select-content,
+.chrono-dropdown-content {
+  background: rgba(18, 18, 21, 0.98) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+}
+.chrono-popover-content {
+  background: rgba(30, 30, 35, 0.98) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+}
+.chrono-select-content [data-slot="select-label"],
+.chrono-dropdown-content [data-slot="dropdown-menu-label"] {
+  color: #a1a1aa;
+}
+.chrono-select-content [data-slot="select-item"],
+.chrono-dropdown-content [data-slot="dropdown-menu-item"],
+.chrono-dropdown-content [data-slot="dropdown-menu-radio-item"],
+.chrono-dropdown-content [data-slot="dropdown-menu-checkbox-item"] {
+  color: #d4d4d8;
+}
+.chrono-select-content [data-slot="select-item"]:hover,
+.chrono-select-content [data-slot="select-item"][data-highlighted],
+.chrono-dropdown-content [data-slot="dropdown-menu-item"]:hover,
+.chrono-dropdown-content [data-slot="dropdown-menu-radio-item"][data-highlighted],
+.chrono-dropdown-content [data-slot="dropdown-menu-checkbox-item"][data-highlighted] {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+.chrono-select-content [data-slot="select-separator"],
+.chrono-dropdown-content [data-slot="dropdown-menu-separator"] {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Chrono dialog - task create/edit modal */
+.chrono-dialog {
+  background: rgba(18, 18, 21, 0.98) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.6);
+}
+.chrono-dialog-overlay {
+  background: rgba(0, 0, 0, 0.7) !important;
+  backdrop-filter: blur(4px);
+}
+.chrono-dialog h3 {
+  color: #e4e4e7;
+  font-weight: 600;
+}
+.chrono-dialog .chrono-dialog-description {
+  color: #a1a1aa;
+}
+.chrono-dialog [data-slot="label"],
+.chrono-dialog label {
+  color: #a1a1aa;
+}
+.chrono-dialog [data-slot="textarea"],
+.chrono-dialog [data-slot="input"] {
+  background: rgba(24, 24, 27, 0.8) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  color: #d4d4d8;
+}
+.chrono-dialog [data-slot="textarea"]:focus,
+.chrono-dialog [data-slot="input"]:focus {
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05);
+}
+.chrono-dialog .chrono-dialog-submit {
+  background: rgba(24, 24, 27, 0.9) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #d4d4d8;
+  transition: all 0.2s;
+}
+.chrono-dialog .chrono-dialog-submit:hover:not(:disabled) {
+  background: rgba(39, 39, 42, 0.95) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: white;
+}
+.chrono-dialog .chrono-time-input {
+  background: rgba(24, 24, 27, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+}
+.chrono-dialog .chrono-time-input button {
+  color: #a1a1aa;
+}
+.chrono-dialog .chrono-time-input button:hover:not(:disabled) {
+  color: #d4d4d8;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Aura-style compact custom checkbox */
+.custom-checkbox {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  min-height: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  display: grid;
+  place-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.custom-checkbox::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  transform: scale(0);
+  transition: 120ms transform ease-in-out;
+  box-shadow: inset 1em 1em white;
+  transform-origin: center;
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+}
+.custom-checkbox:checked::before {
+  transform: scale(1);
+}
+.custom-checkbox:checked {
+  background: #3b82f6;
+  border-color: #3b82f6;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.glass-panel {
+  background: rgba(10, 10, 12, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Chrono time drum picker - clean scroll selector */
+.chrono-time-drum {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.chrono-time-drum::-webkit-scrollbar {
+  display: none;
+}
+.chrono-time-drum-selected {
+  color: white !important;
+  font-weight: 700;
+  font-size: 1.5rem;
+}
+.chrono-time-drum-unselected {
+  color: #71717a !important;
+  font-weight: 400;
+  font-size: 0.95rem;
+}
+.chrono-time-drum-window {
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+.chrono-time-drum-colon {
+  color: white;
+  font-weight: 700;
+  font-size: 1.5rem;
+}

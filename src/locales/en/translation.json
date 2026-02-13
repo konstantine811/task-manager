@@ -1,0 +1,215 @@
+{
+  "nav":{"sign_in":"Sign in with Google","to_tasks":"To Tasks","logout":"Log out"},"common": {
+    "chrono": "Chrono",
+    "cancel": "Cancel"
+  },
+  "ai": {
+    "dialog_title": "Add Tasks with AI",
+    "dialog_description": "Describe your tasks in natural language — AI will parse and create them.",
+    "placeholder": "e.g. buy milk, 45 min workout health, important meeting 1 hour career",
+    "parse": "Create Tasks",
+    "parsing": "AI is analyzing your text...",
+    "preview_title": "Created tasks",
+    "add_tasks": "Add",
+    "no_tasks_found": "No tasks found in text",
+    "parse_error": "Parse error. Try again.",
+    "tasks_added": "Added {{count}} tasks"
+  },
+  "pages": {
+    "task": {
+      "template": "Task Template",
+      "daily": "Daily Tasks",
+      "analytics": "Analytics",
+      "home": "Home"
+    }
+  },
+  "task_manager": {
+    "add": "Add Task",
+    "add_container": "Add category",
+    "add_template_task": "Add Task Template for Today",
+    "template_daily_task_title": "Daily Task Template",
+    "daily_task_title": "Your Tasks for",
+    "edit": "Edit Task",
+    "category": "Category",
+    "categories": {
+      "health": "Health",
+      "finance": "Finance",
+      "emotions": "Emotions",
+      "relationships": "Relationships",
+      "career": "Career",
+      "spirituality": "Spirituality",
+      "personal_growth": "Personal Growth",
+      "hobbies": "Hobbies",
+      "leisure": "Leisure"
+    },
+    "combobox_placeholder": "Category or task name",
+    "planned_tasks": "Planned Tasks",
+    "template_task": "Task Templates",
+    "new_task": "New Tasks",
+    "delete": "Delete Task",
+    "complete": "Complete Task",
+    "drag_task_here": "Drag task here",
+    "incomplete": "Incomplete Task",
+    "completed": "Completed Tasks",
+    "incomplete_tasks": "Incomplete Tasks",
+    "no_tasks": "No tasks available",
+    "task_name": "Task Name",
+    "task_description": "Task Description",
+    "calendar": {
+      "header": {
+        "title": "Move Goal",
+        "description": "Set your daily activity goal."
+      },
+      "date_range": {
+        "today": "Today",
+        "yesterday": "Yesterday",
+        "thisWeek": "This Week",
+        "lastWeek": "Last Week",
+        "last7Days": "Last 7 Days",
+        "thisMonth": "This Month",
+        "lastMonth": "Last Month",
+        "thisYear": "This Year",
+        "lastYear": "Last Year"
+      }
+    },
+    "add_all_tasks": {
+      "header": {
+        "title": "All Tasks from Template",
+        "description": "You can add all tasks from the template to your task list."
+      }
+    },
+    "analytics": {
+      "header": {
+        "title": "Task Analytics",
+        "description": "Here you can view statistics on assigned tasks."
+      },
+      "daily_table": {
+        "indicator": "Indicator",
+        "count": "Count",
+        "time": "Time"
+      },
+      "header_range": {
+        "title": "Task Analytics for Period",
+        "description": "Select the period for which you want to view task statistics."
+      },
+      "range_table": {
+        "task": "Task",
+        "done": "Done",
+        "not_done": "Not Done",
+        "total_time": "Total Time",
+        "done_time": "Done Time",
+        "sort_by_done_time": "Sort by Done Time",
+        "sort_by_done_count": "Sort by Done Count"
+      }
+    },
+    "day_names": {
+      "1": "Mon",
+      "2": "Tue",
+      "3": "Wed",
+      "4": "Thu",
+      "5": "Fri",
+      "6": "Sat",
+      "7": "Sun",
+      "all": "Common Tasks",
+      "by_all_week": "By All Days of the Week"
+    },
+    "dialog_category": {
+      "delete": {
+        "title": "Delete Category",
+        "description": "Are you sure you want to delete this category? All tasks in it will be deleted.",
+        "yes": "Yes, delete",
+        "no": "No, leave it"
+      }
+    },
+    "dialog_delete_task": {
+      "title": "Delete Task",
+      "description": "Are you sure you want to delete this task? This action cannot be undone.",
+      "yes": "Yes, delete",
+      "no": "No, leave it"
+    },
+    "dialog_create_task": {
+      "task": {
+        "title": {
+          "label": "Task Title",
+          "description": "Briefly describe what you want to do."
+        },
+        "time": {
+          "determined": {
+            "label": "Planned for",
+            "description": "Specify the exact time you want to complete this task."
+          },
+          "duration": {
+            "label": "Expected Duration",
+            "description": "How long do you expect this task to take (e.g., 1 hour 30 minutes)"
+          },
+          "wasted": {
+            "label": "Wasted Time",
+            "description": "How much time was actually spent on execution (e.g., 45 minutes)"
+          },
+          "label": "Planned Time",
+          "wasted_time": "Wasted Time",
+          "remaining_time": "Remaining Time",
+          "when_day": "When to do?",
+          "hours": "Hours",
+          "minutes": "Minutes",
+          "is_determined_task": "At a specific time",
+          "on_time": "At this hour",
+          "count_time": "How much time do you need?",
+          "description": "How much time do you want to dedicate to this task?"
+        },
+        "priority": {
+          "label": "Priority",
+          "description": "How important is this task for today?",
+          "options": {
+            "low": "Low",
+            "medium": "Medium",
+            "high": "High"
+          }
+        }
+      },
+      "1": {
+        "title": "New Task",
+        "description": "Formulate your intention for the day. A small step — a big impact."
+      },
+      "2": {
+        "title": "Plan What Matters",
+        "description": "Add a task that helps you focus, stay balanced, and move toward your goals."
+      },
+      "3": {
+        "title": "Create Task",
+        "description": "Specify the title, priority, and desired completion time. This will help organize your day better."
+      },
+      "4": {
+        "title": "Main Action of the Day",
+        "description": "What truly matters today? Describe it clearly and briefly."
+      }
+    }
+  },
+  "chart": {
+    "hours": "Hours",
+    "days": "Days",
+    "hour": "hr",
+    "minute": "min",
+    "count_chart_title": "Total Duration of Tasks Each Day",
+    "period_count_category_title": "Total Duration of Categories for Period",
+    "period_count_task_title": "Total Duration of Tasks for Period",
+    "period_count_person_title": "Total Duration for Period",
+    "range_count_task_title": "Analytics of Time Spent on Tasks for Selected Period",
+    "period": "Period",
+    "category": "Categories",
+    "task": "Tasks",
+    "timeCount": "Duration",
+    "task_day_count": "Tasks for Today",
+    "pie_category_daily_time": "Task Completion Status by Categories",
+    "done_tasks": "Completed Tasks",
+    "undone_tasks": "Undone Tasks",
+    "line_chart_type": {
+      "title": "Line Chart Type",
+      "linear": "Linear",
+      "step": "Step",
+      "smooth": "Smooth",
+      "smooth_cardinal": "Smooth (Cardinal)",
+      "monotone": "Monotone"
+    }
+  }
+}
