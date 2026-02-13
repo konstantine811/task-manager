@@ -80,6 +80,7 @@ function SortableItem({
       renderItem={renderItem}
       task={task}
       onEditTask={onEditTask}
+      containerId={containerId}
     />
   );
 }

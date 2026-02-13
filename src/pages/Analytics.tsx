@@ -81,15 +81,15 @@ const Analytics = () => {
                   className="grow"
                   data={analyticsData.categoryEntity}
                 />
-                <div className="grow max-w-md mx-auto">
+                <div className="grow max-w-2xl mx-auto w-full">
                   <div className="flex flex-wrap justify-center items-center gap-2">
                     <ChartTitle title="chart.period_count_category_title" />
                   </div>
-                  <div className="max-w-md mx-auto">
+                  <div className="w-full">
                     <ChartPieItem
                       data={categoryDoneEntity}
                       type={ItemTimeMapKeys.category}
-                      height={430}
+                      height={320}
                     />
                   </div>
                 </div>

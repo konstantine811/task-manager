@@ -14,6 +14,8 @@ import { useTranslation } from "react-i18next";
 import { paresSecondToTime } from "@/utils/time.util";
 import TaskDeterminedTime from "./task-components/task-determined-time";
 import { StyleWordBreak } from "@/config/styles.config";
+import { CATEGORY_CHART_COLORS } from "@/config/chart-colors.config";
+
 export function TaskItem({
   index = "",
   task,
@@ -22,9 +24,11 @@ export function TaskItem({
   dragging = false,
   onEditTask,
   templated,
-  style, // ✅ додали
+  readOnly = false,
+  style,
   listeners,
   handle,
+  categoryId,
 }: {
   index?: number | string;
   task: ItemTask;
@@ -34,9 +38,11 @@ export function TaskItem({
   children?: React.ReactNode;
   dragging?: boolean;
   templated: boolean;
-  style?: React.CSSProperties; // ✅ додали
+  readOnly?: boolean;
+  style?: React.CSSProperties;
   listeners?: DraggableSyntheticListeners;
   handle?: boolean;
+  categoryId?: UniqueIdentifier;
 }) {
   const [isPlay, setIsPlay] = useState(false);
   const [t] = useTranslation();
@@ -46,6 +52,10 @@ export function TaskItem({
       ? task.timeDone
       : task.time;
   const timeFormatted = paresSecondToTime(timeSecs);
+  const categoryColor =
+    categoryId && templated
+      ? CATEGORY_CHART_COLORS[String(categoryId)] ?? null
+      : null;
 
   return (
     <div
@@ -54,8 +64,14 @@ export function TaskItem({
         isPlay ? getPriorityBorderClass(task.priority) : ""
       }`}
     >
+      {categoryColor && (
+        <div
+          className="absolute left-0 top-1 bottom-1 w-[3px] rounded-full"
+          style={{ backgroundColor: categoryColor }}
+        />
+      )}
       <div
-        className={`flex items-center justify-between gap-3 p-2 rounded-lg border border-white/[0.04] bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/[0.06] transition-all w-full ${
+        className={`flex items-center justify-between gap-3 p-2 rounded-lg border border-zinc-200/80 dark:border-white/10 bg-white/80 dark:bg-white/5 hover:bg-white/90 dark:hover:bg-white/10 shadow-sm transition-all w-full ${categoryColor ? "pl-3" : ""} ${
           task.isDone
             ? "chrono-task-card-done text-indigo-200/90 border-indigo-500/15 bg-indigo-500/5"
             : "text-zinc-300"
@@ -91,6 +107,7 @@ export function TaskItem({
               />
             </SoundHoverElement>
           )}
+          {!readOnly && (
           <Button
             data-cypress="draggable-item"
             {...(!handle ? listeners : undefined)}
@@ -100,6 +117,7 @@ export function TaskItem({
           >
             <GripVertical className="w-3 h-3" />
           </Button>
+          )}
           <p
             className={`text-left text-sm font-medium min-w-0 max-w-[200px] break-words ${
               task.isDone ? "text-indigo-200" : ""
@@ -160,6 +178,7 @@ export function TaskItem({
               )}
             </>
           )}
+          {!readOnly && (
           <div className="w-12 flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             {onEditTask && (
               <WrapperHoverElement>
@@ -206,6 +225,7 @@ export function TaskItem({
               </Button>
             </SoundHoverElement>
           </div>
+          )}
           {children}
         </div>
       </div>

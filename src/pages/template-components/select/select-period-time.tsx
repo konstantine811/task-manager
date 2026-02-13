@@ -17,19 +17,31 @@ import { useTranslation } from "react-i18next";
 
 const SelectPeriodTime = ({
   onChange,
+  value: controlledValue,
 }: {
   onChange: (period: TypeAnalyticsPeriod) => void;
+  value?: TypeAnalyticsPeriod;
 }) => {
-  const initialPeriod = ANALYTICS_PERIODS[0]; // Встановлюємо початковий період
-  const [period, setPeriod] = useState<string | undefined>(initialPeriod);
-  function parsePeriod(period: string | undefined): TypeAnalyticsPeriod {
-    return isNaN(Number(period))
-      ? (period as "all" | "by_all_week")
-      : (Number(period) as DayNumber);
+  const initialPeriod = ANALYTICS_PERIODS[0];
+  const [internalPeriod, setInternalPeriod] = useState<string | undefined>(
+    (controlledValue ?? initialPeriod).toString()
+  );
+  const period = controlledValue !== undefined
+    ? controlledValue.toString()
+    : internalPeriod;
+
+  function parsePeriod(p: string | undefined): TypeAnalyticsPeriod {
+    return isNaN(Number(p))
+      ? (p as "all" | "by_all_week")
+      : (Number(p) as DayNumber);
   }
+
   useEffect(() => {
-    onChange(initialPeriod);
-  }, [onChange, initialPeriod]);
+    if (controlledValue === undefined) {
+      onChange(parsePeriod(initialPeriod));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [t] = useTranslation();
   return (
     <DropdownMenu>
@@ -51,8 +63,8 @@ const SelectPeriodTime = ({
         <DropdownMenuRadioGroup
           value={period}
           onValueChange={(val) => {
-            setPeriod(val);
-            onChange(parsePeriod(val)); // Викликаємо onChange з новим періодом
+            if (controlledValue === undefined) setInternalPeriod(val);
+            onChange(parsePeriod(val));
           }}
         >
           {ANALYTICS_PERIODS.map((period) => {

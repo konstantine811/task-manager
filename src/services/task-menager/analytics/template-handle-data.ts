@@ -51,7 +51,7 @@ export const getItemTimeMapByPeriod = (
     category.tasks.forEach((task) => {
       const timeToAdd = task.isDetermined ? task.timeDone : task.time;
       const itemKey =
-        type === ItemTimeMapKeys.category ? category.title : task.title;
+        type === ItemTimeMapKeys.category ? String(category.id) : task.title;
       switchItemTimeMapByPeriod(
         itemTimeMap,
         itemKey,

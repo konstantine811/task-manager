@@ -1,6 +1,3 @@
-import { ThemePalette, ThemeStaticPalette, ThemeType } from "@/config/theme-colors.config";
-import { useHeaderSizeStore } from "@/storage/headerSizeStore";
-import { useThemeStore } from "@/storage/themeStore";
 import {
   StackedDay,
   TaskAnalytics,
@@ -17,9 +14,7 @@ import { isTouchDevice } from "@/utils/touch-inspect";
 
 const ChartTimeCount = ({ templateTasks }: { templateTasks: Items }) => {
   const [analyticsData, setAnalyticsData] = useState<TaskAnalytics>();
-  const hS = useHeaderSizeStore((s) => s.size);
   const [t] = useTranslation();
-  const themeName = useThemeStore((s) => s.selectedTheme);
   const { TooltipElement, showTooltip, hideTooltip } = useChartTooltip();
   const ref = useRef<SVGSVGElement>(null);
   const activeNodeRef = useRef<SVGGElement | null>(null);
@@ -78,7 +73,6 @@ const ChartTimeCount = ({ templateTasks }: { templateTasks: Items }) => {
     const heightViewOffset = 40;
     const widthOffset = width - margin.left - margin.right;
     const heightOffset = height - margin.top - margin.bottom;
-    const colors = ThemePalette[themeName ?? ThemeType.DARK] ?? ThemePalette[ThemeType.DARK];
     const svg = d3.select(ref.current);
     svg.selectAll("*").remove(); // Clean before render
 
@@ -223,26 +217,45 @@ const ChartTimeCount = ({ templateTasks }: { templateTasks: Items }) => {
     const gradient = defs
       .append("linearGradient")
       .attr("id", "barGradient")
-      .attr("gradientUnits", "userSpaceOnUse") // 👈 важливо!
+      .attr("gradientUnits", "userSpaceOnUse")
       .attr("x1", "0")
       .attr("y1", y(0))
       .attr("x2", "0")
-      .attr("y2", y(18 * 3600)); // верхня межа (16 годин)
+      .attr("y2", y(18 * 3600));
 
     gradient
       .append("stop")
-      .attr("offset", "40%")
-      .attr("stop-color", colors.accent); // 0h (синій)
+      .attr("offset", "0%")
+      .attr("stop-color", "#34d399");
 
     gradient
       .append("stop")
-      .attr("offset", `${(1 - y(20 * 3600) / y(0)) * 100}%`)
-      .attr("stop-color", ThemeStaticPalette.yellow); // 13h (жовтий)
+      .attr("offset", "50%")
+      .attr("stop-color", "#22d3ee");
 
     gradient
       .append("stop")
-      .attr("offset", `${(1 - y(40 * 3600) / y(0)) * 100}%`)
-      .attr("stop-color", colors.destructive); // 16h (червоний)
+      .attr("offset", "85%")
+      .attr("stop-color", "#818cf8");
+
+    gradient
+      .append("stop")
+      .attr("offset", "100%")
+      .attr("stop-color", "#fb7185");
+
+    defs
+      .append("filter")
+      .attr("id", "bar-drop-shadow")
+      .attr("x", "-20%")
+      .attr("y", "-20%")
+      .attr("width", "140%")
+      .attr("height", "140%")
+      .append("feDropShadow")
+      .attr("dx", 0)
+      .attr("dy", 4)
+      .attr("stdDeviation", 6)
+      .attr("flood-color", "#000")
+      .attr("flood-opacity", 0.25);
 
     group
       .append("g")
@@ -254,7 +267,8 @@ const ChartTimeCount = ({ templateTasks }: { templateTasks: Items }) => {
       .attr("width", x.bandwidth())
       .attr("height", (d) => y(0) - y(d.total))
       .attr("rx", 8)
-      .attr("fill", "url(#barGradient)");
+      .attr("fill", "url(#barGradient)")
+      .attr("filter", "url(#bar-drop-shadow)");
     const path = group
       .selectAll("g.layer-outline")
       .data(stack)
@@ -296,19 +310,30 @@ const ChartTimeCount = ({ templateTasks }: { templateTasks: Items }) => {
   }, [
     analyticsData,
     ref,
-    hS,
     t,
-    themeName,
     showTooltip,
     hideTooltip,
     handleInteraction,
     onHideTooltip,
   ]);
+
   return (
     <div className="w-full relative">
-      <ChartTitle title="chart.count_chart_title" />
+      <div className="rounded-xl border border-white/10 bg-gradient-to-b from-white to-zinc-50 dark:from-zinc-900/80 dark:to-zinc-950 text-zinc-900 dark:text-zinc-100 shadow-[0_25px_70px_rgba(0,0,0,0.35)] overflow-hidden">
+        <div className="p-2 sm:p-3">
+          <div className="mb-2">
+            <ChartTitle title="chart.count_chart_title" />
+          </div>
+          <div className="relative">
+            <div className="absolute inset-0 rounded-full blur-3xl bg-indigo-500/10 dark:bg-indigo-500/15 pointer-events-none" />
+            <svg
+              ref={ref}
+              className="relative w-full h-auto drop-shadow-[0_12px_28px_rgba(0,0,0,0.4)]"
+            />
+          </div>
+        </div>
+      </div>
       {TooltipElement}
-      <svg ref={ref} className="w-full h-auto" />
     </div>
   );
 };

@@ -41,6 +41,7 @@ const SortableItemDragOverlay = ({
       renderItem={renderItem}
       templated={templated}
       dragOverlay
+      containerId={container.id}
     />
   );
 };

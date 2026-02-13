@@ -56,6 +56,7 @@ const ContainerDragOverlay = ({
             })}
             renderItem={renderItem}
             task={task}
+            containerId={containerId}
           />
         ))}
     </Container>

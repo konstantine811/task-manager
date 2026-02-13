@@ -158,7 +158,7 @@ const DailyTask = () => {
 
         {/* Центральна колонка */}
         <main
-          className={`w-full flex-1 px-4 flex flex-col justify-center ${outletContext.className}`}
+          className={`w-full flex-1 px-4 flex flex-col justify-start ${outletContext.className}`}
           style={{ minHeight: `calc(100vh - ${hS}px)` }}
         >
           <h2 className="text-center text-foreground/50 text-sm mb-4 mt-2">

@@ -15,6 +15,7 @@ export interface Props {
   children: React.ReactNode;
   columns?: number;
   label?: string;
+  readOnly?: boolean;
   style?: React.CSSProperties;
   horizontal?: boolean;
   handleProps?: React.HTMLAttributes<HTMLButtonElement | HTMLDivElement>;
@@ -36,6 +37,7 @@ export const Container = forwardRef<HTMLDivElement, Props>(
       onRemove,
       label,
       placeholder,
+      readOnly = false,
       style,
       options,
       onValueChange,
@@ -62,14 +64,16 @@ export const Container = forwardRef<HTMLDivElement, Props>(
         {label ? (
           <div className="flex items-center justify-between mb-3 px-2 group relative z-10">
             <div className="flex items-center gap-2 flex-1 min-w-0">
-              <Button
-                {...handleProps}
-                variant="ghost"
-                size="icon"
-                className="cursor-move hover:bg-white/5 hover:text-white flex-shrink-0 md:hidden h-7 w-7 text-zinc-400"
-              >
-                <GripVertical className="w-3 h-3" />
-              </Button>
+              {!readOnly && (
+                <Button
+                  {...handleProps}
+                  variant="ghost"
+                  size="icon"
+                  className="cursor-move hover:bg-white/5 hover:text-white flex-shrink-0 md:hidden h-7 w-7 text-zinc-400"
+                >
+                  <GripVertical className="w-3 h-3" />
+                </Button>
+              )}
               {isEdit ? (
                 <InputCombobox
                   options={options}
@@ -84,8 +88,8 @@ export const Container = forwardRef<HTMLDivElement, Props>(
                     const Icon = style.icon;
                     return (
                       <label
-                        onDoubleClick={() => setIsEdit(true)}
-                        className={`text-sm font-medium flex items-center gap-2 ${style.color} cursor-pointer`}
+                        onDoubleClick={readOnly ? undefined : () => setIsEdit(true)}
+                        className={`text-sm font-medium flex items-center gap-2 ${style.color} ${readOnly ? "" : "cursor-pointer"}`}
                       >
                         <Icon className="w-4 h-4 flex-shrink-0" />
                         {options.includes(label)
@@ -96,6 +100,7 @@ export const Container = forwardRef<HTMLDivElement, Props>(
                   })()}
                 </>
               )}
+              {!readOnly && (
               <SoundHoverElement
                 animValue={0.9}
                 hoverTypeElement={SoundTypeElement.SELECT}
@@ -109,8 +114,9 @@ export const Container = forwardRef<HTMLDivElement, Props>(
                   {isEdit ? <PenOff className="w-3 h-3" /> : <Pen className="w-3 h-3" />}
                 </Button>
               </SoundHoverElement>
+              )}
             </div>
-            {!isEdit && (
+            {!readOnly && !isEdit && (
               <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 flex-shrink-0">
                 {onRemove && (
                   <SoundHoverElement

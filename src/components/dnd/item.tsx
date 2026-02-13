@@ -20,6 +20,7 @@ export type RenderItemProps = {
   transition: Props["transition"];
   value: Props["value"];
   task: ItemTask;
+  containerId?: UniqueIdentifier;
 };
 
 export interface Props {
@@ -41,6 +42,7 @@ export interface Props {
   transition?: string | null;
   value: React.ReactNode;
   task: ItemTask;
+  containerId?: UniqueIdentifier;
   onRemove?(): void;
   renderItem?: (args: RenderItemProps) => React.ReactElement;
   onToggle?: (id: UniqueIdentifier, value: boolean) => void;
@@ -58,6 +60,7 @@ export const Item = React.memo(
         handle,
         index,
         listeners,
+        containerId,
         onEditTask,
         renderItem,
         sorting,
@@ -96,6 +99,7 @@ export const Item = React.memo(
           transition,
           value,
           task,
+          containerId,
         })
       ) : (
         <li className="list-none" ref={ref} tabIndex={!handle ? 0 : undefined}>
@@ -108,6 +112,7 @@ export const Item = React.memo(
             onEditTask={onEditTask}
             listeners={listeners}
             handle={handle}
+            categoryId={containerId}
             style={{
               transform: transform
                 ? `translate3d(${transform.x}px, ${transform.y}px, 0)`

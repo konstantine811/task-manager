@@ -2,7 +2,6 @@ import { useCallback, useRef } from "react";
 import * as d3 from "d3";
 import { paresSecondToTime } from "@/utils/time.util";
 import { useTranslation } from "react-i18next";
-import { useIsAdoptive } from "@/hooks/useIsAdoptive";
 
 type ShowTooltipParams = {
   event: PointerEvent;
@@ -12,7 +11,6 @@ type ShowTooltipParams = {
 
 const useChartTooltip = () => {
   const ref = useRef<HTMLDivElement | null>(null);
-  const { isAdoptiveSize } = useIsAdoptive();
   const [t] = useTranslation();
   const showTooltip = useCallback(
     ({ event, title, time }: ShowTooltipParams) => {
@@ -20,19 +18,16 @@ const useChartTooltip = () => {
       const tooltip = ref.current;
       const { hours, minutes } = paresSecondToTime(time);
       const parsedHours = String(Number(hours));
-      const svgRect = (
-        ref.current.parentElement?.querySelector("svg") as SVGSVGElement
-      )?.getBoundingClientRect();
-      if (!svgRect) return;
+      const offset = 16;
 
-      const x = event.clientX - svgRect.left;
-      const y = event.clientY - svgRect.top;
-
-      const currentRef = d3
-        .select(ref.current)
-
+      d3.select(ref.current)
+        .style("position", "fixed")
+        .style("left", `${event.clientX}px`)
+        .style("top", `${event.clientY}px`)
+        .style("transform", `translate(${offset}px, ${offset}px)`)
         .style("display", "flex")
-        .style("opacity", 1).html(`
+        .style("opacity", "1")
+        .html(`
         <h3 class="text-zinc-300 text-center text-sm"><strong>${t(
           title
         )}</strong></h3>
@@ -43,24 +38,21 @@ const useChartTooltip = () => {
         </div>
       `);
 
-      if (isAdoptiveSize) {
-        currentRef.style("transform", `translate(calc(${x}px - 50%), ${y}px)`);
-      } else {
-        currentRef.style(
-          "transform",
-          `translate(calc(${x}px - 100% - 20px), ${y + 28}px)`
-        );
-      }
-
-      const { left } = tooltip.getBoundingClientRect();
-      if (left < 0) {
-        currentRef.style(
-          "transform",
-          `translate(calc(${x}px - 20px), ${y + 28}px)`
-        );
-      }
+      requestAnimationFrame(() => {
+        if (!ref.current) return;
+        const rect = tooltip.getBoundingClientRect();
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        let tx = offset;
+        let ty = offset;
+        if (event.clientX + rect.width + offset > vw - 8) tx = -rect.width - offset;
+        else if (event.clientX + tx < 8) tx = offset;
+        if (event.clientY + rect.height + offset > vh - 8) ty = -rect.height - offset;
+        else if (event.clientY + ty < 8) ty = offset;
+        d3.select(ref.current).style("transform", `translate(${tx}px, ${ty}px)`);
+      });
     },
-    [t, isAdoptiveSize]
+    [t]
   );
 
   const hideTooltip = useCallback(() => {
@@ -71,7 +63,7 @@ const useChartTooltip = () => {
   const TooltipElement = (
     <div
       ref={ref}
-      className="absolute z-50 max-w-sm p-2 top-0 text-sm bg-zinc-800/95 border border-white/20 rounded shadow-xl shadow-black/70 will-change-transform pointer-events-none opacity-0 items-center flex-col gap-2 backdrop-blur-sm"
+      className="fixed z-[100] max-w-sm p-2 text-sm bg-zinc-800/95 border border-white/20 rounded-lg shadow-xl shadow-black/70 will-change-transform pointer-events-none opacity-0 items-center flex-col gap-2 backdrop-blur-sm"
     />
   );
 

@@ -15,7 +15,7 @@ const ChartPieCateogoryWrap = ({
       {Object.keys(data).length > 0 && (
         <div
           className={cn(
-            `flex flex-col items-center gap-4 max-w-md mx-auto ${className}`
+            `flex flex-col items-center gap-4 max-w-2xl mx-auto w-full ${className}`
           )}
         >
           <ChartTitle title="chart.pie_category_daily_time" />
