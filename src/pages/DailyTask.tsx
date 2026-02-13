@@ -23,7 +23,7 @@ import { BreakPoints } from "@/config/adaptive.config";
 import { DailyTaskAnalytics } from "@/types/analytics/task-analytics.model";
 
 const DailyTask = () => {
-  const { isAdoptiveSize: mdSize, screenWidth } = useIsAdoptive(BreakPoints.lg);
+  const { isAdoptiveSize: mdSize, screenWidth } = useIsAdoptive("lg");
   const hS = useHeaderSizeStore((s) => s.size);
   const [dailyTask, setDailyTask] = useState<Items>();
   const outletContext = useOutletContext<TaskManagerOutletContext>();

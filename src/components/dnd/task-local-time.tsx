@@ -6,17 +6,20 @@ import {
 } from "@/components/ui/tooltip";
 import { formatSeconds } from "@/utils/time.util";
 import { useEffect, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
 
 const TaskLocalTime = ({
   outerTime,
   isPlay,
   revert = false,
   tooltipText,
+  className = "",
 }: {
   outerTime: number;
   isPlay: boolean;
   revert?: boolean;
   tooltipText?: string;
+  className?: string;
 }) => {
   const [time, setTime] = useState(outerTime);
   const startRef = useRef<number | null>(null);
@@ -57,9 +60,12 @@ const TaskLocalTime = ({
     <Tooltip>
       <TooltipTrigger asChild>
         <div
-          className={`flex items-center gap-0.5 font-mono text-xs relative ${
-            isNegative ? "text-destructive/70" : "text-accent/70"
-          } ${!revert && "text-muted-foreground"}`}
+          className={cn(
+            "flex items-center gap-0.5 font-mono text-xs relative",
+            isNegative ? "text-destructive/70" : "text-accent/70",
+            !revert && "text-muted-foreground",
+            className
+          )}
         >
           {revert && isNegative && <span className="absolute -left-2">-</span>}
           <SlidingNumber value={hours} padStart={true} />

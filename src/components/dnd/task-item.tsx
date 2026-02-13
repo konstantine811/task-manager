@@ -40,7 +40,7 @@ export function TaskItem({
 }) {
   const [isPlay, setIsPlay] = useState(false);
   const [t] = useTranslation();
-  const hasLongWord = task.title.split(" ").some((word) => word.length > 40); // можна змінити 20 на поріг
+  const hasLongWord = task.title.split(" ").some((word) => word.length > 40);
   const timeSecs =
     task.isPlanned && task.isDone && task.timeDone
       ? task.timeDone
@@ -55,59 +55,61 @@ export function TaskItem({
       }`}
     >
       <div
-        className={`flex items-center gap-3 p-2 rounded-lg border border-white/[0.04] bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/[0.06] transition-all ${
+        className={`flex items-center justify-between gap-3 p-2 rounded-lg border border-white/[0.04] bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/[0.06] transition-all w-full ${
           task.isDone
             ? "chrono-task-card-done text-indigo-200/90 border-indigo-500/15 bg-indigo-500/5"
             : "text-zinc-300"
         }`}
       >
-        <div className="w-6 text-center text-xs text-zinc-600 font-mono tabular-nums flex-shrink-0">
-          {(index || index === 0) && String(Number(index) + 1).padStart(2, "0")}
-        </div>
-        {!templated && (
-          <SoundHoverElement
-            className="flex-shrink-0"
-            animValue={1.4}
-            hoverTypeElement={SoundTypeElement.SELECT}
-          >
-            <input
-              type="checkbox"
-              className="custom-checkbox"
-              id={`isDone-${task.id}`}
-              checked={task.isDone}
-              onChange={() => {
-                if (onToggle) {
-                  if (!task.isDone) {
-                    checkOutSound.stop();
-                    checkInSound.play();
-                  } else {
-                    checkInSound.stop();
-                    checkOutSound.play();
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          <div className="w-6 text-center text-xs text-zinc-600 font-mono tabular-nums flex-shrink-0">
+            {(index || index === 0) && String(Number(index) + 1).padStart(2, "0")}
+          </div>
+          {!templated && (
+            <SoundHoverElement
+              className="flex-shrink-0"
+              animValue={1.4}
+              hoverTypeElement={SoundTypeElement.SELECT}
+            >
+              <input
+                type="checkbox"
+                className="custom-checkbox"
+                id={`isDone-${task.id}`}
+                checked={task.isDone}
+                onChange={() => {
+                  if (onToggle) {
+                    if (!task.isDone) {
+                      checkOutSound.stop();
+                      checkInSound.play();
+                    } else {
+                      checkInSound.stop();
+                      checkOutSound.play();
+                    }
+                    onToggle(task.id, !task.isDone);
                   }
-                  onToggle(task.id, !task.isDone);
-                }
-              }}
-            />
-          </SoundHoverElement>
-        )}
-        <Button
-          data-cypress="draggable-item"
-          {...(!handle ? listeners : undefined)}
-          variant="ghost"
-          size="icon"
-          className="cursor-move hover:bg-white/5 hover:text-white text-zinc-500 flex-shrink-0 h-6 w-6 md:hidden"
-        >
-          <GripVertical className="w-3 h-3" />
-        </Button>
-        <p
-          className={`flex-1 text-left text-sm font-medium min-w-0 truncate ${
-            task.isDone ? "text-indigo-200" : ""
-          }`}
-          style={StyleWordBreak}
-          title={hasLongWord ? task.title : ""}
-        >
-          {task.title}
-        </p>
+                }}
+              />
+            </SoundHoverElement>
+          )}
+          <Button
+            data-cypress="draggable-item"
+            {...(!handle ? listeners : undefined)}
+            variant="ghost"
+            size="icon"
+            className="cursor-move hover:bg-white/5 hover:text-white text-zinc-500 flex-shrink-0 h-6 w-6 md:hidden"
+          >
+            <GripVertical className="w-3 h-3" />
+          </Button>
+          <p
+            className={`text-left text-sm font-medium min-w-0 max-w-[200px] break-words ${
+              task.isDone ? "text-indigo-200" : ""
+            }`}
+            style={StyleWordBreak}
+            title={hasLongWord ? task.title : undefined}
+          >
+            {task.title}
+          </p>
+        </div>
 
         <div className="flex items-center gap-4 flex-shrink-0">
           {templated && task.whenDo && task.whenDo.length > 0 && (

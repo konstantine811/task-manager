@@ -37,7 +37,7 @@ const Analytics = () => {
   useEffect(() => {
     const worker = new AnalyticsWorker();
     worker.postMessage(rangeTasks);
-    worker.onmessage = (e) => {
+    worker.onmessage = (e: MessageEvent) => {
       const analyticsData = e.data as AnalyticsData;
       if (analyticsData.categoryEntity) {
         const categoryTime: ItemTimeMap = {};
