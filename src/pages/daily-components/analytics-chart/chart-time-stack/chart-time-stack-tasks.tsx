@@ -96,12 +96,13 @@ const ChartTimeStackTasks = ({
       .sort((a, b) => {
         if (a.isDone && !b.isDone) return -1;
         if (!a.isDone && b.isDone) return 1;
-        return b.time - a.time;
+        return 0;
       });
 
     const totalTime = d3.sum(tasks, (d) => d.time);
-    const doneTime = d3.sum(tasks, (d) => (d.isDone ? d.timeDone : 0));
-    const pendingTime = totalTime - doneTime;
+    const doneTime = d3.sum(tasks, (d) =>
+      d.isDone ? (d.timeDone || d.time) : 0
+    );
 
     const svg = d3.select(ref.current);
     svg.selectAll("*").remove();
@@ -119,25 +120,7 @@ const ChartTimeStackTasks = ({
       .domain([0, totalTime])
       .range(direction === "horizontal" ? [0, innerW] : [innerH, 0]);
 
-    group
-      .append("rect")
-      .attr(
-        direction === "horizontal" ? "x" : "y",
-        direction === "horizontal" ? 0 : scale(doneTime)
-      )
-      .attr(direction === "horizontal" ? "y" : "x", 0)
-      .attr(
-        direction === "horizontal" ? "width" : "height",
-        direction === "horizontal"
-          ? scale(doneTime)
-          : scale(0) - scale(doneTime)
-      )
-      .attr(direction === "horizontal" ? "height" : "width", barSize)
-      .attr("fill", colors["primary"])
-      .attr("rx", 2);
-
-    // create gradient for stack
-    // 👉 Вирахуємо відсотки
+    // create gradient for full bar (base layer)
     const redOffset =
       totalTime > 0 ? `${(16 * 3600 * 100) / totalTime}%` : "0%";
     const yellowOffset =
@@ -152,40 +135,48 @@ const ChartTimeStackTasks = ({
       .attr("x2", direction === "horizontal" ? "100%" : "0%")
       .attr("y2", direction === "horizontal" ? "0%" : "0%");
 
-    // 🟢 до 13 годин — primary
     gradient
       .append("stop")
       .attr("offset", yellowOffset)
       .attr("stop-color", ThemeStaticPalette.green);
-
     gradient
       .append("stop")
       .attr("offset", redOffset)
       .attr("stop-color", ThemeStaticPalette.yellow);
-
-    // 🔴 після 16 годин — destructive (червоний)
     gradient
       .append("stop")
       .attr("offset", "100%")
       .attr("stop-color", colors["destructive"]);
 
-    // Створюємо прямокутник для стека
+    // 1. Base: full gradient bar
     group
       .append("rect")
-      .attr(
-        direction === "horizontal" ? "x" : "y",
-        direction === "horizontal" ? scale(doneTime) : 0
-      )
+      .attr(direction === "horizontal" ? "x" : "y", 0)
       .attr(direction === "horizontal" ? "y" : "x", 0)
       .attr(
         direction === "horizontal" ? "width" : "height",
-        direction === "horizontal"
-          ? Math.abs(scale(pendingTime))
-          : Math.abs(scale(doneTime))
+        direction === "horizontal" ? innerW : innerH
       )
       .attr(direction === "horizontal" ? "height" : "width", barSize)
       .attr("fill", "url(#stackGradient)")
-      .attr("fill-opacity", 1);
+      .attr("rx", 2);
+
+    // 2. Blue overlay at the start for all completed tasks (0 to doneTime)
+    if (doneTime > 0) {
+      const blueColor = colors["primary"];
+      const segSize = Math.abs(scale(doneTime) - scale(0));
+      const isHor = direction === "horizontal";
+      const rect = group.append("rect").attr("fill", blueColor).attr("rx", 2);
+      if (isHor) {
+        rect.attr("x", 0).attr("y", 0).attr("width", segSize).attr("height", barSize);
+      } else {
+        rect
+          .attr("x", 0)
+          .attr("y", scale(doneTime))
+          .attr("width", barSize)
+          .attr("height", segSize);
+      }
+    }
 
     let offset = 0;
 

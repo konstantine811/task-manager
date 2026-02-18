@@ -48,7 +48,7 @@ const TaskPlay = ({
           <Button
             size="icon"
             variant="ghost"
-            className={`h-7 w-7 rounded-md border border-white/5 bg-white/[0.03] text-zinc-500 hover:bg-white/5 hover:text-zinc-300 hover:border-white/10 transition-colors ${
+            className={`h-7 w-7 rounded-md border border-zinc-300/80 dark:border-white/5 bg-zinc-100 dark:bg-white/[0.03] text-zinc-600 dark:text-zinc-500 hover:bg-zinc-200 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-zinc-300 hover:border-zinc-400/80 dark:hover:border-white/10 transition-colors ${
               task.isDone && "cursor-not-allowed opacity-40"
             }`}
             onClick={handleClick}
@@ -67,17 +67,15 @@ const TaskPlay = ({
               tooltipText={t(
                 "task_manager.dialog_create_task.task.time.wasted_time"
               )}
-              className="!text-zinc-500 bg-zinc-900/50 px-2 py-0.5 rounded border border-white/5"
+              className="!text-zinc-700 dark:!text-zinc-400 bg-zinc-200 dark:bg-zinc-900/50 px-2 py-0.5 rounded border border-zinc-300/80 dark:border-white/5"
             />
-            <span className="text-zinc-600 text-[10px]">/</span>
-            <TaskLocalTime
-              outerTime={task.time - task.timeDone}
-              isPlay={isPlaying}
-              revert
+            <span className="text-zinc-600 dark:text-zinc-500 text-[10px]">/</span>
+            <TaskLocalTimeStatic
+              timeInSeconds={task.time}
               tooltipText={t(
-                "task_manager.dialog_create_task.task.time.remaining_time"
+                "task_manager.dialog_create_task.task.time.total_time"
               )}
-              className="!text-zinc-500 bg-zinc-900/50 px-2 py-0.5 rounded border border-white/5"
+              className="!text-zinc-700 dark:!text-zinc-400 bg-zinc-200 dark:bg-zinc-900/50 px-2 py-0.5 rounded border border-zinc-300/80 dark:border-white/5"
             />
           </>
         ) : (
@@ -87,16 +85,15 @@ const TaskPlay = ({
               tooltipText={t(
                 "task_manager.dialog_create_task.task.time.wasted_time"
               )}
-              className="!text-zinc-500 bg-zinc-900/50 px-2 py-0.5 rounded border border-white/5"
+              className="!text-zinc-700 dark:!text-zinc-400 bg-zinc-200 dark:bg-zinc-900/50 px-2 py-0.5 rounded border border-zinc-300/80 dark:border-white/5"
             />
-            <span className="text-zinc-600 text-[10px]">/</span>
+            <span className="text-zinc-600 dark:text-zinc-500 text-[10px]">/</span>
             <TaskLocalTimeStatic
-              timeInSeconds={task.time - task.timeDone}
-              revert
+              timeInSeconds={task.time}
               tooltipText={t(
-                "task_manager.dialog_create_task.task.time.remaining_time"
+                "task_manager.dialog_create_task.task.time.total_time"
               )}
-              className="!text-zinc-500 bg-zinc-900/50 px-2 py-0.5 rounded border border-white/5"
+              className="!text-zinc-700 dark:!text-zinc-400 bg-zinc-200 dark:bg-zinc-900/50 px-2 py-0.5 rounded border border-zinc-300/80 dark:border-white/5"
             />
           </>
         )}

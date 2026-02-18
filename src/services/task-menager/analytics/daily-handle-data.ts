@@ -42,7 +42,11 @@ export const getDailyTaskAnalyticsData = (tasks: Items): DailyTaskAnalytics => {
 
       const timeDo = isDetermined || isPlanned || isDone ? timeDone : time;
       const timeDoneCategory =
-        (isDetermined || isPlanned) && !isDone ? 0 : timeDone;
+        (isDetermined || isPlanned) && !isDone
+          ? 0
+          : isDone
+            ? timeDone || time
+            : timeDone;
       dailyAnalytics.countTime += timeDo;
       dailyAnalytics.countAllTask += 1;
       dailyAnalytics.countDoneTime += timeDoneCategory;
@@ -60,7 +64,7 @@ export const getDailyTaskAnalyticsData = (tasks: Items): DailyTaskAnalytics => {
 
       dailyEntity[id] = {
         title,
-        time: timeDo,
+        time: time,
         timeDone,
         category: categoryTitle,
         isDone,

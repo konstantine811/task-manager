@@ -42,8 +42,10 @@ export function denormalizeItems(normalizedTasks: NormalizedTask[]): Items {
       timeDone: task.timeDone,
       priority: task.priority,
       isPlanned: task.isPlanned,
-      whenDo: task.whenDo,
+      whenDo: task.whenDo ?? [],
       isDetermined: task.isDetermined,
+      goalLinks: task.goalLinks,
+      schedule: task.schedule,
     });
   }
 

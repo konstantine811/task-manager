@@ -11,22 +11,34 @@ export function applyGoalImpact(
   template: TaskTemplate,
   goals: Goal[]
 ): Goal[] {
-  const goalMap = new Map(goals.map((g) => [g.id, { ...g }]));
+  const goalMap = new Map<string, Goal>(
+    goals.map((g) => [String(g.id), { ...g }])
+  );
   const links = template.goalLinks ?? [];
 
+  const seenGoals = new Set<string>();
   for (const link of links) {
-    const goal = goalMap.get(link.goalId);
+    const goalKey = String(link.goalId);
+    if (seenGoals.has(goalKey)) continue;
+    seenGoals.add(goalKey);
+    const goal = goalMap.get(goalKey);
     if (!goal || goal.status !== "active") continue;
 
     if (instance.status === "done") {
-      const delta = getImpactValue(link.impact, instance, template);
-      goal.progress = Math.max(0, goal.progress + delta);
+      let delta = getImpactValue(link.impact, instance, template);
+      if (link.impact.type === "count") delta = Math.min(delta, 1);
+      goal.progress = Math.max(0, (goal.progress ?? 0) + delta);
+    } else if (instance.status === "todo") {
+      /* task was unchecked — subtract impact */
+      let delta = getImpactValue(link.impact, instance, template);
+      if (link.impact.type === "count") delta = Math.min(delta, 1);
+      goal.progress = Math.max(0, (goal.progress ?? 0) - delta);
     } else if (instance.status === "skipped" && link.onMiss) {
       if (link.onMiss.type === "decrease" && link.onMiss.value != null) {
         goal.progress = Math.max(0, goal.progress - link.onMiss.value);
       }
     }
-    goalMap.set(goal.id, goal);
+    goalMap.set(String(goal.id), goal);
   }
 
   return Array.from(goalMap.values());

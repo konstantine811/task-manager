@@ -17,6 +17,7 @@ import ChartTitle from "./chart/chart-title";
 import ChartPieItem from "./template-components/chart-pie-item";
 import RangeAnalyticsTable from "./analytics-comonents/range-analytics-table";
 import TaskDateRangeHeader from "./analytics-comonents/task-data-range-header";
+import AnalyticsCompletedGoals from "./analytics-comonents/analytics-completed-goals";
 
 const Analytics = () => {
   const hS = useHeaderSizeStore((s) => s.size);
@@ -96,6 +97,7 @@ const Analytics = () => {
                   </div>
                 </div>
               </div>
+              <AnalyticsCompletedGoals rangeFrom={range.from} rangeTo={range.to} />
               <div className="mt-10">
                 <RangeAnalyticsTable data={analyticsData.rangeTaskEntity} />
               </div>

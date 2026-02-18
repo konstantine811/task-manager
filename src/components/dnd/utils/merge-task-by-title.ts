@@ -11,7 +11,7 @@ function findIndexByTitle(tasks: ItemTask[], title: string): number {
 
 /**
  * Merges newTask into existing task with same title.
- * Merge: time is summed, whenDo is union of days.
+ * Merge: time, whenDo, goalLinks, schedule from newTask; preserves id.
  * Returns the merged task, or null if no match.
  */
 export function mergeTaskInto(
@@ -24,6 +24,11 @@ export function mergeTaskInto(
     whenDo: (newTask.whenDo?.length
       ? newTask.whenDo
       : existing.whenDo ?? []) as (1 | 2 | 3 | 4 | 5 | 6 | 7)[],
+    goalLinks: newTask.goalLinks ?? existing.goalLinks,
+    schedule: newTask.schedule ?? existing.schedule,
+    isDetermined: newTask.isDetermined ?? existing.isDetermined,
+    isPlanned: newTask.isPlanned ?? existing.isPlanned,
+    priority: newTask.priority ?? existing.priority,
   };
 }
 

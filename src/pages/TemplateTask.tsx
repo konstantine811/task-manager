@@ -32,7 +32,6 @@ const TemplateTask = () => {
     ((advisorTask: import("@/services/ai/gemini.types").AdvisorTask) => void) | null
   >(null);
   const promptFromQuickStartRef = useRef<((prompt: string) => void) | null>(null);
-
   useEffect(() => {
     setIsLoaded(true);
     loadTemplateTasks()
@@ -85,7 +84,7 @@ const TemplateTask = () => {
                   templated={true}
                   items={dailyTasks}
                   isEmptyTemplate={templatedTask.length === 0}
-                  beforeCategories={templatedTask.length > 0 ? <GoalsPanel /> : undefined}
+                  beforeCategories={<GoalsPanel templateTasks={templatedTask} />}
                   emptyStateCenter={
                     templatedTask.length === 0 ? (
                       <QuickStartOnboarding

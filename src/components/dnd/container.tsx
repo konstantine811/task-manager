@@ -69,7 +69,7 @@ export const Container = forwardRef<HTMLDivElement, Props>(
                   {...handleProps}
                   variant="ghost"
                   size="icon"
-                  className="cursor-move hover:bg-white/5 hover:text-white flex-shrink-0 md:hidden h-7 w-7 text-zinc-400"
+                  className="cursor-move hover:bg-zinc-200 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white flex-shrink-0 md:hidden h-7 w-7 text-zinc-600 dark:text-zinc-400"
                 >
                   <GripVertical className="w-3 h-3" />
                 </Button>
@@ -123,7 +123,7 @@ export const Container = forwardRef<HTMLDivElement, Props>(
               )}
             </div>
             {!readOnly && !isEdit && (
-              <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 flex-shrink-0">
+              <div className="flex gap-1 flex-shrink-0">
                 {onRemove && (
                   <SoundHoverElement
                     animValue={0.9}
@@ -132,7 +132,7 @@ export const Container = forwardRef<HTMLDivElement, Props>(
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-6 w-6 p-1 text-zinc-600 hover:text-white hover:bg-white/5"
+                      className="h-6 w-6 p-1 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-white/5"
                       onClick={onRemove}
                     >
                       <X className="w-3 h-3" />
@@ -148,7 +148,7 @@ export const Container = forwardRef<HTMLDivElement, Props>(
                     {...handleProps}
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6 p-1 cursor-move hover:bg-white/5 hover:text-white text-zinc-400"
+                    className="h-6 w-6 p-1 cursor-move hover:bg-zinc-200 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white text-zinc-600 dark:text-zinc-400"
                   >
                     <GripVertical className="w-3 h-3" />
                   </Button>

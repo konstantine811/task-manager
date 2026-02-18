@@ -4,6 +4,29 @@ import {
   FirebaseCollection,
   FirebaseCollectionProps,
 } from "@/config/firebase.config";
+
+/** Firestore rejects undefined. Recursively strip undefined from objects/arrays. */
+function stripUndefined<T>(val: T): T {
+  if (val === undefined) {
+    return val;
+  }
+  if (Array.isArray(val)) {
+    return val.map((v) => stripUndefined(v)).filter((v) => v !== undefined) as T;
+  }
+  if (val !== null && typeof val === "object" && !(val instanceof Date)) {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(val)) {
+      if (v !== undefined) {
+        const cleaned = stripUndefined(v);
+        if (cleaned !== undefined) {
+          out[k] = cleaned;
+        }
+      }
+    }
+    return out as T;
+  }
+  return val;
+}
 import {
   DailyTaskRecord,
   Items,
@@ -37,10 +60,11 @@ export const saveTemplateTasks = async (items: Items) => {
   const ref = doc(db, FirebaseCollection.templateTasks, uid);
 
   try {
+    const cleanItems = stripUndefined(items);
     await setDoc(ref, {
       updatedAt: new Date().toISOString(),
       email: user.email,
-      items,
+      items: cleanItems,
     });
     return;
   } catch (error) {
@@ -73,10 +97,11 @@ export const saveDailyTasks = async <T>(
   );
 
   try {
+    const cleanItems = stripUndefined(items);
     await setDoc(ref, {
       updatedAt: new Date().toISOString(),
       email: user.email,
-      items,
+      items: cleanItems,
     });
   } catch (error) {
     console.error("🔥 Error saving tasks:", error);
@@ -141,7 +166,7 @@ export const updatePlannedTasksOnServer = async (
     date
   );
 
-  await setDoc(ref, { items: tasks }, { merge: true });
+  await setDoc(ref, { items: stripUndefined(tasks) }, { merge: true });
 };
 
 export const subscribeToNonEmptyTaskDates = async <
@@ -208,7 +233,7 @@ export const subscribeToPlannedTasksWithCounts = async (
   return unsubscribe;
 };
 
-export const fetchAllDailyTasks = async () => {
+export const fetchAllDailyTasks = async (): Promise<Array<{ date: string; items: Items }>> => {
   const user = await waitForUserAuth();
   if (!user) return [];
 
@@ -222,10 +247,14 @@ export const fetchAllDailyTasks = async () => {
 
   try {
     const snapshot = await getDocs(daysRef);
-    return snapshot.docs.map((docSnap) => ({
-      date: docSnap.id,
-      ...docSnap.data(),
-    }));
+    return snapshot.docs
+      .map((docSnap) => {
+        const data = docSnap.data();
+        const items = data.items as Items;
+        if (!items || !Array.isArray(items)) return null;
+        return { date: docSnap.id, items };
+      })
+      .filter((r): r is { date: string; items: Items } => r != null);
   } catch (error) {
     console.error("🔥 Error fetching daily tasks:", error);
     return [];

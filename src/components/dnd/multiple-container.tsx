@@ -88,6 +88,8 @@ interface Props {
   onSuggestedTaskMovedToTemplate?: (advisorTask: import("@/services/ai/gemini.types").AdvisorTask) => void;
   /** Called when task is toggled to done (для оновлення прогресу цілей) */
   onTaskDone?: (task: ItemTask) => void;
+  /** Called when task is unchecked (відміна прогресу цілей) */
+  onTaskUndone?: (task: ItemTask) => void;
 }
 
 export function MultipleContainers({
@@ -117,6 +119,7 @@ export function MultipleContainers({
   beforeCategories,
   onSuggestedTaskMovedToTemplate,
   onTaskDone,
+  onTaskUndone,
 }: Props) {
   const [t] = useTranslation();
   const [items, setItems] = useState<Items>(initialItems);
@@ -209,14 +212,17 @@ export function MultipleContainers({
     (taskId: UniqueIdentifier, newIsDone: boolean) => {
       setItems((prevItems) => {
         let doneTask: ItemTask | null = null;
+        let undoneTask: ItemTask | null = null;
         const updated = prevItems.map((container) => ({
           ...container,
           tasks: container.tasks.map((t) => {
             if (t.id === taskId) {
-              const updatedTask = { ...t, isDone: newIsDone };
-              if (newIsDone && t.goalLinks?.length) {
-                doneTask = updatedTask;
+              let updatedTask: ItemTask = { ...t, isDone: newIsDone };
+              if (newIsDone && !(t.timeDone && t.timeDone > 0)) {
+                updatedTask = { ...updatedTask, timeDone: t.time };
               }
+              if (newIsDone) doneTask = updatedTask;
+              else if (t.isDone) undoneTask = t;
               if (updatedTask.isPlanned || updatedTask.isDetermined) {
                 onEditPlannedTask?.(updatedTask);
               }
@@ -225,12 +231,15 @@ export function MultipleContainers({
             return t;
           }),
         }));
-        onChangeTasks(updated);
-        if (doneTask) onTaskDone?.(doneTask);
+        queueMicrotask(() => {
+          onChangeTasks(updated);
+          if (doneTask) onTaskDone?.(doneTask);
+          if (undoneTask) onTaskUndone?.(undoneTask);
+        });
         return updated;
       });
     },
-    [onChangeTasks, onEditPlannedTask, onTaskDone]
+    [onChangeTasks, onEditPlannedTask, onTaskDone, onTaskUndone]
   );
 
   const handleAddTask = useCallback(

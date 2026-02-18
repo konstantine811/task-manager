@@ -236,6 +236,19 @@ html:not(.dark) .chrono-chart-plot-bg::before {
   border-color: rgba(99, 102, 241, 0.5);
   background: rgba(99, 102, 241, 0.3);
 }
+/* Custom checkbox (task list) - light theme visibility */
+html:not(.dark) .chrono-page-bg .custom-checkbox {
+  border-color: rgba(0, 0, 0, 0.35);
+  background: rgba(255, 255, 255, 0.9);
+}
+html:not(.dark) .chrono-page-bg .custom-checkbox:hover {
+  border-color: rgba(0, 0, 0, 0.5);
+  background: rgba(255, 255, 255, 1);
+}
+html:not(.dark) .chrono-page-bg .custom-checkbox:checked {
+  border-color: #3b82f6;
+  background: #3b82f6;
+}
 
 /* Chrono table - subtle borders, soft header */
 .chrono-table {
@@ -480,6 +493,102 @@ html:not(.dark) .chart-tooltip .chart-tooltip-time {
   background: rgba(255, 255, 255, 0.05);
 }
 
+/* Chrono dialog - light theme */
+html:not(.dark) .chrono-dialog-overlay {
+  background: rgba(0, 0, 0, 0.35) !important;
+}
+html:not(.dark) .chrono-dialog {
+  background: rgba(255, 255, 255, 0.98) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.2);
+}
+html:not(.dark) .chrono-dialog h3 {
+  color: #18181b;
+}
+html:not(.dark) .chrono-dialog .chrono-dialog-description {
+  color: #52525b;
+}
+html:not(.dark) .chrono-dialog [data-slot="label"],
+html:not(.dark) .chrono-dialog label {
+  color: #52525b;
+}
+html:not(.dark) .chrono-dialog [data-slot="textarea"],
+html:not(.dark) .chrono-dialog [data-slot="input"] {
+  background: #fafafa !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+  color: #18181b;
+}
+html:not(.dark) .chrono-dialog [data-slot="textarea"]:focus,
+html:not(.dark) .chrono-dialog [data-slot="input"]:focus {
+  border-color: rgba(99, 102, 241, 0.4) !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+html:not(.dark) .chrono-dialog .chrono-dialog-submit {
+  background: #f4f4f5 !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  color: #18181b;
+}
+html:not(.dark) .chrono-dialog .chrono-dialog-submit:hover:not(:disabled) {
+  background: #e4e4e7 !important;
+  border-color: rgba(0, 0, 0, 0.15) !important;
+  color: #09090b;
+}
+html:not(.dark) .chrono-dialog .chrono-time-input {
+  background: #fafafa;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+html:not(.dark) .chrono-dialog .chrono-time-input button {
+  color: #52525b;
+}
+html:not(.dark) .chrono-dialog .chrono-time-input button:hover:not(:disabled) {
+  color: #18181b;
+  background: rgba(0, 0, 0, 0.05);
+}
+/* Chrono day badge - light theme (used in dialog) */
+html:not(.dark) .chrono-dialog .chrono-day-badge {
+  background: #f4f4f5;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  color: #52525b;
+}
+html:not(.dark) .chrono-dialog .chrono-day-badge.selected {
+  background: rgba(99, 102, 241, 0.15);
+  border-color: rgba(99, 102, 241, 0.3);
+  color: #3730a3;
+}
+/* Select/dropdown inside dialog - light theme */
+html:not(.dark) .chrono-dialog .chrono-select-trigger {
+  background: #fafafa !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+  color: #18181b;
+}
+/* Custom checkbox in dialog - light theme */
+html:not(.dark) .chrono-dialog .custom-checkbox {
+  border-color: rgba(0, 0, 0, 0.2);
+  background: rgba(255, 255, 255, 0.8);
+}
+html:not(.dark) .chrono-dialog .custom-checkbox::before {
+  box-shadow: inset 1em 1em #3730a3;
+}
+/* Radix checkbox in dialog - light theme */
+html:not(.dark) .chrono-dialog [data-slot="checkbox"] {
+  border-color: rgba(0, 0, 0, 0.2);
+  background: #fafafa;
+}
+html:not(.dark) .chrono-dialog [data-slot="checkbox"][data-state="checked"] {
+  border-color: rgba(99, 102, 241, 0.5);
+  background: rgba(99, 102, 241, 0.25);
+}
+
+/* Destructive button in dialogs — завжди помітний (світла і темна тема) */
+.chrono-dialog .chrono-dialog-destructive {
+  background: #dc2626 !important;
+  color: white !important;
+  border-color: #dc2626 !important;
+}
+.chrono-dialog .chrono-dialog-destructive:hover {
+  background: #b91c1c !important;
+}
+
 /* Aura-style compact custom checkbox */
 .custom-checkbox {
   appearance: none;
@@ -551,6 +660,19 @@ html:not(.dark) .chart-tooltip .chart-tooltip-time {
   color: white;
   font-weight: 700;
   font-size: 1.5rem;
+}
+/* Time drum in light-theme dialog */
+html:not(.dark) .chrono-dialog .chrono-time-drum-selected {
+  color: #18181b !important;
+}
+html:not(.dark) .chrono-dialog .chrono-time-drum-unselected {
+  color: #a1a1aa !important;
+}
+html:not(.dark) .chrono-dialog .chrono-time-drum-window {
+  border-color: rgba(0, 0, 0, 0.15);
+}
+html:not(.dark) .chrono-dialog .chrono-time-drum-colon {
+  color: #18181b;
 }
 
 /* AI assistant — видима прокрутка відповіді (повний текст поради) */

@@ -23,6 +23,9 @@ interface PieEntity {
   name: string;
   time: number;
   doneTime: number;
+  countDone: number;
+  countTotal: number;
+  taskPct: number;
   segmentValue: number;
 }
 
@@ -36,28 +39,69 @@ const ChartPieCategory = ({
   const ref = useRef<SVGSVGElement | null>(null);
   const [t] = useTranslation();
 
-  const entries = Object.entries(data).map(([id, value]) => ({
-    name: id,
-    time: value.time,
-    doneTime: value.countDoneTime,
-    /** Segment value: completed time only when showCompletedOnly, else total time */
-    segmentValue: showCompletedOnly ? value.countDoneTime : value.time,
-  }));
+  const entries = Object.entries(data).map(([id, value]) => {
+    const countTotal = value.taskDone.length + value.taskNoDone.length;
+    const taskPct =
+      countTotal > 0
+        ? Math.round((value.countDone / countTotal) * 100)
+        : 0;
+    return {
+      name: id,
+      time: value.time,
+      doneTime: value.countDoneTime,
+      countDone: value.countDone,
+      countTotal,
+      taskPct,
+      /** Segment size: planned time for showCompletedOnly; else same. Min 1 for pie. */
+      segmentValue: Math.max(value.time, 1),
+    };
+  });
 
-  const totalSec = entries.reduce((s, e) => s + e.segmentValue, 0);
+  const totalSec = entries.reduce((s, e) => s + e.doneTime, 0);
   const { hours: totalH, minutes: totalM } = paresSecondToTime(totalSec);
   const totalLabel = `${totalH}:${totalM}`;
 
+  /** When showCompletedOnly: all categories with tasks; segment = planned time, fill by task % */
   const chartEntries = showCompletedOnly
-    ? entries.filter((e) => e.segmentValue > 0)
+    ? entries.filter((e) => e.countTotal > 0)
     : entries;
 
   useEffect(() => {
-    if (!ref.current || chartEntries.length === 0) return;
+    if (!ref.current) return;
 
     const radius = Math.min(width, height) / 2 - 4;
     const innerRadius = radius * 0.5;
     const outerRadius = radius - 4;
+
+    if (chartEntries.length === 0) {
+      const svg = d3.select(ref.current);
+      svg.selectAll("*").remove();
+      const g = svg
+        .attr("viewBox", `${-width / 2} ${-height / 2} ${width} ${height}`)
+        .attr("overflow", "visible")
+        .append("g");
+      const arcEmpty = d3
+        .arc<d3.PieArcDatum<PieEntity>>()
+        .innerRadius(innerRadius)
+        .outerRadius(outerRadius)
+        .padAngle(0)
+        .cornerRadius(4);
+      g.append("path")
+        .attr(
+          "d",
+          arcEmpty({
+            startAngle: 0,
+            endAngle: Math.PI * 2,
+            data: {} as PieEntity,
+            index: 0,
+            value: 0,
+          })
+        )
+        .attr("fill", "rgba(161,161,170,0.2)")
+        .attr("stroke", "rgba(161,161,170,0.3)")
+        .attr("stroke-width", 1);
+      return;
+    }
 
     const pie = d3.pie<PieEntity>().value((d) => d.segmentValue);
     const timeArcs = pie(chartEntries);
@@ -99,14 +143,41 @@ const ChartPieCategory = ({
       .attr("flood-color", "#000")
       .attr("flood-opacity", 0.35);
 
-    g.selectAll("path.base")
-      .data(timeArcs)
-      .enter()
-      .append("path")
-      .attr("d", arc)
-      .attr("fill", (_, i) => getChartColor(chartEntries[i].name, i))
-      .attr("stroke", "none")
-      .attr("filter", "url(#chart-3d-shadow-category)");
+    if (showCompletedOnly) {
+      /** Base: empty/grey outline per segment (100%) */
+      g.selectAll("path.base")
+        .data(timeArcs)
+        .enter()
+        .append("path")
+        .attr("d", arc)
+        .attr("fill", "rgba(161,161,170,0.15)")
+        .attr("stroke", "rgba(161,161,170,0.35)")
+        .attr("stroke-width", 1);
+      /** Fill: category color to taskPct within each segment */
+      g.selectAll("path.done")
+        .data(timeArcs)
+        .enter()
+        .append("path")
+        .attr("d", (d, i) => {
+          const entry = chartEntries[i];
+          const progress = Math.min(entry.taskPct / 100, 1);
+          const angleRange = d.endAngle - d.startAngle;
+          const newEndAngle = d.startAngle + angleRange * progress;
+          return arcDoneAngle({ ...d, endAngle: newEndAngle });
+        })
+        .attr("fill", (_, i) => getChartColor(chartEntries[i].name, i))
+        .attr("stroke", "none")
+        .attr("filter", "url(#chart-3d-shadow-category)");
+    } else {
+      g.selectAll("path.base")
+        .data(timeArcs)
+        .enter()
+        .append("path")
+        .attr("d", arc)
+        .attr("fill", (_, i) => getChartColor(chartEntries[i].name, i))
+        .attr("stroke", "none")
+        .attr("filter", "url(#chart-3d-shadow-category)");
+    }
 
     if (!showCompletedOnly && fillType === "angle") {
       g.selectAll("path.done")
@@ -149,9 +220,18 @@ const ChartPieCategory = ({
   }, [chartEntries, width, height, fillType, showCompletedOnly, i18n.language]);
 
   const legendItems = (showCompletedOnly ? entries : chartEntries)
+    .filter((e) => showCompletedOnly ? e.countTotal > 0 : true)
     .map((e, i) => {
-      const pct = totalSec > 0 ? Math.round((e.segmentValue / totalSec) * 100) : 0;
-      const { hours, minutes } = paresSecondToTime(e.segmentValue);
+      /** Task completion %: countDone / countTotal (when showCompletedOnly) else time-based */
+      const pct = showCompletedOnly
+        ? e.taskPct
+        : e.time > 0
+          ? Math.round(Math.min(100, (e.doneTime / e.time) * 100))
+          : 0;
+      const { hours: doneH, minutes: doneM } = paresSecondToTime(e.doneTime);
+      const { hours: plannedH, minutes: plannedM } = paresSecondToTime(e.time);
+      const timeLabel =
+        e.time > 0 ? `${doneH}:${doneM} / ${plannedH}:${plannedM}` : `0:00 / 0:00`;
       const label =
         t(`task_manager.categories.${e.name}`) !==
         `task_manager.categories.${e.name}`
@@ -161,14 +241,14 @@ const ChartPieCategory = ({
       return {
         name: e.name,
         label,
-        time: `${hours}:${minutes}`,
+        time: timeLabel,
         pct,
         color: getChartColor(e.name, i),
         Icon: style.icon,
         colorClass: style.color,
       };
     })
-    .sort((a, b) => b.segmentValue - a.segmentValue);
+    .sort((a, b) => b.pct - a.pct);
 
   const LEGEND_COLLAPSE_THRESHOLD = 10;
   const canCollapse = legendItems.length > LEGEND_COLLAPSE_THRESHOLD;

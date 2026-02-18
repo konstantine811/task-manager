@@ -9,6 +9,7 @@ import {
 import { getDailyTaskAnalyticsData } from "@/services/task-menager/analytics/daily-handle-data";
 import ChartPieCategoryWrap from "./analytics-chart/chart-pie-category/chart-pie-category-wrap";
 import DailyAnalyticsTable from "./analytics-chart/daily-analytics-table";
+import DailyGoalsPanel from "./daily-goals-panel";
 
 const DailyAnalytics = () => {
   const { dailyTasks } = useDailyTaskContext();
@@ -32,9 +33,14 @@ const DailyAnalytics = () => {
   }, [dailyTasks]);
   return (
     <div className="flex flex-col gap-4">
+      {dailyTasks.length > 0 && <DailyGoalsPanel dailyTasks={dailyTasks} />}
       <ChartTimeStackWrapper data={dailyEntity} />
       {dailyAnaltyics && <DailyAnalyticsTable data={dailyAnaltyics} />}
-      <ChartPieCategoryWrap className="pb-8 md:py-8" data={categoryEntity} />
+      <ChartPieCategoryWrap
+        className="pb-8 md:py-8"
+        data={categoryEntity}
+        showCompletedOnly
+      />
     </div>
   );
 };

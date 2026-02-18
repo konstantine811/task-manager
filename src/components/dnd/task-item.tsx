@@ -78,9 +78,6 @@ export function TaskItem({
         }`}
       >
         <div className="flex items-center gap-3 min-w-0 flex-1">
-          <div className="w-6 text-center text-xs text-zinc-600 dark:text-zinc-600 font-mono tabular-nums flex-shrink-0">
-            {(index || index === 0) && String(Number(index) + 1).padStart(2, "0")}
-          </div>
           {!templated && (
             <SoundHoverElement
               className="flex-shrink-0"
@@ -113,7 +110,7 @@ export function TaskItem({
             {...(!handle ? listeners : undefined)}
             variant="ghost"
             size="icon"
-            className="cursor-move hover:bg-zinc-200 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white text-zinc-600 dark:text-zinc-500 flex-shrink-0 h-6 w-6 md:hidden"
+            className="cursor-move hover:bg-zinc-200 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white text-zinc-700 dark:text-zinc-500 flex-shrink-0 h-6 w-6 md:hidden"
           >
             <GripVertical className="w-3 h-3" />
           </Button>
@@ -132,18 +129,16 @@ export function TaskItem({
         <div className="flex items-center gap-4 flex-shrink-0">
           {templated && task.whenDo && task.whenDo.length > 0 && (
             <div className="flex gap-1">
-              {[1, 2, 3, 4, 5, 6, 7].map((d) => (
-                <span
-                  key={d}
-                  className={`text-[10px] ${
-                    task.whenDo?.includes(d as 1 | 2 | 3 | 4 | 5 | 6 | 7)
-                      ? "text-indigo-600 dark:text-indigo-400/80"
-                      : "text-zinc-500 dark:text-zinc-600"
-                  }`}
-                >
-                  {t(`task_manager.day_names.${d}`)}
-                </span>
-              ))}
+              {[...task.whenDo]
+                .sort((a, b) => a - b)
+                .map((d) => (
+                  <span
+                    key={d}
+                    className="text-[10px] text-indigo-600 dark:text-indigo-400/80"
+                  >
+                    {t(`task_manager.day_names.${d}`)}
+                  </span>
+                ))}
             </div>
           )}
           {!dragging && (
@@ -159,7 +154,7 @@ export function TaskItem({
                 <TaskDeterminedTime
                   task={task}
                   titleDeterminedTime={t(
-                    "task_manager.dialog_create_task.task.time.on_time"
+                    "task_manager.dialog_create_task.task.time.total_time"
                   )}
                   titleSpendingTime={t(
                     "task_manager.dialog_create_task.task.time.wasted_time"
@@ -179,7 +174,7 @@ export function TaskItem({
             </>
           )}
           {!readOnly && (
-          <div className="w-12 flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="w-12 flex justify-end gap-1">
             {onEditTask && (
               <WrapperHoverElement>
                 <SoundHoverElement
@@ -200,7 +195,7 @@ export function TaskItem({
                     size="icon"
                     disabled={task.isDone}
                     onClick={() => onEditTask(task)}
-                    className={`h-6 w-6 text-zinc-600 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-white/5 ${
+                    className={`h-6 w-6 text-zinc-700 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-white/5 ${
                       task.isDone && "text-zinc-500 dark:text-zinc-600"
                     }`}
                   >
@@ -219,7 +214,7 @@ export function TaskItem({
                 {...(!handle ? listeners : undefined)}
                 variant="ghost"
                 size="icon"
-                className="h-6 w-6 cursor-move hover:bg-zinc-200 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white text-zinc-600 dark:text-zinc-500"
+                className="h-6 w-6 cursor-move hover:bg-zinc-200 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white text-zinc-700 dark:text-zinc-500"
               >
                 <GripVertical className="w-3 h-3" />
               </Button>

@@ -41,32 +41,32 @@ const TemplateChartsPanel = ({ templateTasks }: { templateTasks: Items }) => {
         </div>
       )}
       <div className="flex flex-col gap-4 px-4 sm:px-6">
-      {selectedItem.map((item) => {
+      {selectedItem.map((item, index) => {
         switch (item) {
           case TemplateTypeChart.timeCount:
             return (
-              <div className="max-w-2xl mx-auto w-full">
-                <ChartTimeCount templateTasks={templateTasks} key={item} />
+              <div key={`${item}-${index}`} className="max-w-2xl mx-auto w-full">
+                <ChartTimeCount templateTasks={templateTasks} />
               </div>
             );
           case TemplateTypeChart.category:
             return (
               <ChartTimeCategory
+                key={`${item}-${index}`}
                 templateTasks={templateTasks}
                 title="chart.period_count_category_title"
                 type={ItemTimeMapKeys.category}
                 period={period}
-                key={item}
               />
             );
           case TemplateTypeChart.task:
             return (
               <ChartTimeCategory
+                key={`${item}-${index}`}
                 templateTasks={templateTasks}
                 title="chart.period_count_task_title"
                 type={ItemTimeMapKeys.task}
                 period={period}
-                key={item}
               />
             );
           default:

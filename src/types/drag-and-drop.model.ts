@@ -1,4 +1,5 @@
 import { UniqueIdentifier } from "@dnd-kit/core";
+import type { ScheduleRule } from "./task-template.model";
 
 export interface TaskCategory {
   id: UniqueIdentifier;
@@ -31,6 +32,11 @@ export interface ItemTask {
   isDetermined?: boolean;
   /** Зв'язок з цілями — при виконанні оновлює прогрес цілі */
   goalLinks?: TaskGoalLink[];
+  /**
+   * Універсальне правило періодичності. Якщо відсутнє, використовується whenDo як weekdays.
+   * Дозволяє: interval_days (кожні N днів), times_per_week (N раз на тиждень), once.
+   */
+  schedule?: ScheduleRule;
 }
 
 export interface NormalizedTask extends ItemTask {

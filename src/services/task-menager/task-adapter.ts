@@ -1,10 +1,21 @@
 import type { UniqueIdentifier } from "@dnd-kit/core";
 import type { ItemTask, Items, DayNumber } from "@/types/drag-and-drop.model";
-import type { TaskTemplate, TemplateItems } from "@/types/task-template.model";
+import type {
+  TaskTemplate,
+  TemplateItems,
+  ScheduleRule,
+} from "@/types/task-template.model";
+
+function getScheduleFromItemTask(task: ItemTask): ScheduleRule {
+  if (task.schedule) return task.schedule;
+  return task.whenDo && task.whenDo.length > 0
+    ? { type: "weekdays", days: task.whenDo }
+    : { type: "weekdays", days: [1, 2, 3, 4, 5, 6, 7] };
+}
 
 /**
  * Convert ItemTask (legacy) to TaskTemplate.
- * Maps whenDo → schedule: { type: "weekdays", days }
+ * Uses task.schedule when present, else maps whenDo → schedule: { type: "weekdays", days }
  */
 export function itemTaskToTaskTemplate(task: ItemTask): TaskTemplate {
   return {
@@ -12,18 +23,16 @@ export function itemTaskToTaskTemplate(task: ItemTask): TaskTemplate {
     title: task.title,
     timePlanned: task.time,
     priority: task.priority,
-    schedule:
-      task.whenDo && task.whenDo.length > 0
-        ? { type: "weekdays", days: task.whenDo }
-        : { type: "weekdays", days: [1, 2, 3, 4, 5, 6, 7] },
+    schedule: getScheduleFromItemTask(task),
     isPlanned: task.isPlanned,
     isDetermined: task.isDetermined,
+    goalLinks: task.goalLinks,
   };
 }
 
 /**
  * Convert TaskTemplate to ItemTask (for backward compat / display).
- * Maps schedule.weekdays → whenDo
+ * Maps schedule.weekdays → whenDo, preserves schedule for interval_days/times_per_week/once
  */
 export function taskTemplateToItemTask(
   template: TaskTemplate,
@@ -43,6 +52,8 @@ export function taskTemplateToItemTask(
     isPlanned: template.isPlanned,
     whenDo: days,
     isDetermined: template.isDetermined,
+    goalLinks: template.goalLinks,
+    schedule: template.schedule,
   };
 }
 

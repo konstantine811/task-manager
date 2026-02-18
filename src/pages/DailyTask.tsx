@@ -18,6 +18,7 @@ import { UniqueIdentifier } from "@dnd-kit/core";
 import { useTranslation } from "react-i18next";
 import CustomDrawer from "@/components/ui-abc/drawer/custom-drawer";
 import DailySidePanelContent from "./daily-components/daily-side-panel-content";
+import { DialogGoalCompletion } from "@/components/goals/dialog-goal-completion";
 import DailyAnalytics from "./daily-components/daily-analytics";
 import { BreakPoints } from "@/config/adaptive.config";
 import { DailyTaskAnalytics } from "@/types/analytics/task-analytics.model";
@@ -182,6 +183,7 @@ const DailyTask = () => {
           )}
         </div>
       </div>
+      <DialogGoalCompletion />
     </DailyTaskContext.Provider>
   );
 };

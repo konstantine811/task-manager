@@ -42,6 +42,8 @@ export interface Goal {
   metric: GoalMetric;
   progress: number;
   status: "active" | "paused" | "done" | "archived";
+  /** ISO date (YYYY-MM-DD) when goal was marked as achieved — for analytics by period */
+  completedAt?: string;
   rules?: ProgressRules;
   subGoals?: GoalSubtask[];
 }
