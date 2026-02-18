@@ -95,10 +95,12 @@ const LineChartTask = ({ data }: { data: RangeTaskAnalyticRecord[] }) => {
     const svg = d3.select(svgRef.current);
     svg.selectAll("*").remove();
     const d3Curve = d3[curveType as keyof typeof d3] as d3.CurveFactory;
+    const innerW = chartWidth - margin.left - margin.right;
+    const xPad = Math.min(24, innerW * 0.02);
     const x = d3
       .scaleTime()
       .domain(d3.extent(parsedData, (d) => d.date) as [Date, Date])
-      .range([0, chartWidth - margin.left - margin.right]);
+      .range([xPad, innerW - xPad]);
 
     const y = d3
       .scaleLinear()
@@ -338,7 +340,7 @@ const LineChartTask = ({ data }: { data: RangeTaskAnalyticRecord[] }) => {
           {/* Tooltip */}
           <div
             ref={tooltipRef}
-            className="fixed hidden bg-zinc-800/95 border border-white/20 rounded-md p-2 pointer-events-none shadow-xl shadow-black/70 z-50 text-sm transition-all backdrop-blur-sm"
+            className="chart-tooltip fixed hidden rounded-md p-2 pointer-events-none shadow-xl z-50 text-sm transition-all backdrop-blur-sm"
           />
         </div>
       </div>

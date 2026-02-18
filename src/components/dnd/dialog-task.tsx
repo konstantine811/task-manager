@@ -1,7 +1,7 @@
 import SoundHoverElement from "@/components/ui-abc/sound-hover-element";
 import { Button } from "@/components/ui/button";
 import { useHoverStore } from "@/storage/hoverStore";
-import { DayNumber, ItemTask, Priority } from "@/types/drag-and-drop.model";
+import { DayNumber, ItemTask, Priority, TaskGoalLink } from "@/types/drag-and-drop.model";
 import { HoverStyleElement, SoundTypeElement } from "@/types/sound";
 import { getRandomFromTo } from "@/utils/random";
 import { useCallback, useEffect, useState } from "react";
@@ -16,10 +16,13 @@ import TimePicker from "@/components/ui-abc/select/select-time";
 import LabelTextArea from "../ui-abc/dialog/task/label-text-area";
 import LabelSelectOption from "../ui-abc/dialog/task/label-select-option";
 import LabelSelectWeek from "../ui-abc/dialog/task/label-select-week";
+import { useGoalsStore } from "@/storage/goalsStore";
 import LabelCheckData from "../ui-abc/dialog/task/label-check-data";
 import LabelTooltip from "../ui-abc/dialog/task/label-tooltip";
 import Dialog from "@/components/ui-abc/dialog/dialog";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
+
+const weekDays = [1, 2, 3, 4, 5, 6, 7] as DayNumber[];
 
 const DialogTask = ({
   onChangeTask,
@@ -42,7 +45,6 @@ const DialogTask = ({
 }) => {
   const [t] = useTranslation();
   const setHover = useHoverStore((s) => s.setHover);
-  const weekDays = Array.from({ length: 7 }, (_, i) => i + 1) as DayNumber[];
   const [selectedDays, setSelectedDays] = useState<DayNumber[]>(weekDays);
   const [title, setTitle] = useState<string>("");
   const [priority, setPriority] = useState<Priority>(Priority.LOW);
@@ -50,12 +52,22 @@ const DialogTask = ({
   const [wastedTime, setWastedTime] = useState<number>(0);
   const [translateRandom, setTranslateRandom] = useState(1);
   const [isDetermined, setIsDetermined] = useState<boolean>(false);
+  const [linkedGoalIds, setLinkedGoalIds] = useState<UniqueIdentifier[]>([]);
+  const goals = useGoalsStore((s) => s.goals).filter((g) => g.status === "active");
 
   function toggleDay(day: DayNumber) {
     setSelectedDays((prev) =>
       prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
     );
   }
+
+  const goalLinks: TaskGoalLink[] | undefined =
+    linkedGoalIds.length > 0
+      ? linkedGoalIds.map((goalId) => ({
+          goalId,
+          impact: { type: "count" as const, value: 1 },
+        }))
+      : undefined;
 
   const handleCreateTask = () => {
     if (title.trim() === "") return;
@@ -69,6 +81,7 @@ const DialogTask = ({
           timeDone: wastedTime,
           whenDo: selectedDays,
           isDetermined,
+          goalLinks,
         },
         containerId,
         true
@@ -83,7 +96,7 @@ const DialogTask = ({
         selectedDays,
         isDetermined
       );
-      onChangeTask(newTask, containerId, false);
+      onChangeTask({ ...newTask, goalLinks }, containerId, false);
     }
     reset();
     setHover(false, null, HoverStyleElement.circle);
@@ -96,7 +109,8 @@ const DialogTask = ({
     setWastedTime(0);
     setSelectedDays(weekDays);
     setIsDetermined(false);
-  }, [weekDays]);
+    setLinkedGoalIds([]);
+  }, []);
 
   useEffect(() => {
     if (task) {
@@ -104,8 +118,9 @@ const DialogTask = ({
       setPriority(task.priority);
       setTime(task.time);
       setWastedTime(task.timeDone);
-      setSelectedDays(task.whenDo || []);
+      setSelectedDays(task.whenDo?.length ? task.whenDo : weekDays);
       setIsDetermined(task.isDetermined || false);
+      setLinkedGoalIds(task.goalLinks?.map((l) => l.goalId) ?? []);
     }
   }, [task]);
 
@@ -338,6 +353,39 @@ const DialogTask = ({
                 prefixWeedDay={"task_manager.day_names"}
                 toggleDay={toggleDay}
               />
+            </div>
+          )}
+          {templated && goals.length > 0 && (
+            <div className="grid grid-cols-1 gap-2 md:gap-4">
+              <p className="text-sm font-medium text-zinc-300">
+                {t("task_manager.dialog_create_task.task.goal_link.label") || "Пов'язати з ціллю"}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {goals.map((g) => {
+                  const isLinked = linkedGoalIds.includes(g.id);
+                  return (
+                    <label
+                      key={g.id}
+                      className="flex cursor-pointer items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-sm transition-colors hover:bg-white/5 data-[checked]:border-indigo-500/50 data-[checked]:bg-indigo-500/10"
+                      data-checked={isLinked}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isLinked}
+                        onChange={() =>
+                          setLinkedGoalIds((prev) =>
+                            isLinked
+                              ? prev.filter((id) => id !== g.id)
+                              : [...prev, g.id]
+                          )
+                        }
+                        className="rounded border-white/20"
+                      />
+                      <span className="text-zinc-300">{g.title}</span>
+                    </label>
+                  );
+                })}
+              </div>
             </div>
           )}
           <div className="flex gap-1 justify-end">

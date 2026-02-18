@@ -40,25 +40,25 @@ const DailyAnalyticsTable = ({ data }: { data: DailyAnalyticsData }) => {
           </TableHeader>
           <TableBody>
             <TableRow>
-              <TableCell className="text-zinc-200">Загально</TableCell>
-              <TableCell className="font-mono text-zinc-400">{data.countAllTask}</TableCell>
-              <TableCell className="font-mono text-zinc-400">
+              <TableCell className="text-zinc-800 dark:text-zinc-200">Загально</TableCell>
+              <TableCell className="font-mono text-zinc-700 dark:text-zinc-400">{data.countAllTask}</TableCell>
+              <TableCell className="font-mono text-zinc-700 dark:text-zinc-400">
                 {parseTime(data.countTime)}
               </TableCell>
             </TableRow>
             <TableRow>
-              <TableCell className="text-zinc-200">Затрекані</TableCell>
-              <TableCell className="font-mono text-zinc-400">{data.countDoneTask}</TableCell>
-              <TableCell className="font-mono text-zinc-400">
+              <TableCell className="text-zinc-800 dark:text-zinc-200">Затрекані</TableCell>
+              <TableCell className="font-mono text-zinc-700 dark:text-zinc-400">{data.countDoneTask}</TableCell>
+              <TableCell className="font-mono text-zinc-700 dark:text-zinc-400">
                 {parseTime(data.countDoneTime)}
               </TableCell>
             </TableRow>
             <TableRow>
-              <TableCell className="text-zinc-200">Залишкові</TableCell>
-              <TableCell className="font-mono text-zinc-400">
+              <TableCell className="text-zinc-800 dark:text-zinc-200">Залишкові</TableCell>
+              <TableCell className="font-mono text-zinc-700 dark:text-zinc-400">
                 {data.countAllTask - data.countDoneTask}
               </TableCell>
-              <TableCell className="font-mono text-zinc-400">
+              <TableCell className="font-mono text-zinc-700 dark:text-zinc-400">
                 {parseTime(data.countTime - data.countDoneTime)}
               </TableCell>
             </TableRow>

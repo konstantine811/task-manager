@@ -33,7 +33,7 @@ const DailyAddAnotherTask = ({
             >
               <Button
                 variant="outline"
-                className="w-full bg-zinc-900/80 border-white/5 hover:bg-white/5 hover:text-indigo-300 text-zinc-300"
+                className="w-full bg-zinc-100 dark:bg-zinc-900/80 border-zinc-300 dark:border-white/5 hover:bg-zinc-200 dark:hover:bg-white/5 hover:text-indigo-600 dark:hover:text-indigo-300 text-zinc-800 dark:text-zinc-300"
                 size="sm"
               >
                 <Plus /> {t("task_manager.add_all_tasks.header.title")}

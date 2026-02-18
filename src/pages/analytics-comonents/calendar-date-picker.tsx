@@ -12,6 +12,7 @@ import {
   endOfYear,
   startOfDay,
   endOfDay,
+  format,
 } from "date-fns";
 import { toDate, formatInTimeZone } from "date-fns-tz";
 import { DateRange } from "react-day-picker";
@@ -113,12 +114,13 @@ export const CalendarDatePicker = React.forwardRef<
     const [highlightedPart] = React.useState<string | null>(null);
 
     const today = new Date();
-    const months = t("months", {
+    const locale = locales[language] ?? enUS;
+    const months = Array.from({ length: 12 }, (_, i) =>
+      format(new Date(2000, i), "LLL", { locale })
+    );
+    const ranges = (t("task_manager.calendar.date_range", {
       returnObjects: true,
-    }) as string[];
-    const ranges = t("ranges", {
-      returnObjects: true,
-    }) as Record<string, string>;
+    }) ?? {}) as Record<string, string>;
 
     const years = Array.from(
       { length: yearsRange + 1 },
@@ -498,7 +500,7 @@ export const CalendarDatePicker = React.forwardRef<
           </PopoverTrigger>
           {isPopoverOpen && (
             <PopoverContent
-              className="w-auto"
+              className="calendar-date-picker-popover w-auto bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-white/10 shadow-xl dark:shadow-black/50 z-[100]"
               side="bottom" // відкриваємо під тригером
               align="end" // вирівнювання по правому краю
               sideOffset={8} // відступ 8px від кнопки

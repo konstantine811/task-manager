@@ -48,7 +48,7 @@ const TemplateRightPanel = ({
                 <SelectPeriodTime onChange={setPeriod} value={period} />
               </div>
             )}
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 px-4 sm:px-6">
             {selectedItem.map((item) => {
               switch (item) {
                 case TemplateTypeChart.timeCount:

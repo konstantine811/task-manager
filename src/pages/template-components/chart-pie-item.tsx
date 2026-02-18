@@ -121,6 +121,7 @@ const ChartPieItem = ({
 
     const g = svg
       .attr("viewBox", `${-width / 2} ${-height / 2} ${width} ${height}`)
+      .attr("overflow", "visible")
       .append("g");
 
     const defs = svg.append("defs");
@@ -276,8 +277,8 @@ const ChartPieItem = ({
   return (
     <div className="relative">
       {type === ItemTimeMapKeys.task && TooltipElement}
-      <div className="rounded-xl border border-white/10 bg-gradient-to-b from-white to-zinc-50 dark:from-zinc-900/80 dark:to-zinc-950 text-zinc-900 dark:text-zinc-100 shadow-[0_25px_70px_rgba(0,0,0,0.35)] overflow-hidden">
-        <div className="p-2 sm:p-3">
+      <div className="rounded-xl border border-white/10 bg-gradient-to-b from-white to-zinc-50 dark:from-zinc-900/80 dark:to-zinc-950 text-zinc-900 dark:text-zinc-100 shadow-[0_25px_70px_rgba(0,0,0,0.35)] overflow-visible chrono-chart-plot-bg">
+        <div className="relative z-10 p-4 sm:p-5">
           {titleKey && (
             <div className="mb-3">
               <h4 className="text-sm font-normal text-zinc-500 dark:text-zinc-400 text-left py-1 px-0">
@@ -286,12 +287,12 @@ const ChartPieItem = ({
             </div>
           )}
           <div className="grid grid-cols-1 md:grid-cols-5 gap-5 items-stretch">
-            <div className="md:col-span-3 flex items-center justify-center">
-              <div className="relative w-64 aspect-square md:w-72">
+            <div className="md:col-span-3 flex items-center justify-center p-6 sm:p-8">
+              <div className="relative w-64 aspect-square md:w-72 shrink-0">
                 <div className="absolute inset-0 rounded-full blur-3xl bg-rose-500/10 dark:bg-rose-500/15" />
                 <svg
                   ref={ref}
-                  className="relative w-full h-full drop-shadow-[0_12px_28px_rgba(0,0,0,0.4)] drop-shadow-[0_4px_12px_rgba(0,0,0,0.3)]"
+                  className="relative w-full h-full overflow-visible drop-shadow-[0_12px_28px_rgba(0,0,0,0.4)] drop-shadow-[0_4px_12px_rgba(0,0,0,0.3)]"
                 />
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <div className="text-center">

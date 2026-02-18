@@ -361,18 +361,18 @@ export function AiAssistantPanel({
       )}
 
       {/* Чат — тільки ввід, історія та текстова відповідь */}
-      <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+      <div className="rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/[0.03] p-4">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <div className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-black/20">
-                <MessageCircle className="h-5 w-5 text-zinc-200" />
+              <div className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-200 dark:border-white/10 bg-zinc-200 dark:bg-black/20">
+                <MessageCircle className="h-5 w-5 text-zinc-700 dark:text-zinc-200" />
               </div>
               <div className="min-w-0">
-                <div className="text-sm font-medium text-zinc-100">
+                <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
                   {t("ai_assistant.title")}
                 </div>
-                <p className="mt-0.5 text-sm text-zinc-500">
+                <p className="mt-0.5 text-sm text-zinc-600 dark:text-zinc-500">
                   {t("ai_assistant.description")}
                 </p>
               </div>
@@ -385,17 +385,17 @@ export function AiAssistantPanel({
                     key={key}
                     type="button"
                     onClick={() => setPreset(key)}
-                    className="rounded-full border border-white/10 bg-black/20 px-2.5 py-1.5 text-xs font-medium text-zinc-300 transition-colors hover:bg-white/5"
+                    className="rounded-full border border-zinc-200 dark:border-white/10 bg-zinc-200 dark:bg-black/20 px-2.5 py-1.5 text-xs font-medium text-zinc-700 dark:text-zinc-300 transition-colors hover:bg-zinc-300 dark:hover:bg-white/5"
                   >
                     {t(key)}
                   </button>
                 ))}
               </div>
 
-              <div className="rounded-lg border border-white/10 bg-black/20 p-3">
+              <div className="rounded-lg border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-black/20 p-3">
                 <label
                   htmlFor="aiPrompt"
-                  className="block text-xs font-medium text-zinc-400"
+                  className="block text-xs font-medium text-zinc-600 dark:text-zinc-400"
                 >
                   {t("ai_assistant.prompt_label")}
                 </label>
@@ -411,20 +411,20 @@ export function AiAssistantPanel({
                     }
                   }}
                   placeholder={t("ai_assistant.prompt_placeholder")}
-                  className="mt-2 w-full resize-none bg-transparent text-sm text-zinc-200 outline-none placeholder:text-zinc-600"
+                  className="mt-2 w-full resize-none bg-transparent text-sm text-zinc-800 dark:text-zinc-200 outline-none placeholder:text-zinc-500 dark:placeholder:text-zinc-600"
                   disabled={loading}
                 />
 
                 <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex items-center gap-2 text-xs text-zinc-500">
-                    <ShieldCheck className="h-4 w-4 text-zinc-500" />
+                  <div className="flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-500">
+                    <ShieldCheck className="h-4 w-4 text-zinc-600 dark:text-zinc-500" />
                     {t("ai_assistant.disclaimer")}
                   </div>
                   <button
                     type="button"
                     onClick={() => handleAsk()}
                     disabled={loading}
-                    className="inline-flex items-center gap-2 rounded-md border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-zinc-200 transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex items-center gap-2 rounded-md border border-zinc-200 dark:border-white/10 bg-zinc-200 dark:bg-white/5 px-3 py-2 text-xs font-medium text-zinc-800 dark:text-zinc-200 transition-colors hover:bg-zinc-300 dark:hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {loading ? (
                       <span className="animate-pulse">
@@ -432,7 +432,7 @@ export function AiAssistantPanel({
                       </span>
                     ) : (
                       <>
-                        <Wand2 className="h-4 w-4 text-zinc-200" />
+                        <Wand2 className="h-4 w-4 text-zinc-700 dark:text-zinc-200" />
                         {t("ai_assistant.ask")}
                       </>
                     )}
@@ -442,11 +442,11 @@ export function AiAssistantPanel({
 
               {/* Історія */}
               {history.length > 0 && (
-                <div className="rounded-lg border border-white/10 bg-black/20">
+                <div className="rounded-lg border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-black/20">
                   <button
                     type="button"
                     onClick={() => setHistoryOpen((o) => !o)}
-                    className="flex w-full items-center justify-between px-3 py-2 text-xs font-medium text-zinc-400 transition-colors hover:text-zinc-200"
+                    className="flex w-full items-center justify-between px-3 py-2 text-xs font-medium text-zinc-600 dark:text-zinc-400 transition-colors hover:text-zinc-800 dark:hover:text-zinc-200"
                   >
                     <span className="flex items-center gap-2">
                       <History className="h-4 w-4" />
@@ -459,20 +459,20 @@ export function AiAssistantPanel({
                     )}
                   </button>
                   {historyOpen && (
-                    <div className="max-h-48 overflow-y-auto border-t border-white/5 px-3 py-2">
+                    <div className="max-h-48 overflow-y-auto border-t border-zinc-200 dark:border-white/5 px-3 py-2">
                       {[...history].reverse().map((item) => (
                         <button
                           key={item.id}
                           type="button"
                           onClick={() => selectHistoryItem(item)}
-                          className={`mt-1 block w-full rounded px-2 py-1.5 text-left text-xs transition-colors first:mt-0 hover:bg-white/5 ${
+                          className={`mt-1 block w-full rounded px-2 py-1.5 text-left text-xs transition-colors first:mt-0 hover:bg-zinc-200 dark:hover:bg-white/5 ${
                             selectedHistoryId === item.id
-                              ? "bg-white/10 text-zinc-100"
-                              : "text-zinc-400"
+                              ? "bg-zinc-200 dark:bg-white/10 text-zinc-900 dark:text-zinc-100"
+                              : "text-zinc-600 dark:text-zinc-400"
                           }`}
                         >
                           <span className="line-clamp-1">{item.prompt}</span>
-                          <span className="mt-0.5 block text-[10px] text-zinc-500">
+                          <span className="mt-0.5 block text-[10px] text-zinc-500 dark:text-zinc-500">
                             {new Date(item.createdAt).toLocaleString()}
                             {item.suggestedTasks?.length
                               ? ` • ${item.suggestedTasks.length} ${t("ai_assistant.tasks_short")}`
@@ -486,29 +486,29 @@ export function AiAssistantPanel({
               )}
 
               {/* Відповідь — тільки текст поради */}
-              <div className="rounded-lg border border-white/10 bg-gradient-to-b from-white/[0.04] to-transparent p-3">
+              <div className="rounded-lg border border-zinc-200 dark:border-white/10 bg-gradient-to-b from-zinc-100 dark:from-white/[0.04] to-transparent p-3">
                 <div className="flex items-center justify-between gap-3">
-                  <div className="text-xs font-medium text-zinc-400">
+                  <div className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
                     {t("ai_assistant.answer_label")}
                   </div>
                   {(displayedAnswer || selectedItem) && (
                     <button
                       type="button"
                       onClick={clearAnswer}
-                      className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-500 transition-colors hover:text-zinc-200"
+                      className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-600 dark:text-zinc-500 transition-colors hover:text-zinc-800 dark:hover:text-zinc-200"
                     >
-                      <Trash2 className="h-4 w-4 text-zinc-400" />
+                      <Trash2 className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
                       {t("ai_assistant.clear")}
                     </button>
                   )}
                 </div>
-                <div className="ai-answer-scroll mt-2 text-sm leading-relaxed text-zinc-300">
+                <div className="ai-answer-scroll mt-2 text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
                   {displayedAnswer !== null || selectedItem ? (
                     <div className="whitespace-pre-wrap pr-2">
                       {displayedAnswer ?? selectedItem?.answer ?? ""}
                     </div>
                   ) : (
-                    <span className="text-zinc-500">
+                    <span className="text-zinc-500 dark:text-zinc-500">
                       {t("ai_assistant.no_answer_yet")}
                     </span>
                   )}
@@ -516,12 +516,12 @@ export function AiAssistantPanel({
                 {/* Кнопка для формування задач на основі поради */}
                 {(displayedAnswer !== null || selectedItem) &&
                   currentSuggestedTasks.length === 0 && (
-                    <div className="mt-3 pt-3 border-t border-white/5">
+                    <div className="mt-3 pt-3 border-t border-zinc-200 dark:border-white/5">
                       <button
                         type="button"
                         onClick={handleFormTasks}
                         disabled={loading}
-                        className="inline-flex items-center gap-2 rounded-md border border-indigo-500/40 bg-indigo-500/20 px-3 py-2 text-xs font-medium text-indigo-200 transition-colors hover:bg-indigo-500/30 disabled:opacity-60"
+                        className="inline-flex items-center gap-2 rounded-md border border-indigo-400 dark:border-indigo-500/40 bg-indigo-100 dark:bg-indigo-500/20 px-3 py-2 text-xs font-medium text-indigo-700 dark:text-indigo-200 transition-colors hover:bg-indigo-200 dark:hover:bg-indigo-500/30 disabled:opacity-60"
                       >
                         {loading ? (
                           <span className="animate-pulse">
@@ -540,24 +540,24 @@ export function AiAssistantPanel({
             </div>
           </div>
 
-          <div className="hidden shrink-0 sm:flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-black/20">
-            <Sparkles className="h-5 w-5 text-zinc-200" />
+          <div className="hidden shrink-0 sm:flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-200 dark:border-white/10 bg-zinc-200 dark:bg-black/20">
+            <Sparkles className="h-5 w-5 text-zinc-700 dark:text-zinc-200" />
           </div>
         </div>
       </div>
 
       {/* Окреме вікно — сформовані задачі (як у шаблоні) */}
       {currentSuggestedTasks.length > 0 && (
-        <div className="rounded-xl border border-indigo-500/30 bg-indigo-950/20 p-4">
+        <div className="rounded-xl border border-indigo-300 dark:border-indigo-500/30 bg-indigo-50 dark:bg-indigo-950/20 p-4">
           <div className="flex items-center justify-between gap-3 mb-4">
-            <span className="text-sm font-medium text-indigo-200">
+            <span className="text-sm font-medium text-indigo-800 dark:text-indigo-200">
               {t("ai_assistant.suggested_tasks")} ({currentSuggestedTasks.length})
             </span>
             {onReplaceTasks && (
               <button
                 type="button"
                 onClick={handleReplace}
-                className="inline-flex items-center gap-1.5 rounded-md border border-indigo-400/50 bg-indigo-500/30 px-3 py-2 text-sm font-medium text-indigo-100 transition-colors hover:bg-indigo-500/40"
+                className="inline-flex items-center gap-1.5 rounded-md border border-indigo-400 dark:border-indigo-400/50 bg-indigo-200 dark:bg-indigo-500/30 px-3 py-2 text-sm font-medium text-indigo-800 dark:text-indigo-100 transition-colors hover:bg-indigo-300 dark:hover:bg-indigo-500/40"
               >
                 <Replace className="h-4 w-4" />
                 {t("ai_assistant.replace_all")}

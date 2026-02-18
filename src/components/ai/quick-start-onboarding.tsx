@@ -150,19 +150,19 @@ export function QuickStartOnboarding({
 
   return (
     <div className="flex w-full max-w-2xl flex-col items-center">
-      <div className="w-full rounded-xl border border-white/10 bg-white/[0.03] p-4 space-y-4">
+      <div className="w-full rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/[0.03] p-4 space-y-4">
         <button
           type="button"
           onClick={() => setExpanded((e) => !e)}
           className="flex w-full items-center justify-between text-left"
         >
-          <span className="text-sm font-medium text-zinc-100">
+          <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
             {t("quick_start.title")}
           </span>
           {expanded ? (
-            <ChevronUp className="h-4 w-4 text-zinc-500" />
+            <ChevronUp className="h-4 w-4 text-zinc-600 dark:text-zinc-500" />
           ) : (
-            <ChevronDown className="h-4 w-4 text-zinc-500" />
+            <ChevronDown className="h-4 w-4 text-zinc-600 dark:text-zinc-500" />
           )}
         </button>
 
@@ -170,8 +170,8 @@ export function QuickStartOnboarding({
           <div className="space-y-4 text-sm">
             {/* 1. Фокуси */}
             <div>
-              <div className="flex items-center gap-2 mb-2 text-zinc-400">
-                <Zap className="h-4 w-4 text-zinc-500" />
+              <div className="flex items-center gap-2 mb-2 text-zinc-600 dark:text-zinc-400">
+                <Zap className="h-4 w-4 text-zinc-600 dark:text-zinc-500" />
                 <span className="text-xs font-medium">{t("quick_start.focus_label")}</span>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -182,8 +182,8 @@ export function QuickStartOnboarding({
                     onClick={() => toggleFocus(key)}
                     className={`rounded-full border px-2.5 py-1.5 text-xs font-medium transition-colors ${
                       (data.weeklyFocuses ?? []).includes(key)
-                        ? "border-indigo-400/50 bg-indigo-500/30 text-indigo-50"
-                        : "border-white/10 bg-black/20 text-zinc-300 hover:bg-white/5"
+                        ? "border-indigo-400 dark:border-indigo-400/50 bg-indigo-200 dark:bg-indigo-500/30 text-indigo-800 dark:text-indigo-50"
+                        : "border-zinc-200 dark:border-white/10 bg-zinc-200 dark:bg-black/20 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-white/5"
                     }`}
                 >
                   {t(`quick_start.focus.${key}`)}
@@ -194,8 +194,8 @@ export function QuickStartOnboarding({
 
           {/* 2. Час на день */}
           <div>
-            <div className="flex items-center gap-2 mb-2 text-zinc-400">
-              <Clock className="h-4 w-4 text-zinc-500" />
+            <div className="flex items-center gap-2 mb-2 text-zinc-600 dark:text-zinc-400">
+              <Clock className="h-4 w-4 text-zinc-600 dark:text-zinc-500" />
               <span className="text-xs font-medium">{t("quick_start.time_budget_label")}</span>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -204,11 +204,11 @@ export function QuickStartOnboarding({
                   key={min}
                   type="button"
                   onClick={() => updateData({ dailyTimeBudget: min })}
-                  className={`rounded-full border px-2.5 py-1.5 text-xs font-medium transition-colors ${
-                    data.dailyTimeBudget === min
-                      ? "border-indigo-400/50 bg-indigo-500/30 text-indigo-50"
-                      : "border-white/10 bg-black/20 text-zinc-300 hover:bg-white/5"
-                  }`}
+                    className={`rounded-full border px-2.5 py-1.5 text-xs font-medium transition-colors ${
+                      data.dailyTimeBudget === min
+                        ? "border-indigo-400 dark:border-indigo-400/50 bg-indigo-200 dark:bg-indigo-500/30 text-indigo-800 dark:text-indigo-50"
+                        : "border-zinc-200 dark:border-white/10 bg-zinc-200 dark:bg-black/20 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-white/5"
+                    }`}
                 >
                   {min} хв
                 </button>
@@ -218,8 +218,8 @@ export function QuickStartOnboarding({
 
           {/* 3. Найкращий час */}
           <div>
-            <div className="flex items-center gap-2 mb-2 text-zinc-400">
-              <Sun className="h-4 w-4 text-zinc-500" />
+            <div className="flex items-center gap-2 mb-2 text-zinc-600 dark:text-zinc-400">
+              <Sun className="h-4 w-4 text-zinc-600 dark:text-zinc-500" />
               <span className="text-xs font-medium">{t("quick_start.preferred_time_label")}</span>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -228,11 +228,11 @@ export function QuickStartOnboarding({
                   key={key}
                   type="button"
                   onClick={() => updateData({ preferredTimeOfDay: key })}
-                  className={`rounded-full border px-2.5 py-1.5 text-xs font-medium transition-colors ${
-                    data.preferredTimeOfDay === key
-                      ? "border-indigo-400/50 bg-indigo-500/30 text-indigo-50"
-                      : "border-white/10 bg-black/20 text-zinc-300 hover:bg-white/5"
-                  }`}
+                    className={`rounded-full border px-2.5 py-1.5 text-xs font-medium transition-colors ${
+                      data.preferredTimeOfDay === key
+                        ? "border-indigo-400 dark:border-indigo-400/50 bg-indigo-200 dark:bg-indigo-500/30 text-indigo-800 dark:text-indigo-50"
+                        : "border-zinc-200 dark:border-white/10 bg-zinc-200 dark:bg-black/20 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-white/5"
+                    }`}
                 >
                   {t(`quick_start.time_of_day.${key}`)}
                 </button>
@@ -243,11 +243,11 @@ export function QuickStartOnboarding({
           {/* 4. Енергія */}
           <div>
             <div className="flex flex-col gap-0.5 mb-2">
-              <div className="flex items-center gap-2 text-zinc-400">
-                <Battery className="h-4 w-4 text-zinc-500" />
+              <div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400">
+                <Battery className="h-4 w-4 text-zinc-600 dark:text-zinc-500" />
                 <span className="text-xs font-medium">{t("quick_start.energy_label")}</span>
               </div>
-              <p className="text-[10px] text-zinc-500 pl-6">{t("quick_start.energy_label_hint")}</p>
+              <p className="text-[10px] text-zinc-600 dark:text-zinc-500 pl-6">{t("quick_start.energy_label_hint")}</p>
             </div>
             <div className="flex gap-2">
               {[1, 2, 3, 4, 5].map((n) => (
@@ -255,11 +255,11 @@ export function QuickStartOnboarding({
                   key={n}
                   type="button"
                   onClick={() => updateData({ energyLevel: n })}
-                  className={`w-9 h-9 rounded-lg border text-xs font-medium transition-colors ${
-                    (data.energyLevel ?? 0) === n
-                      ? "border-indigo-400/50 bg-indigo-500/30 text-indigo-50"
-                      : "border-white/10 bg-black/20 text-zinc-300 hover:bg-white/5"
-                  }`}
+                    className={`w-9 h-9 rounded-lg border text-xs font-medium transition-colors ${
+                      (data.energyLevel ?? 0) === n
+                        ? "border-indigo-400 dark:border-indigo-400/50 bg-indigo-200 dark:bg-indigo-500/30 text-indigo-800 dark:text-indigo-50"
+                        : "border-zinc-200 dark:border-white/10 bg-zinc-200 dark:bg-black/20 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-white/5"
+                    }`}
                 >
                   {n}
                 </button>
@@ -269,8 +269,8 @@ export function QuickStartOnboarding({
 
           {/* 5. Зайнято */}
           <div>
-            <div className="flex items-center gap-2 mb-2 text-zinc-400">
-              <Calendar className="h-4 w-4 text-zinc-500" />
+            <div className="flex items-center gap-2 mb-2 text-zinc-600 dark:text-zinc-400">
+              <Calendar className="h-4 w-4 text-zinc-600 dark:text-zinc-500" />
               <span className="text-xs font-medium">{t("quick_start.commitments_label")}</span>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -279,11 +279,11 @@ export function QuickStartOnboarding({
                   key={key}
                   type="button"
                   onClick={() => toggleCommitment(key)}
-                  className={`rounded-full border px-2.5 py-1.5 text-xs font-medium transition-colors ${
-                    (data.fixedCommitments ?? []).includes(key)
-                      ? "border-indigo-400/50 bg-indigo-500/30 text-indigo-50"
-                      : "border-white/10 bg-black/20 text-zinc-300 hover:bg-white/5"
-                  }`}
+                    className={`rounded-full border px-2.5 py-1.5 text-xs font-medium transition-colors ${
+                      (data.fixedCommitments ?? []).includes(key)
+                        ? "border-indigo-400 dark:border-indigo-400/50 bg-indigo-200 dark:bg-indigo-500/30 text-indigo-800 dark:text-indigo-50"
+                        : "border-zinc-200 dark:border-white/10 bg-zinc-200 dark:bg-black/20 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-white/5"
+                    }`}
                 >
                   {t(`quick_start.commitments.${key}`)}
                 </button>
@@ -293,8 +293,8 @@ export function QuickStartOnboarding({
 
           {/* 6. Бар'єр */}
           <div>
-            <div className="flex items-center gap-2 mb-2 text-zinc-400">
-              <AlertCircle className="h-4 w-4 text-zinc-500" />
+            <div className="flex items-center gap-2 mb-2 text-zinc-600 dark:text-zinc-400">
+              <AlertCircle className="h-4 w-4 text-zinc-600 dark:text-zinc-500" />
               <span className="text-xs font-medium">{t("quick_start.barrier_label")}</span>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -305,11 +305,11 @@ export function QuickStartOnboarding({
                   onClick={() =>
                     updateData({ barrier: data.barrier === key ? "" : key })
                   }
-                  className={`rounded-full border px-2.5 py-1.5 text-xs font-medium transition-colors ${
-                    data.barrier === key
-                      ? "border-indigo-400/50 bg-indigo-500/30 text-indigo-50"
-                      : "border-white/10 bg-black/20 text-zinc-300 hover:bg-white/5"
-                  }`}
+                    className={`rounded-full border px-2.5 py-1.5 text-xs font-medium transition-colors ${
+                      data.barrier === key
+                        ? "border-indigo-400 dark:border-indigo-400/50 bg-indigo-200 dark:bg-indigo-500/30 text-indigo-800 dark:text-indigo-50"
+                        : "border-zinc-200 dark:border-white/10 bg-zinc-200 dark:bg-black/20 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-white/5"
+                    }`}
                 >
                   {t(`quick_start.barrier.${key}`)}
                 </button>
@@ -321,14 +321,14 @@ export function QuickStartOnboarding({
           <button
             type="button"
             onClick={handleGenerateFromQuickStart}
-            className="w-full rounded-md border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-zinc-200 transition-colors hover:bg-white/10"
+            className="w-full rounded-md border border-zinc-200 dark:border-white/10 bg-zinc-200 dark:bg-white/5 px-4 py-3 text-sm font-medium text-zinc-800 dark:text-zinc-200 transition-colors hover:bg-zinc-300 dark:hover:bg-white/10"
           >
             {t("quick_start.generate")}
           </button>
 
           {/* Стартові пакети */}
           <div>
-            <div className="text-xs font-medium text-zinc-400 mb-2">
+            <div className="text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-2">
               {t("quick_start.starter_packs_label")}
             </div>
             <div className="flex flex-col gap-2">
@@ -337,12 +337,12 @@ export function QuickStartOnboarding({
                   key={pack.id}
                   type="button"
                   onClick={() => handleAddPack(pack.id)}
-                  className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-left text-xs transition-colors hover:bg-white/5"
+                  className="rounded-lg border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-black/20 px-3 py-2 text-left text-xs transition-colors hover:bg-zinc-200 dark:hover:bg-white/5"
                 >
-                  <span className="font-medium text-zinc-200">
+                  <span className="font-medium text-zinc-800 dark:text-zinc-200">
                     {t(pack.nameKey)}
                   </span>
-                  <p className="mt-0.5 text-zinc-500">{t(pack.descriptionKey)}</p>
+                  <p className="mt-0.5 text-zinc-600 dark:text-zinc-500">{t(pack.descriptionKey)}</p>
                 </button>
               ))}
             </div>

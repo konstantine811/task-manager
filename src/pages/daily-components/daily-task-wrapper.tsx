@@ -35,6 +35,7 @@ import {
   filterTasksByAnotherTasks,
 } from "@/services/task-menager/filter-tasks";
 import { normalizeItems } from "@/services/task-menager/normalize";
+import { useGoalsStore } from "@/storage/goalsStore";
 
 const DailyTaskWrapper = () => {
   const [dailyTasks, setDailyTasks] = useState<Items>([]);
@@ -53,6 +54,7 @@ const DailyTaskWrapper = () => {
     addPlannedTask,
     setDailyTasks: setProviderDailyTask,
   } = useDailyTaskContext();
+  const applyTaskDone = useGoalsStore((s) => s.applyTaskDone);
   useEffect(() => {
     // 💡 Очищення попередніх даних при зміні дати
     setIsLoaded(false);
@@ -148,6 +150,7 @@ const DailyTaskWrapper = () => {
           whenDo: task.whenDo || [],
           isDetermined: task.isDetermined || false,
           categoryName: task.categoryName,
+          goalLinks: task.goalLinks,
         } as ItemTaskCategory;
       });
       addPlannedTask(plannedTasks);
@@ -198,6 +201,17 @@ const DailyTaskWrapper = () => {
                 onDeletePlannedTask={deletePlannedTask}
                 onChangeTasks={handleChangeTasks}
                 onEditPlannedTask={onUpdatePlannedTask}
+                onTaskDone={
+                  date
+                    ? (task) =>
+                        applyTaskDone(task.id, date, {
+                          title: task.title,
+                          time: task.time,
+                          timeDone: task.timeDone,
+                          goalLinks: task.goalLinks,
+                        })
+                    : undefined
+                }
               />
             </TaskManagerProvider>
           )}

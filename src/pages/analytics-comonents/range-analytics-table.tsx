@@ -116,7 +116,7 @@ const RangeAnalyticsTable = ({ data }: Props) => {
                   key={field}
                   onClick={() => toggleSort(field)}
                   className={cn(
-                    "text-center cursor-pointer select-none hover:text-zinc-300 transition-colors",
+                    "text-center cursor-pointer select-none hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors",
                     className
                   )}
                 >
@@ -131,23 +131,23 @@ const RangeAnalyticsTable = ({ data }: Props) => {
           <TableBody>
             {sortedData.map((task) => (
               <TableRow key={task.key}>
-                <TableCell className="font-medium text-zinc-200 whitespace-pre-wrap break-words max-w-[200px]">
+                <TableCell className="font-medium text-zinc-800 dark:text-zinc-200 whitespace-pre-wrap break-words max-w-[200px]">
                   {(() => {
                     const key = `task_manager.categories.${task.key}`;
                     const tr = t(key);
                     return tr !== key ? tr : task.key;
                   })()}
                 </TableCell>
-                <TableCell className="text-center font-mono text-zinc-400">
+                <TableCell className="text-center font-mono text-zinc-700 dark:text-zinc-400">
                   {task.countIsDone}
                 </TableCell>
-                <TableCell className="text-center font-mono text-zinc-400">
+                <TableCell className="text-center font-mono text-zinc-700 dark:text-zinc-400">
                   {task.countIsNotDone}
                 </TableCell>
-                <TableCell className="text-center font-mono text-zinc-400">
+                <TableCell className="text-center font-mono text-zinc-700 dark:text-zinc-400">
                   {parseTime(task.countTime)}
                 </TableCell>
-                <TableCell className="text-center font-mono text-zinc-400">
+                <TableCell className="text-center font-mono text-zinc-700 dark:text-zinc-400">
                   {parseTime(task.countDoneTime)}
                 </TableCell>
               </TableRow>

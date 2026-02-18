@@ -40,11 +40,15 @@ const TemplateChartsPanel = ({ templateTasks }: { templateTasks: Items }) => {
           <SelectPeriodTime onChange={setPeriod} value={period} />
         </div>
       )}
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 px-4 sm:px-6">
       {selectedItem.map((item) => {
         switch (item) {
           case TemplateTypeChart.timeCount:
-            return <ChartTimeCount templateTasks={templateTasks} key={item} />;
+            return (
+              <div className="max-w-2xl mx-auto w-full">
+                <ChartTimeCount templateTasks={templateTasks} key={item} />
+              </div>
+            );
           case TemplateTypeChart.category:
             return (
               <ChartTimeCategory

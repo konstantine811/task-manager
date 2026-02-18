@@ -28,10 +28,8 @@ const useChartTooltip = () => {
         .style("display", "flex")
         .style("opacity", "1")
         .html(`
-        <h3 class="text-zinc-300 text-center text-sm"><strong>${t(
-          title
-        )}</strong></h3>
-        <div class="bg-accent/40 rounded-md text-center text-sm border border-white/15 inline-block px-2">
+        <h3 class="chart-tooltip-title"><strong>${t(title)}</strong></h3>
+        <div class="chart-tooltip-time">
           ${parsedHours !== "0" ? parsedHours + t("chart.hour") : ""} ${
         minutes !== "00" ? minutes + t("chart.minute") : ""
       }
@@ -63,7 +61,7 @@ const useChartTooltip = () => {
   const TooltipElement = (
     <div
       ref={ref}
-      className="fixed z-[100] max-w-sm p-2 text-sm bg-zinc-800/95 border border-white/20 rounded-lg shadow-xl shadow-black/70 will-change-transform pointer-events-none opacity-0 items-center flex-col gap-2 backdrop-blur-sm"
+      className="chart-tooltip fixed z-[100] max-w-sm p-2 text-sm rounded-lg shadow-xl will-change-transform pointer-events-none opacity-0 items-center flex-col gap-2 backdrop-blur-sm"
     />
   );
 

@@ -27,7 +27,7 @@ const Analytics = () => {
   });
   const [rangeTasks, setRangeTasks] = useState<DailyTaskRecord[]>([]);
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData>();
-  const [categoryDoneEntity, setCategoryDoneEntity] = useState<ItemTimeMap>({});
+  const [categoryTotalEntity, setCategoryTotalEntity] = useState<ItemTimeMap>({});
   useEffect(() => {
     loadDailyTasksByRange(range.from, range.to).then((rangeTasks) => {
       setRangeTasks(rangeTasks);
@@ -40,13 +40,13 @@ const Analytics = () => {
     worker.onmessage = (e: MessageEvent) => {
       const analyticsData = e.data as AnalyticsData;
       if (analyticsData.categoryEntity) {
-        const categoryTime: ItemTimeMap = {};
+        const totalByCategory: ItemTimeMap = {};
         Object.entries(analyticsData.categoryEntity).forEach(([key, value]) => {
-          if (value.countDoneTime > 0) {
-            categoryTime[key] = value.countDoneTime;
+          if (value.time > 0) {
+            totalByCategory[key] = value.time;
           }
         });
-        setCategoryDoneEntity(categoryTime);
+        setCategoryTotalEntity(totalByCategory);
       }
       setAnalyticsData(analyticsData);
     };
@@ -76,25 +76,29 @@ const Analytics = () => {
             <>
               <TaskDateRangeHeader tasks={analyticsData.rangeTasks} />
               <LineChartTask data={analyticsData.rangeTasks} />
-              <div className="flex flex-wrap gap-4 justify-around items-start pt-10">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start pt-10">
                 <ChartPieCategoryWrap
-                  className="grow"
+                  className="w-full"
                   data={analyticsData.categoryEntity}
+                  showCompletedOnly
                 />
-                <div className="grow max-w-2xl mx-auto w-full">
-                  <div className="flex flex-wrap justify-center items-center gap-2">
-                    <ChartTitle title="chart.period_count_category_title" />
-                  </div>
-                  <div className="w-full">
+                <div className="w-full flex flex-col items-center max-w-2xl mx-auto md:max-w-none md:mr-0">
+                  <ChartTitle
+                    title="chart.period_count_category_title"
+                    subtitle="chart.pie_category_total_subtitle"
+                  />
+                  <div className="w-full mt-4">
                     <ChartPieItem
-                      data={categoryDoneEntity}
+                      data={categoryTotalEntity}
                       type={ItemTimeMapKeys.category}
                       height={320}
                     />
                   </div>
                 </div>
               </div>
-              <RangeAnalyticsTable data={analyticsData.rangeTaskEntity} />
+              <div className="mt-10">
+                <RangeAnalyticsTable data={analyticsData.rangeTaskEntity} />
+              </div>
             </>
           ) : (
             t("not_data")

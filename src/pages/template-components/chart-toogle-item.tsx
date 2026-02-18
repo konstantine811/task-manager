@@ -44,8 +44,8 @@ const ChartCheckboxSort = ({
           <div
             className={`flex items-center gap-1 px-2 py-1 rounded-lg transition select-none flex-wrap ${
               selected.includes(key)
-                ? "chrono-chart-toggle selected text-indigo-200"
-                : "chrono-chart-toggle text-zinc-400"
+                ? "chrono-chart-toggle selected text-indigo-800 dark:text-indigo-200"
+                : "chrono-chart-toggle text-zinc-600 dark:text-zinc-400"
             }`}
           >
             <Checkbox

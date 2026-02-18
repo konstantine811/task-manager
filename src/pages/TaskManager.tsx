@@ -3,16 +3,11 @@ import { Link, Outlet, useLocation } from "react-router";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { DateTemplate } from "@/config/data-config";
-import {
-  Dock,
-  DockIcon,
-  DockItem,
-  DockLabel,
-} from "@/components/ui/shadcn-io/dock";
 import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import { ChronoNav } from "@/components/landing";
 import { LayoutDashboard, ChartSpline } from "lucide-react";
 import { ROUTES } from "@/config/routes";
+import { cn } from "@/lib/utils";
 
 const NAVBAR_HEIGHT = 56;
 
@@ -29,7 +24,7 @@ const TASK_MANAGER_ROUTERS = [
   {
     path: ROUTES.DAILY_ID,
     id: "task-manager-daily",
-    icon: <span className="text-lg">🚶</span>,
+    icon: <span className="text-base leading-none">🚶</span>,
   },
   {
     path: ROUTES.ANALYTICS,
@@ -57,8 +52,8 @@ const TaskManager = () => {
       <div className="relative z-10">
         <Outlet context={outletConext} />
       </div>
-      <div className="fixed bottom-2 left-1/2 max-w-full -translate-x-1/2 z-20">
-        <Dock className="items-end pb-3 dropdown-glass border-white/5">
+      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-20">
+        <div className="flex items-center gap-1 p-1.5 rounded-full border border-zinc-300/80 dark:border-white/10 bg-white/80 dark:bg-[rgba(10,10,12,0.6)] backdrop-blur-xl shadow-lg">
           {TASK_MANAGER_ROUTERS.map((item) => {
             let path: string = item.path;
             let title: string = item.path;
@@ -72,22 +67,26 @@ const TaskManager = () => {
               activePath = item.path;
               title = item.path.split("/").filter(Boolean).pop() ?? item.path;
             }
+            const isActive = pathname.startsWith(activePath);
             return (
-              <Link to={path} key={item.id}>
-                <DockItem
-                  className={`${
-                    pathname.startsWith(activePath)
-                      ? "bg-indigo-500/20 text-indigo-200 border-indigo-500/20"
-                      : "bg-white/[0.03] text-zinc-400 border-white/5 hover:bg-white/5 hover:text-white"
-                  } transition duration-200 aspect-square rounded-full border cursor-pointer`}
-                >
-                  <DockLabel>{t(`pages.task.${title}`)}</DockLabel>
-                  <DockIcon className="text-3xl ">{item.icon}</DockIcon>
-                </DockItem>
+              <Link
+                to={path}
+                key={item.id}
+                title={t(`pages.task.${title}`)}
+                className={cn(
+                  "w-9 h-9 rounded-full flex items-center justify-center transition-colors",
+                  isActive
+                    ? "bg-indigo-500/20 text-indigo-600 dark:text-indigo-200"
+                    : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/80 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white"
+                )}
+              >
+                <span className="w-4 h-4 flex items-center justify-center [&>svg]:w-4 [&>svg]:h-4 [&>span]:text-sm">
+                  {item.icon}
+                </span>
               </Link>
             );
           })}
-        </Dock>
+        </div>
       </div>
     </div>
   );

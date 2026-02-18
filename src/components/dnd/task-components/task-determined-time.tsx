@@ -15,14 +15,14 @@ const TaskDeterminedTime = ({
       <TaskLocalTimeStatic
         timeInSeconds={task.time}
         tooltipText={titleDeterminedTime}
-        className="!text-zinc-500 bg-zinc-900/50 px-2 py-0.5 rounded border border-white/5"
+        className="!text-zinc-700 dark:!text-zinc-400 bg-zinc-200 dark:bg-zinc-900/50 px-2 py-0.5 rounded border border-zinc-300/80 dark:border-white/5"
       />
       <span className="text-zinc-600 text-[10px]">/</span>
       <TaskLocalTimeStatic
         timeInSeconds={task.timeDone}
         revert
         tooltipText={titleSpendingTime}
-        className="!text-zinc-500 bg-zinc-900/50 px-2 py-0.5 rounded border border-white/5"
+        className="!text-zinc-700 dark:!text-zinc-400 bg-zinc-200 dark:bg-zinc-900/50 px-2 py-0.5 rounded border border-zinc-300/80 dark:border-white/5"
       />
     </div>
   );

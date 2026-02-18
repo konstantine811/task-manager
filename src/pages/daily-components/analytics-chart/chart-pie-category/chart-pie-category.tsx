@@ -15,12 +15,15 @@ interface ChartPieCategoryProps {
   width?: number;
   height?: number;
   fillType?: "angle" | "radius";
+  /** Show only completed tasks time (countDoneTime). When false, shows total time with completion overlay. */
+  showCompletedOnly?: boolean;
 }
 
 interface PieEntity {
   name: string;
   time: number;
   doneTime: number;
+  segmentValue: number;
 }
 
 const ChartPieCategory = ({
@@ -28,6 +31,7 @@ const ChartPieCategory = ({
   width = 320,
   height = 320,
   fillType = "radius",
+  showCompletedOnly = false,
 }: ChartPieCategoryProps) => {
   const ref = useRef<SVGSVGElement | null>(null);
   const [t] = useTranslation();
@@ -36,21 +40,27 @@ const ChartPieCategory = ({
     name: id,
     time: value.time,
     doneTime: value.countDoneTime,
+    /** Segment value: completed time only when showCompletedOnly, else total time */
+    segmentValue: showCompletedOnly ? value.countDoneTime : value.time,
   }));
 
-  const totalSec = entries.reduce((s, e) => s + e.time, 0);
+  const totalSec = entries.reduce((s, e) => s + e.segmentValue, 0);
   const { hours: totalH, minutes: totalM } = paresSecondToTime(totalSec);
   const totalLabel = `${totalH}:${totalM}`;
 
+  const chartEntries = showCompletedOnly
+    ? entries.filter((e) => e.segmentValue > 0)
+    : entries;
+
   useEffect(() => {
-    if (!ref.current || entries.length === 0) return;
+    if (!ref.current || chartEntries.length === 0) return;
 
     const radius = Math.min(width, height) / 2 - 4;
     const innerRadius = radius * 0.5;
     const outerRadius = radius - 4;
 
-    const pie = d3.pie<PieEntity>().value((d) => d.time);
-    const timeArcs = pie(entries);
+    const pie = d3.pie<PieEntity>().value((d) => d.segmentValue);
+    const timeArcs = pie(chartEntries);
 
     const arc = d3
       .arc<d3.PieArcDatum<PieEntity>>()
@@ -71,6 +81,7 @@ const ChartPieCategory = ({
 
     const g = svg
       .attr("viewBox", `${-width / 2} ${-height / 2} ${width} ${height}`)
+      .attr("overflow", "visible")
       .append("g");
 
     const defs = svg.append("defs");
@@ -93,11 +104,11 @@ const ChartPieCategory = ({
       .enter()
       .append("path")
       .attr("d", arc)
-      .attr("fill", (_, i) => getChartColor(entries[i].name, i))
+      .attr("fill", (_, i) => getChartColor(chartEntries[i].name, i))
       .attr("stroke", "none")
       .attr("filter", "url(#chart-3d-shadow-category)");
 
-    if (fillType === "angle") {
+    if (!showCompletedOnly && fillType === "angle") {
       g.selectAll("path.done")
         .data(timeArcs)
         .enter()
@@ -111,7 +122,7 @@ const ChartPieCategory = ({
         })
         .attr("fill", "rgba(59,130,246,0.6)")
         .attr("stroke", "none");
-    } else if (fillType === "radius") {
+    } else if (!showCompletedOnly && fillType === "radius") {
       g.selectAll("path.done")
         .data(timeArcs)
         .enter()
@@ -135,12 +146,12 @@ const ChartPieCategory = ({
         .attr("fill", "rgba(59,130,246,0.7)")
         .attr("stroke", "none");
     }
-  }, [data, width, height, fillType, i18n.language]);
+  }, [chartEntries, width, height, fillType, showCompletedOnly, i18n.language]);
 
-  const legendItems = entries
+  const legendItems = (showCompletedOnly ? entries : chartEntries)
     .map((e, i) => {
-      const pct = totalSec > 0 ? Math.round((e.time / totalSec) * 100) : 0;
-      const { hours, minutes } = paresSecondToTime(e.time);
+      const pct = totalSec > 0 ? Math.round((e.segmentValue / totalSec) * 100) : 0;
+      const { hours, minutes } = paresSecondToTime(e.segmentValue);
       const label =
         t(`task_manager.categories.${e.name}`) !==
         `task_manager.categories.${e.name}`
@@ -157,22 +168,22 @@ const ChartPieCategory = ({
         colorClass: style.color,
       };
     })
-    .sort((a, b) => (data[b.name]?.time ?? 0) - (data[a.name]?.time ?? 0));
+    .sort((a, b) => b.segmentValue - a.segmentValue);
 
   const LEGEND_COLLAPSE_THRESHOLD = 10;
   const canCollapse = legendItems.length > LEGEND_COLLAPSE_THRESHOLD;
   const [isCollapsed, setIsCollapsed] = useState(true);
 
   return (
-    <div className="rounded-xl border border-white/10 bg-gradient-to-b from-white to-zinc-50 dark:from-zinc-900/80 dark:to-zinc-950 text-zinc-900 dark:text-zinc-100 shadow-[0_25px_70px_rgba(0,0,0,0.35)] overflow-hidden">
-      <div className="p-4 sm:p-5">
+    <div className="rounded-xl border border-white/10 bg-gradient-to-b from-white to-zinc-50 dark:from-zinc-900/80 dark:to-zinc-950 text-zinc-900 dark:text-zinc-100 shadow-[0_25px_70px_rgba(0,0,0,0.35)] overflow-visible chrono-chart-plot-bg">
+      <div className="relative z-10 p-4 sm:p-5">
         <div className="grid grid-cols-1 md:grid-cols-5 gap-5 items-stretch">
-          <div className="md:col-span-3 flex items-center justify-center">
-            <div className="relative w-64 aspect-square md:w-72">
+          <div className="md:col-span-3 flex items-center justify-center p-6 sm:p-8">
+            <div className="relative w-64 aspect-square md:w-72 shrink-0">
               <div className="absolute inset-0 rounded-full blur-3xl bg-rose-500/10 dark:bg-rose-500/15" />
               <svg
                 ref={ref}
-                className="relative w-full h-full drop-shadow-[0_12px_28px_rgba(0,0,0,0.4)] drop-shadow-[0_4px_12px_rgba(0,0,0,0.3)]"
+                className="relative w-full h-full overflow-visible drop-shadow-[0_12px_28px_rgba(0,0,0,0.4)] drop-shadow-[0_4px_12px_rgba(0,0,0,0.3)]"
               />
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <div className="text-center">

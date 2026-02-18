@@ -49,7 +49,7 @@ const SelectPeriodTime = ({
         <div className="inline-block">
           <SoundHoverElement animValue={1}>
             <Button
-              className="w-56 bg-zinc-900/80 border-white/5 hover:border-white/10 hover:bg-zinc-800/80 text-zinc-300"
+              className="w-56 bg-zinc-100 dark:bg-zinc-900/80 border-zinc-300 dark:border-white/5 hover:border-zinc-400 dark:hover:border-white/10 hover:bg-zinc-200 dark:hover:bg-zinc-800/80 text-zinc-800 dark:text-zinc-300"
               variant="outline"
             >
               {t(`task_manager.day_names.${period}`)}

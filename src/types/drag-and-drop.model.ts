@@ -8,6 +8,17 @@ export interface TaskCategory {
 
 export type Items = TaskCategory[];
 
+/** Link from task to goal — how task affects goal progress */
+export interface TaskGoalLink {
+  goalId: UniqueIdentifier;
+  impact:
+    | { type: "count"; value: number }
+    | { type: "minutes"; valueMode: "done" | "planned" }
+    | { type: "score"; value: number }
+    | { type: "streak"; value: 1 };
+  onMiss?: { type: "decrease" | "keep"; value?: number };
+}
+
 export interface ItemTask {
   id: UniqueIdentifier;
   title: string;
@@ -18,6 +29,8 @@ export interface ItemTask {
   isPlanned?: boolean;
   whenDo: DayNumber[];
   isDetermined?: boolean;
+  /** Зв'язок з цілями — при виконанні оновлює прогрес цілі */
+  goalLinks?: TaskGoalLink[];
 }
 
 export interface NormalizedTask extends ItemTask {

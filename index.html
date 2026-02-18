@@ -1,7 +1,24 @@
 <!DOCTYPE html>
-<html lang="uk" class="dark">
+<html lang="uk">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      (function() {
+        try {
+          var t = localStorage.getItem('theme');
+          var isLight = t === 'light';
+          if (isLight) {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.style.setProperty('--background', '#fbfcf8');
+            document.documentElement.style.setProperty('--foreground', '#333333');
+          } else {
+            document.documentElement.classList.add('dark');
+            document.documentElement.style.setProperty('--background', '#000000');
+            document.documentElement.style.setProperty('--foreground', '#d4d4d4');
+          }
+        } catch (e) {}
+      })();
+    </script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chrono // Керування часом</title>

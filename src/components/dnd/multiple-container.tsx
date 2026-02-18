@@ -82,8 +82,12 @@ interface Props {
   emptyStateCenter?: React.ReactNode;
   /** When true, template has no tasks */
   isEmptyTemplate?: boolean;
+  /** Rendered above categories (e.g. Goals panel) */
+  beforeCategories?: React.ReactNode;
   /** Called when a suggested task is dropped into template — remove it from AI list */
   onSuggestedTaskMovedToTemplate?: (advisorTask: import("@/services/ai/gemini.types").AdvisorTask) => void;
+  /** Called when task is toggled to done (для оновлення прогресу цілей) */
+  onTaskDone?: (task: ItemTask) => void;
 }
 
 export function MultipleContainers({
@@ -110,7 +114,9 @@ export function MultipleContainers({
   sidePanel,
   emptyStateCenter,
   isEmptyTemplate = false,
+  beforeCategories,
   onSuggestedTaskMovedToTemplate,
+  onTaskDone,
 }: Props) {
   const [t] = useTranslation();
   const [items, setItems] = useState<Items>(initialItems);
@@ -202,26 +208,29 @@ export function MultipleContainers({
   const handleToggleTask = useCallback(
     (taskId: UniqueIdentifier, newIsDone: boolean) => {
       setItems((prevItems) => {
+        let doneTask: ItemTask | null = null;
         const updated = prevItems.map((container) => ({
           ...container,
           tasks: container.tasks.map((t) => {
             if (t.id === taskId) {
-              const updated = { ...t, isDone: newIsDone };
-              if (updated.isPlanned || updated.isDetermined) {
-                onEditPlannedTask?.(updated);
+              const updatedTask = { ...t, isDone: newIsDone };
+              if (newIsDone && t.goalLinks?.length) {
+                doneTask = updatedTask;
               }
-              return updated;
-            } else {
-              // Якщо це не той таск, то просто повертаємо його без змін
-              return t;
+              if (updatedTask.isPlanned || updatedTask.isDetermined) {
+                onEditPlannedTask?.(updatedTask);
+              }
+              return updatedTask;
             }
+            return t;
           }),
         }));
         onChangeTasks(updated);
+        if (doneTask) onTaskDone?.(doneTask);
         return updated;
       });
     },
-    [onChangeTasks, onEditPlannedTask]
+    [onChangeTasks, onEditPlannedTask, onTaskDone]
   );
 
   const handleAddTask = useCallback(
@@ -413,6 +422,7 @@ export function MultipleContainers({
           }
         >
           <div className="flex min-w-0 flex-col gap-4">
+            {beforeCategories && <div className="w-full">{beforeCategories}</div>}
             <div
               className={`flex flex-col w-full min-w-0 items-stretch justify-start ${templated ? "mt-5" : ""}`}
             >

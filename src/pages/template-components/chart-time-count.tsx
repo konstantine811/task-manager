@@ -319,8 +319,8 @@ const ChartTimeCount = ({ templateTasks }: { templateTasks: Items }) => {
 
   return (
     <div className="w-full relative">
-      <div className="rounded-xl border border-white/10 bg-gradient-to-b from-white to-zinc-50 dark:from-zinc-900/80 dark:to-zinc-950 text-zinc-900 dark:text-zinc-100 shadow-[0_25px_70px_rgba(0,0,0,0.35)] overflow-hidden">
-        <div className="p-2 sm:p-3">
+      <div className="rounded-xl border border-white/10 bg-gradient-to-b from-white to-zinc-50 dark:from-zinc-900/80 dark:to-zinc-950 text-zinc-900 dark:text-zinc-100 shadow-[0_25px_70px_rgba(0,0,0,0.35)] overflow-hidden chrono-chart-plot-bg">
+        <div className="relative z-10 p-2 sm:p-3">
           <div className="mb-2">
             <ChartTitle title="chart.count_chart_title" />
           </div>
