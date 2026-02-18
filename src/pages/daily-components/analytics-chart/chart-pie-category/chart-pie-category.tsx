@@ -9,6 +9,7 @@ import {
   CATEGORY_STYLE,
   DEFAULT_CATEGORY_STYLE,
 } from "@/components/dnd/config/category-style.config";
+import { CATEGORY_OPTIONS } from "@/components/dnd/config/category-options";
 
 interface ChartPieCategoryProps {
   data: CategoryAnalyticsNameEntity;
@@ -17,6 +18,10 @@ interface ChartPieCategoryProps {
   fillType?: "angle" | "radius";
   /** Show only completed tasks time (countDoneTime). When false, shows total time with completion overlay. */
   showCompletedOnly?: boolean;
+  /** When true, fill & pct use planned vs completed TIME (doneTime/time). When false, use task count (countDone/countTotal). */
+  useTimeCompletion?: boolean;
+  /** When true, include all categories even with 0 tasks (like line chart shows all days) */
+  includeAllCategories?: boolean;
 }
 
 interface PieEntity {
@@ -26,7 +31,9 @@ interface PieEntity {
   countDone: number;
   countTotal: number;
   taskPct: number;
+  timePct: number;
   segmentValue: number;
+  categoryId?: string;
 }
 
 const ChartPieCategory = ({
@@ -35,8 +42,12 @@ const ChartPieCategory = ({
   height = 320,
   fillType = "radius",
   showCompletedOnly = false,
+  useTimeCompletion = false,
+  includeAllCategories = false,
 }: ChartPieCategoryProps) => {
   const ref = useRef<SVGSVGElement | null>(null);
+  const tooltipRef = useRef<HTMLDivElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const [t] = useTranslation();
 
   const entries = Object.entries(data).map(([id, value]) => {
@@ -45,6 +56,10 @@ const ChartPieCategory = ({
       countTotal > 0
         ? Math.round((value.countDone / countTotal) * 100)
         : 0;
+    /** Відсоток виконаного часу від запланованого (може бути > 100) */
+    const timePct = value.time > 0
+      ? Math.round((value.countDoneTime / value.time) * 100)
+      : 0;
     return {
       name: id,
       time: value.time,
@@ -52,8 +67,10 @@ const ChartPieCategory = ({
       countDone: value.countDone,
       countTotal,
       taskPct,
+      timePct,
       /** Segment size: planned time for showCompletedOnly; else same. Min 1 for pie. */
       segmentValue: Math.max(value.time, 1),
+      categoryId: value.categoryId,
     };
   });
 
@@ -61,10 +78,14 @@ const ChartPieCategory = ({
   const { hours: totalH, minutes: totalM } = paresSecondToTime(totalSec);
   const totalLabel = `${totalH}:${totalM}`;
 
-  /** When showCompletedOnly: all categories with tasks; segment = planned time, fill by task % */
-  const chartEntries = showCompletedOnly
-    ? entries.filter((e) => e.countTotal > 0)
-    : entries;
+  /** When showCompletedOnly: categories with tasks or with time data; segment = planned time, fill by %.
+   * When includeAllCategories: show all entries (including 0). */
+  const chartEntries =
+    showCompletedOnly && !includeAllCategories
+      ? entries.filter(
+          (e) => e.countTotal > 0 || e.time > 0 || e.doneTime > 0
+        )
+      : entries;
 
   useEffect(() => {
     if (!ref.current) return;
@@ -92,6 +113,7 @@ const ChartPieCategory = ({
           arcEmpty({
             startAngle: 0,
             endAngle: Math.PI * 2,
+            padAngle: 0,
             data: {} as PieEntity,
             index: 0,
             value: 0,
@@ -143,6 +165,52 @@ const ChartPieCategory = ({
       .attr("flood-color", "#000")
       .attr("flood-opacity", 0.35);
 
+    const showPieTooltip = (e: MouseEvent, entry: PieEntity) => {
+      const tooltip = tooltipRef.current;
+      if (!tooltip) return;
+      const label =
+        t(`task_manager.categories.${entry.name}`) !==
+        `task_manager.categories.${entry.name}`
+          ? t(`task_manager.categories.${entry.name}`)
+          : entry.name;
+      const pct =
+        showCompletedOnly
+          ? useTimeCompletion ? entry.timePct : entry.taskPct
+          : entry.time > 0
+            ? Math.round((entry.doneTime / entry.time) * 100)
+            : 0;
+      const { hours: doneH, minutes: doneM } = paresSecondToTime(entry.doneTime);
+      const { hours: plannedH, minutes: plannedM } = paresSecondToTime(entry.time);
+      const timeStr =
+        entry.time > 0 ? `${doneH}:${doneM} / ${plannedH}:${plannedM}` : `0:00 / 0:00`;
+      tooltip.innerHTML = `
+        <div class="chart-tooltip-title font-semibold">${label}</div>
+        <div class="chart-tooltip-time mt-1">${timeStr} · ${pct}%</div>
+      `;
+      tooltip.style.display = "block";
+      tooltip.style.position = "fixed";
+      tooltip.style.left = `${e.clientX + 12}px`;
+      tooltip.style.top = `${e.clientY + 12}px`;
+      tooltip.style.opacity = "1";
+      requestAnimationFrame(() => {
+        if (!tooltipRef.current) return;
+        const rect = tooltip.getBoundingClientRect();
+        let left = e.clientX + 12;
+        let top = e.clientY + 12;
+        if (left + rect.width > window.innerWidth - 8) left = e.clientX - rect.width - 12;
+        if (top + rect.height > window.innerHeight - 8) top = e.clientY - rect.height - 12;
+        if (top < 8) top = 8;
+        if (left < 8) left = 8;
+        tooltip.style.left = `${left}px`;
+        tooltip.style.top = `${top}px`;
+      });
+    };
+    const hidePieTooltip = () => {
+      if (tooltipRef.current) {
+        tooltipRef.current.style.display = "none";
+      }
+    };
+
     if (showCompletedOnly) {
       /** Base: empty/grey outline per segment (100%) */
       g.selectAll("path.base")
@@ -152,22 +220,40 @@ const ChartPieCategory = ({
         .attr("d", arc)
         .attr("fill", "rgba(161,161,170,0.15)")
         .attr("stroke", "rgba(161,161,170,0.35)")
-        .attr("stroke-width", 1);
-      /** Fill: category color to taskPct within each segment */
+        .attr("stroke-width", 1)
+        .attr("cursor", "pointer")
+        .on("mouseenter", function (event, d) {
+          showPieTooltip(event, d.data);
+        })
+        .on("mousemove", function (event, d) {
+          showPieTooltip(event, d.data);
+        })
+        .on("mouseleave", hidePieTooltip);
+      /** Fill: category color to taskPct or timePct within each segment */
       g.selectAll("path.done")
         .data(timeArcs)
         .enter()
         .append("path")
         .attr("d", (d, i) => {
           const entry = chartEntries[i];
-          const progress = Math.min(entry.taskPct / 100, 1);
+          const progress = useTimeCompletion
+            ? Math.min(entry.timePct / 100, 1)
+            : Math.min(entry.taskPct / 100, 1);
           const angleRange = d.endAngle - d.startAngle;
           const newEndAngle = d.startAngle + angleRange * progress;
           return arcDoneAngle({ ...d, endAngle: newEndAngle });
         })
         .attr("fill", (_, i) => getChartColor(chartEntries[i].name, i))
         .attr("stroke", "none")
-        .attr("filter", "url(#chart-3d-shadow-category)");
+        .attr("filter", "url(#chart-3d-shadow-category)")
+        .attr("cursor", "pointer")
+        .on("mouseenter", function (event, d) {
+          showPieTooltip(event, d.data);
+        })
+        .on("mousemove", function (event, d) {
+          showPieTooltip(event, d.data);
+        })
+        .on("mouseleave", hidePieTooltip);
     } else {
       g.selectAll("path.base")
         .data(timeArcs)
@@ -176,7 +262,15 @@ const ChartPieCategory = ({
         .attr("d", arc)
         .attr("fill", (_, i) => getChartColor(chartEntries[i].name, i))
         .attr("stroke", "none")
-        .attr("filter", "url(#chart-3d-shadow-category)");
+        .attr("filter", "url(#chart-3d-shadow-category)")
+        .attr("cursor", "pointer")
+        .on("mouseenter", function (event, d) {
+          showPieTooltip(event, d.data);
+        })
+        .on("mousemove", function (event, d) {
+          showPieTooltip(event, d.data);
+        })
+        .on("mouseleave", hidePieTooltip);
     }
 
     if (!showCompletedOnly && fillType === "angle") {
@@ -192,7 +286,15 @@ const ChartPieCategory = ({
           return arcDoneAngle({ ...d, endAngle: newEndAngle });
         })
         .attr("fill", "rgba(59,130,246,0.6)")
-        .attr("stroke", "none");
+        .attr("stroke", "none")
+        .attr("cursor", "pointer")
+        .on("mouseenter", function (event, d) {
+          showPieTooltip(event, d.data);
+        })
+        .on("mousemove", function (event, d) {
+          showPieTooltip(event, d.data);
+        })
+        .on("mouseleave", hidePieTooltip);
     } else if (!showCompletedOnly && fillType === "radius") {
       g.selectAll("path.done")
         .data(timeArcs)
@@ -215,16 +317,30 @@ const ChartPieCategory = ({
           return dynamicArc(d);
         })
         .attr("fill", "rgba(59,130,246,0.7)")
-        .attr("stroke", "none");
+        .attr("stroke", "none")
+        .attr("cursor", "pointer")
+        .on("mouseenter", function (event, d) {
+          showPieTooltip(event, d.data);
+        })
+        .on("mousemove", function (event, d) {
+          showPieTooltip(event, d.data);
+        })
+        .on("mouseleave", hidePieTooltip);
     }
-  }, [chartEntries, width, height, fillType, showCompletedOnly, i18n.language]);
+  }, [chartEntries, width, height, fillType, showCompletedOnly, useTimeCompletion, includeAllCategories, i18n.language, t]);
 
-  const legendItems = (showCompletedOnly ? entries : chartEntries)
-    .filter((e) => showCompletedOnly ? e.countTotal > 0 : true)
+  const legendItems = (
+    includeAllCategories ? chartEntries : showCompletedOnly ? entries : chartEntries
+  ).filter((e) =>
+    includeAllCategories ||
+    !showCompletedOnly ||
+    e.countTotal > 0 ||
+    (useTimeCompletion && (e.time > 0 || e.doneTime > 0))
+  )
     .map((e, i) => {
-      /** Task completion %: countDone / countTotal (when showCompletedOnly) else time-based */
+      /** Task completion %: useTimeCompletion ? timePct : count-based when showCompletedOnly else time-based */
       const pct = showCompletedOnly
-        ? e.taskPct
+        ? (useTimeCompletion ? e.timePct : e.taskPct)
         : e.time > 0
           ? Math.round(Math.min(100, (e.doneTime / e.time) * 100))
           : 0;
@@ -237,7 +353,13 @@ const ChartPieCategory = ({
         `task_manager.categories.${e.name}`
           ? t(`task_manager.categories.${e.name}`)
           : e.name;
-      const style = CATEGORY_STYLE[e.name] ?? DEFAULT_CATEGORY_STYLE;
+      /** Ключ для іконки: categoryId або name; якщо збережено переклад ("Кар'єра"), шукаємо ключ (career) по t() */
+      const rawKey = e.categoryId ?? e.name;
+      const styleKey =
+        CATEGORY_STYLE[rawKey]
+          ? rawKey
+          : CATEGORY_OPTIONS.find((k) => t(`task_manager.categories.${k}`) === rawKey) ?? rawKey;
+      const style = CATEGORY_STYLE[styleKey] ?? DEFAULT_CATEGORY_STYLE;
       return {
         name: e.name,
         label,
@@ -255,7 +377,15 @@ const ChartPieCategory = ({
   const [isCollapsed, setIsCollapsed] = useState(true);
 
   return (
-    <div className="rounded-xl border border-white/10 bg-gradient-to-b from-white to-zinc-50 dark:from-zinc-900/80 dark:to-zinc-950 text-zinc-900 dark:text-zinc-100 shadow-[0_25px_70px_rgba(0,0,0,0.35)] overflow-visible chrono-chart-plot-bg">
+    <div
+      ref={containerRef}
+      className="rounded-xl border border-white/10 bg-gradient-to-b from-white to-zinc-50 dark:from-zinc-900/80 dark:to-zinc-950 text-zinc-900 dark:text-zinc-100 shadow-[0_25px_70px_rgba(0,0,0,0.35)] overflow-visible chrono-chart-plot-bg"
+    >
+      <div
+        ref={tooltipRef}
+        className="chart-tooltip fixed z-[100] max-w-xs p-2 text-sm rounded-lg shadow-xl pointer-events-none hidden"
+        aria-hidden
+      />
       <div className="relative z-10 p-4 sm:p-5">
         <div className="grid grid-cols-1 md:grid-cols-5 gap-5 items-stretch">
           <div className="md:col-span-3 flex items-center justify-center p-6 sm:p-8">
@@ -300,7 +430,10 @@ const ChartPieCategory = ({
                         <Icon
                           className={`h-3.5 w-3.5 shrink-0 ${item.colorClass}`}
                         />
-                        <span className="text-xs font-medium text-zinc-900 dark:text-zinc-100 truncate">
+                        <span
+                          className="text-xs font-medium text-zinc-900 dark:text-zinc-100 truncate"
+                          title={item.label}
+                        >
                           {item.label}
                         </span>
                       </div>
@@ -312,7 +445,7 @@ const ChartPieCategory = ({
                       <div
                         className="h-full rounded-full transition-all duration-300 min-w-[2px]"
                         style={{
-                          width: `${item.pct}%`,
+                          width: `${Math.min(100, item.pct)}%`,
                           backgroundColor: item.color,
                         }}
                       />

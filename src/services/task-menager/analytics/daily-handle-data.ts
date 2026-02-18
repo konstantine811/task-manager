@@ -19,7 +19,14 @@ export const getDailyTaskAnalyticsData = (tasks: Items): DailyTaskAnalytics => {
     countAllTask: 0,
   };
 
-  tasks.forEach(({ title: categoryTitle, tasks: taskList }) => {
+  tasks.forEach((cat) => {
+    const categoryTitle =
+      (cat as { title?: string }).title ??
+      (cat as { name?: string }).name ??
+      (cat as { categoryName?: string }).categoryName ??
+      "";
+    const taskList = (cat as { tasks?: unknown[] }).tasks ?? [];
+    if (!categoryTitle) return;
     const categoryStats = categoryEntity[categoryTitle] ?? {
       time: 0,
       countDone: 0,
@@ -104,7 +111,15 @@ export const getRangeAnalyticsData = (
   let countTimeDone = 0;
   let countNotTimeDone = 0;
 
-  tasks.forEach(({ title: categoryTitle, tasks: taskList }) => {
+  tasks.forEach((cat) => {
+    const categoryTitle =
+      (cat as { title?: string }).title ??
+      (cat as { name?: string }).name ??
+      (cat as { categoryName?: string }).categoryName ??
+      "";
+    /** Ключ категорії для іконок: у випадаючому зберігається саме title (career, health, …), id може бути UUID */
+    const taskList = (cat as { tasks?: unknown[] }).tasks ?? [];
+    if (!categoryTitle) return;
     if (!categoryEntity[categoryTitle]) {
       categoryEntity[categoryTitle] = {
         time: 0,
@@ -124,7 +139,10 @@ export const getRangeAnalyticsData = (
           countIsNotDone: 0,
           countTime: 0,
           countDoneTime: 0,
+          categoryId: categoryTitle,
         };
+      } else if (!taskEntity[title].categoryId) {
+        taskEntity[title].categoryId = categoryTitle;
       }
       if (isDetermined || isPlanned) {
         categoryEntity[categoryTitle].time += timeDone;

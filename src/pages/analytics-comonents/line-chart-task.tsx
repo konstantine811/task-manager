@@ -1,43 +1,72 @@
-import {
-  RangeTaskAnalyticRecord,
-  ValueCurveOption,
-} from "@/types/analytics/task-analytics.model";
+import { RangeTaskAnalyticRecord } from "@/types/analytics/task-analytics.model";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as d3 from "d3";
 import { useTranslation } from "react-i18next";
 import { useThemeStore } from "@/storage/themeStore";
 import { ThemePalette, ThemeType } from "@/config/theme-colors.config";
 import ChartTitle from "../chart/chart-title";
-import SelectTypeLineChart from "./select-type-line-chart";
 
-const LineChartTask = ({ data }: { data: RangeTaskAnalyticRecord[] }) => {
+function getAllDatesInRange(from: Date, to: Date): Date[] {
+  const out: Date[] = [];
+  const curr = new Date(from);
+  curr.setHours(0, 0, 0, 0);
+  const end = new Date(to);
+  end.setHours(0, 0, 0, 0);
+  while (curr <= end) {
+    out.push(new Date(curr));
+    curr.setDate(curr.getDate() + 1);
+  }
+  return out;
+}
+
+const LineChartTask = ({
+  data,
+  rangeFrom,
+  rangeTo,
+}: {
+  data: RangeTaskAnalyticRecord[];
+  rangeFrom?: Date;
+  rangeTo?: Date;
+}) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const [t] = useTranslation();
   const selectedTheme = useThemeStore((s) => s.selectedTheme);
   const themeColors = ThemePalette[selectedTheme ?? ThemeType.DARK] ?? ThemePalette[ThemeType.DARK];
-  const [curveType, setCurveType] = useState<ValueCurveOption>(
-    ValueCurveOption.curveCardinal
-  );
-  const yAxisRef = useRef<SVGSVGElement>(null);
   const margin = { top: 20, right: 80, bottom: 50, left: 50 };
   const [dimensions, setDimensions] = useState({ width: 0, height: 400 });
-  const innerWidth = Math.max(0, dimensions.width - margin.left - margin.right);
   const innerHeight = dimensions.height - margin.top - margin.bottom;
 
-  const containerRef = useRef<HTMLDivElement>(null);
+  const chartWrapperRef = useRef<HTMLDivElement>(null);
+  const [chartWidth, setChartWidth] = useState(400);
 
-  const [chartWidth, setChartWidth] = useState(1000);
-
-  const parsedData = useMemo(
-    () =>
-      data.map((d) => ({
-        date: new Date(d.date),
-        timeDone: d.data.countTimeDone,
-        notTimeDone: d.data.countNotTimeDone,
-      })),
-    [data]
-  );
+  const parsedData = useMemo(() => {
+    const dataByDate = new Map(
+      data.map((d) => [
+        d.date,
+        { timeDone: d.data.countTimeDone, notTimeDone: d.data.countNotTimeDone },
+      ])
+    );
+    if (rangeFrom && rangeTo) {
+      const allDates = getAllDatesInRange(rangeFrom, rangeTo);
+      const toKey = (d: Date) =>
+        `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      return allDates.map((date) => {
+        const key = toKey(date);
+        const existing = dataByDate.get(key);
+        return {
+          date,
+          timeDone: existing?.timeDone ?? 0,
+          notTimeDone: existing?.notTimeDone ?? 0,
+        };
+      });
+    }
+    return data.map((d) => ({
+      date: new Date(d.date),
+      timeDone: d.data.countTimeDone,
+      notTimeDone: d.data.countNotTimeDone,
+    }));
+  }, [data, rangeFrom, rangeTo]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -54,116 +83,137 @@ const LineChartTask = ({ data }: { data: RangeTaskAnalyticRecord[] }) => {
   }, []);
 
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-    if (!yAxisRef.current) return;
+    const wrapper = chartWrapperRef.current;
+    if (!wrapper) return;
 
+    const updateSize = () => {
+      const el = chartWrapperRef.current;
+      if (!el) return;
+      const w = el.getBoundingClientRect().width;
+      if (w > 0) {
+        setChartWidth(w);
+        setDimensions({ width: w, height: 400 });
+      }
+    };
+
+    const rafId = requestAnimationFrame(updateSize);
     const resizeObserver = new ResizeObserver((entries) => {
-      const { width } = entries[0].contentRect;
-      const desiredWidth = Math.max(width, parsedData.length * 50); // 50px на точку
-      setChartWidth(desiredWidth);
-      setDimensions({ width: desiredWidth, height: 400 });
+      const entry = entries[0];
+      if (entry?.contentRect.width > 0) {
+        setChartWidth(entry.contentRect.width);
+        setDimensions({ width: entry.contentRect.width, height: 400 });
+      }
     });
+    resizeObserver.observe(wrapper);
 
-    resizeObserver.observe(container);
-    return () => resizeObserver.disconnect();
+    return () => {
+      cancelAnimationFrame(rafId);
+      resizeObserver.disconnect();
+    };
   }, [parsedData.length]);
 
-  useEffect(() => {
-    if (!yAxisRef.current) return;
-
-    const y = d3
-      .scaleLinear()
-      .domain([
-        0,
-        (d3.max(parsedData, (d) => Math.max(d.timeDone, d.notTimeDone)) ?? 0) /
-          3600,
-      ])
-      .nice()
-      .range([innerHeight, 0]);
-
-    const yAxisSvg = d3.select(yAxisRef.current);
-    yAxisSvg.selectAll("*").remove();
-
-    yAxisSvg
-      .append("g")
-      .attr("transform", `translate(${margin.left},${margin.top})`)
-      .call(d3.axisLeft(y).tickFormat((d) => `${d}${t("chart.hour")}`));
-  }, [parsedData, innerHeight, margin.left, margin.top, t]);
+  /** Діапазон дат, де є хоч якась активність (timeDone або notTimeDone > 0) — обрізаємо нулі зліва/справа */
+  const xDomainTrimmed = useMemo(() => {
+    const hasValue = (d: { timeDone: number; notTimeDone: number }) =>
+      d.timeDone > 0 || d.notTimeDone > 0;
+    const firstIdx = parsedData.findIndex(hasValue);
+    if (firstIdx < 0) {
+      return d3.extent(parsedData, (d) => d.date) as [Date, Date];
+    }
+    const revIdx = [...parsedData].reverse().findIndex(hasValue);
+    const lastIdx = revIdx < 0 ? firstIdx : parsedData.length - 1 - revIdx;
+    return [parsedData[firstIdx].date, parsedData[Math.min(lastIdx, parsedData.length - 1)].date] as [Date, Date];
+  }, [parsedData]);
 
   useEffect(() => {
     const svg = d3.select(svgRef.current);
+    if (!svgRef.current) return;
     svg.selectAll("*").remove();
-    const d3Curve = d3[curveType as keyof typeof d3] as d3.CurveFactory;
+
     const innerW = chartWidth - margin.left - margin.right;
-    const xPad = Math.min(24, innerW * 0.02);
     const x = d3
       .scaleTime()
-      .domain(d3.extent(parsedData, (d) => d.date) as [Date, Date])
-      .range([xPad, innerW - xPad]);
+      .domain(xDomainTrimmed)
+      .range([0, innerW]);
 
+    /** Тільки точки в обрізаному діапазоні — лінії не виходять за межі */
+    const chartData = parsedData.filter(
+      (d) => d.date >= xDomainTrimmed[0] && d.date <= xDomainTrimmed[1]
+    );
+
+    const maxHoursChart =
+      (d3.max(chartData, (d) => Math.max(d.timeDone, d.notTimeDone)) ?? 0) /
+      3600;
     const y = d3
       .scaleLinear()
-      .domain([
-        0,
-        (d3.max(parsedData, (d) => Math.max(d.timeDone, d.notTimeDone)) ?? 0) /
-          3600,
-      ])
+      .domain([0, Math.max(1, maxHoursChart)])
       .nice()
       .range([innerHeight, 0]);
 
-    const g = svg
-      .append("g")
-      .attr("transform", `translate(${margin.left},${margin.top})`);
+    // Монотонна плавна лінія
+    const lineCurve = d3.curveMonotoneX;
 
     const lineGreen = d3
       .line<{ date: Date; timeDone: number }>()
       .x((d) => x(d.date))
       .y((d) => y(d.timeDone / 3600))
-      .curve(d3Curve);
+      .curve(lineCurve);
 
     const lineRed = d3
       .line<{ date: Date; notTimeDone: number }>()
       .x((d) => x(d.date))
       .y((d) => y(d.notTimeDone / 3600))
-      .curve(d3Curve);
+      .curve(lineCurve);
 
-    g.append("g")
+    // Вісь Y
+    svg
+      .append("g")
+      .attr("class", "line-chart-y-axis")
+      .attr("transform", `translate(${margin.left},${margin.top})`)
+      .call(d3.axisLeft(y).tickFormat((d) => `${d}${t("chart.hour")}`));
+
+    // Група графіка (без zoom)
+    const chartGroup = svg
+      .append("g")
+      .attr("class", "line-chart-main")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    chartGroup
+      .append("g")
       .attr("transform", `translate(0,${innerHeight})`)
-      .call(
-        d3
-          .axisBottom(x)
-          .tickValues(
-            parsedData
-              .map((d) => d.date)
-              .filter((_, i, arr) => i % Math.ceil(arr.length / 6) === 0)
-          )
-          .tickFormat((d: Date | d3.NumberValue) =>
-            d3.timeFormat("%d-%m-%Y")(d as Date)
-          )
-      )
-      .selectAll("text")
-      .attr("transform", "rotate(-45)")
-      .style("text-anchor", "end");
+      .append("line")
+      .attr("x1", 0)
+      .attr("x2", innerW)
+      .attr("y1", 0)
+      .attr("y2", 0)
+      .attr("stroke", "currentColor")
+      .attr("stroke-width", 1)
+      .attr("class", "line-chart-x-axis-line");
 
-    g.append("path")
-      .datum(parsedData)
+    chartGroup
+      .append("path")
+      .attr("class", "line-path-green")
+      .datum(chartData)
       .attr("fill", "none")
       .attr("stroke", themeColors.accent)
       .attr("stroke-dasharray", "10,5")
       .attr("stroke-width", 2)
       .attr("d", lineGreen);
 
-    g.append("path")
-      .datum(parsedData)
+    chartGroup
+      .append("path")
+      .attr("class", "line-path-red")
+      .datum(chartData)
       .attr("fill", "none")
-      .attr("stroke", themeColors.destructive)
-      .attr("stroke-width", 2)
+      .attr("stroke", themeColors["muted-foreground"])
+      .attr("stroke-dasharray", "5,5")
+      .attr("stroke-width", 1.5)
+      .attr("opacity", 0.7)
       .attr("d", lineRed);
 
-    // dots
-    g.selectAll(".dot-green")
-      .data(parsedData)
+    chartGroup
+      .selectAll(".dot-green")
+      .data(chartData)
       .enter()
       .append("circle")
       .attr("class", "dot-green")
@@ -174,58 +224,21 @@ const LineChartTask = ({ data }: { data: RangeTaskAnalyticRecord[] }) => {
       .attr("stroke", "white")
       .attr("stroke-width", 1);
 
-    g.selectAll(".dot-red")
-      .data(parsedData)
+    chartGroup
+      .selectAll(".dot-red")
+      .data(chartData)
       .enter()
       .append("circle")
       .attr("class", "dot-red")
       .attr("cx", (d) => x(d.date))
       .attr("cy", (d) => y(d.notTimeDone / 3600))
       .attr("r", 2)
-      .attr("fill", themeColors.destructive)
-      .attr("stroke", "white")
-      .attr("stroke-width", 1);
+      .attr("fill", themeColors["muted-foreground"])
+      .attr("stroke", themeColors.background)
+      .attr("stroke-width", 1)
+      .attr("opacity", 0.7);
 
-    // === Legend ===
-    const legend = svg
-      .append("g")
-      .attr("transform", `translate(${margin.left + 20},${margin.top})`);
-
-    legend
-      .append("line")
-      .attr("x1", 0)
-      .attr("y1", 0)
-      .attr("x2", 20)
-      .attr("y2", 0)
-      .attr("stroke", themeColors.accent)
-      .attr("stroke-width", 2);
-
-    legend
-      .append("text")
-      .attr("x", 30)
-      .attr("y", 5)
-      .attr("fill", themeColors.foreground)
-      .text(t("chart.done_tasks")); // наприклад: "Зроблені"
-
-    legend
-      .append("line")
-      .attr("x1", 0)
-      .attr("y1", 20)
-      .attr("x2", 20)
-      .attr("y2", 20)
-      .attr("stroke", themeColors.destructive)
-      .attr("stroke-width", 2);
-
-    legend
-      .append("text")
-      .attr("x", 30)
-      .attr("y", 25)
-      .attr("fill", themeColors.foreground)
-      .text(t("chart.undone_tasks")); // наприклад: "Незроблені"
-
-    // === Hover interactivity ===
-    const focus = g.append("g").style("display", "none");
-
+    const focus = chartGroup.append("g").style("display", "none");
     focus
       .append("line")
       .attr("class", "hover-line")
@@ -234,21 +247,61 @@ const LineChartTask = ({ data }: { data: RangeTaskAnalyticRecord[] }) => {
       .attr("y1", 0)
       .attr("y2", innerHeight);
 
-    svg
+    // Легенда
+    const legend = chartGroup.append("g").attr("transform", "translate(20, 0)");
+    legend
+      .append("line")
+      .attr("x1", 0)
+      .attr("y1", 0)
+      .attr("x2", 20)
+      .attr("y2", 0)
+      .attr("stroke", themeColors.accent)
+      .attr("stroke-width", 2);
+    legend
+      .append("text")
+      .attr("x", 30)
+      .attr("y", 5)
+      .attr("fill", themeColors.foreground)
+      .text(t("chart.done_tasks"));
+    legend
+      .append("line")
+      .attr("x1", 0)
+      .attr("y1", 20)
+      .attr("x2", 20)
+      .attr("y2", 20)
+      .attr("stroke", themeColors["muted-foreground"])
+      .attr("stroke-dasharray", "5,5")
+      .attr("stroke-width", 1.5)
+      .attr("opacity", 0.7);
+    legend
+      .append("text")
+      .attr("x", 30)
+      .attr("y", 25)
+      .attr("fill", themeColors.foreground)
+      .text(t("chart.undone_tasks"));
+
+    // Прозорий rect для hover
+    chartGroup
       .append("rect")
-      .attr("transform", `translate(${margin.left},${margin.top})`)
-      .attr("width", innerWidth)
-      .attr("height", innerHeight)
-      .style("fill", "none")
+      .attr("class", "line-chart-hover-layer")
+      .attr("width", Math.max(innerW, 1))
+      .attr("height", Math.max(innerHeight, 1))
+      .style("fill", "rgba(0,0,0,0.001)")
       .style("pointer-events", "all")
+      .style("cursor", "crosshair")
       .on("mouseover", () => focus.style("display", null))
       .on("mouseout", () => {
         focus.style("display", "none");
         if (tooltipRef.current) tooltipRef.current.style.display = "none";
       })
       .on("mousemove", function (event) {
-        const [mouseX] = d3.pointer(event, this);
-        const mouseDate = x.invert(mouseX);
+        const svgEl = svgRef.current;
+        if (!svgEl) return;
+        const svgRect = svgEl.getBoundingClientRect();
+        const localX = event.clientX - svgRect.left - margin.left;
+        const dataX = Math.max(0, Math.min(innerW, localX));
+        const mouseDate = x.invert(dataX);
+
         const bisect = d3.bisector((d: (typeof parsedData)[0]) => d.date).left;
         const idx = bisect(parsedData, mouseDate, 1);
         const d0 = parsedData[idx - 1];
@@ -261,10 +314,7 @@ const LineChartTask = ({ data }: { data: RangeTaskAnalyticRecord[] }) => {
           ? d1
           : d0;
 
-        const xPos = x(d?.date);
-
-        // Move the line inside the SVG
-        focus.select("line").attr("transform", `translate(${xPos},0)`);
+        focus.select("line").attr("transform", `translate(${x(d.date)}, 0)`);
 
         const tooltip = tooltipRef.current;
         if (tooltip) {
@@ -275,12 +325,9 @@ const LineChartTask = ({ data }: { data: RangeTaskAnalyticRecord[] }) => {
             <div>❌ ${Math.round(d.notTimeDone / 3600)} ${t("chart.hour")}</div>
           `;
 
-          const svgRect = svgRef.current?.getBoundingClientRect();
-          if (!svgRect) return;
-          const left = svgRect.left + margin.left + xPos;
+          const left = event.clientX;
           const top = svgRect.top + margin.top;
           const tooltipWidth = tooltip.offsetWidth;
-
           const showRight = left + tooltipWidth + 20 < window.innerWidth;
           tooltip.style.position = "fixed";
           tooltip.style.top = `${top}px`;
@@ -289,62 +336,54 @@ const LineChartTask = ({ data }: { data: RangeTaskAnalyticRecord[] }) => {
             : `${left - tooltipWidth - 10}px`;
         }
       });
+
+    // Вісь X (статична)
+    svg
+      .append("g")
+      .attr("class", "line-chart-x-axis")
+      .attr("transform", `translate(${margin.left},${margin.top + innerHeight})`)
+      .call(
+        d3
+          .axisBottom(x)
+          .tickValues(x.ticks(6))
+          .tickFormat((d: Date | d3.NumberValue) =>
+            d3.timeFormat("%d-%m-%Y")(d as Date)
+          )
+      )
+      .selectAll("text")
+      .attr("transform", "rotate(-45)")
+      .style("text-anchor", "end");
   }, [
     parsedData,
+    xDomainTrimmed,
     innerHeight,
     margin.left,
     margin.top,
     margin.right,
-    innerWidth,
     t,
     selectedTheme,
-    curveType,
     chartWidth,
   ]);
 
   return (
-    <>
-      <div ref={containerRef} style={{ width: "100%" }}>
-        <div className="flex flex-wrap gap-2 justify-center items-center">
-          <ChartTitle title="chart.range_count_task_title" />
-          <SelectTypeLineChart value={curveType} onChange={setCurveType} />
-        </div>
-        <div
-          ref={containerRef}
-          style={{ display: "flex", width: "100%", overflowX: "hidden" }}
-        >
-          {/* Вісь Y */}
-          <svg
-            width={margin.left}
-            height={dimensions.height - margin.bottom + 3}
-            ref={yAxisRef}
-            className="pointer-events-none absolute bg-background/50 backdrop-blur-sm"
-          />
-
-          {/* Прокручуваний графік */}
-          <div
-            style={{
-              overflowX: "auto",
-              width: "100%",
-            }}
-          >
-            <div style={{ width: chartWidth - margin.left }}>
-              <svg
-                ref={svgRef}
-                width={chartWidth - margin.left}
-                height={dimensions.height}
-              />
-            </div>
-          </div>
-
-          {/* Tooltip */}
-          <div
-            ref={tooltipRef}
-            className="chart-tooltip fixed hidden rounded-md p-2 pointer-events-none shadow-xl z-50 text-sm transition-all backdrop-blur-sm"
-          />
-        </div>
+    <div ref={chartWrapperRef} className="w-full" style={{ minWidth: 0 }}>
+      <div className="flex flex-wrap gap-2 justify-center items-center mb-2 relative z-10 pointer-events-auto">
+        <ChartTitle title="chart.range_count_task_title" />
       </div>
-    </>
+      <div className="w-full overflow-auto">
+        <svg
+          ref={svgRef}
+          width={Math.max(chartWidth, 1)}
+          height={dimensions.height}
+          style={{ display: "block", overflow: "visible" }}
+        />
+      </div>
+
+      <div
+        ref={tooltipRef}
+        className="chart-tooltip fixed hidden rounded-md p-2 pointer-events-none shadow-xl z-50 text-sm transition-all backdrop-blur-sm"
+      />
+    </div>
   );
 };
 

@@ -49,6 +49,7 @@ import useCategoryHandle from "./hooks/useCategoryHandle";
 import DialogAgree from "../ui-abc/dialog/dialog-agree";
 import { mergeOrAddTask } from "./utils/merge-task-by-title";
 import { AddTasksWithAIDialog } from "@/components/ai/add-tasks-with-ai-dialog";
+import { AnimatedItem } from "@/components/ui/animated-item";
 import { AnimatePresence, motion } from "framer-motion";
 import { SUGGESTED_TASK_PREFIX } from "./config/dnd.config";
 import { TaskItem } from "./task-item";
@@ -443,9 +444,10 @@ export function MultipleContainers({
                 : horizontalListSortingStrategy
             }
           >
-            {items.map((category) => (
+            {items.map((category, catIdx) => (
+              <AnimatedItem key={category.id} index={catIdx}>
               <DroppableContainer
-                key={category.id}
+                id={category.id}
                 id={category.id}
                 templated={templated}
                 label={minimal ? undefined : category.title}
@@ -548,6 +550,7 @@ export function MultipleContainers({
                   )}
                 </SortableContext>
               </DroppableContainer>
+              </AnimatedItem>
             ))}
 
             {!minimal && (
@@ -588,9 +591,11 @@ export function MultipleContainers({
             )}
           </div>
           {sidePanel && (
-            <div className="min-w-0 overflow-auto pt-5">
-              {sidePanel}
-            </div>
+            <AnimatedItem index={items.length}>
+              <div className="min-w-0 overflow-auto pt-5">
+                {sidePanel}
+              </div>
+            </AnimatedItem>
           )}
         </div>
         {createPortal(

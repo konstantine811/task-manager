@@ -19,6 +19,7 @@ import { QuickStartOnboarding } from "@/components/ai/quick-start-onboarding";
 import { GoalsPanel } from "@/components/goals/goals-panel";
 import { useIsAdoptive } from "@/hooks/useIsAdoptive";
 import CustomDrawer from "@/components/ui-abc/drawer/custom-drawer";
+import { AnimatedItem } from "@/components/ui/animated-item";
 
 const TemplateTask = () => {
   const outletContext = useOutletContext<TaskManagerOutletContext>();
@@ -56,20 +57,21 @@ const TemplateTask = () => {
       style={{ minHeight: `calc(100vh - ${hS}px)` }}
     >
       {/* Заголовок — по центру з glass effect */}
-      <h2
-        className={`flex justify-center mb-4 mt-2 ${!mdSize ? "col-span-3" : ""}`}
-      >
-        <span className="inline-block text-center text-sm font-medium py-3 px-6 rounded-xl bg-zinc-200/80 dark:bg-white/5 backdrop-blur-md text-zinc-800 dark:text-zinc-200 shadow-[0_0_20px_rgba(0,0,0,0.04)] dark:shadow-[0_0_20px_rgba(255,255,255,0.06)]">
-          {t("task_manager.template_daily_task_title")}
-        </span>
-      </h2>
+      <AnimatedItem index={0} className={!mdSize ? "col-span-3" : ""}>
+        <h2 className="flex justify-center mb-4 mt-2">
+          <span className="inline-block text-center text-sm font-medium py-3 px-6 rounded-xl bg-zinc-200/80 dark:bg-white/5 backdrop-blur-md text-zinc-800 dark:text-zinc-200 shadow-[0_0_20px_rgba(0,0,0,0.04)] dark:shadow-[0_0_20px_rgba(255,255,255,0.06)]">
+            {t("task_manager.template_daily_task_title")}
+          </span>
+        </h2>
+      </AnimatedItem>
 
       {/* Колонка 1 — графіки */}
-      <div className="min-w-0 hidden lg:block overflow-auto">
+      <AnimatedItem index={1} className="min-w-0 hidden lg:block overflow-auto">
         <TemplateChartsPanel templateTasks={templatedTask} />
-      </div>
+      </AnimatedItem>
 
       {/* Колонки 2+3 — Quick Start/задачі та AI (рівно по 1/3) */}
+      <AnimatedItem index={2} className="flex min-w-0 flex-1 lg:col-span-2 overflow-auto">
       <main
         className={`flex min-w-0 flex-1 lg:col-span-2 overflow-auto ${outletContext.className}`}
         style={{ minHeight: 0 }}
@@ -132,6 +134,7 @@ const TemplateTask = () => {
           <Preloader />
         )}
       </main>
+      </AnimatedItem>
 
       {/* Права колонка — AI у drawer на мобільному */}
       {mdSize && (

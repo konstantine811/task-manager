@@ -449,6 +449,8 @@ export const CalendarDatePicker = React.forwardRef<
                   {...props}
                   className={cn(
                     "w-auto",
+                    "dark:border-white/10 dark:hover:bg-white/5",
+                    variant === "outline" && "border-white/10 dark:!border-white/10",
                     multiSelectVariants({ variant, className })
                   )}
                   onClick={handleTogglePopover}
@@ -500,7 +502,12 @@ export const CalendarDatePicker = React.forwardRef<
           </PopoverTrigger>
           {isPopoverOpen && (
             <PopoverContent
-              className="calendar-date-picker-popover w-auto bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-white/10 shadow-xl dark:shadow-black/50 z-[100]"
+              className={cn(
+                "calendar-date-picker-popover w-auto rounded-lg",
+                "bg-white dark:bg-zinc-950 border border-border dark:border-white/10",
+                "shadow-xl dark:shadow-black/50 z-[100]",
+                "[&_[data-slot=select-trigger]]:border-white/10 [&_[data-slot=select-trigger]]:dark:!border-white/10 [&_[data-slot=select-trigger]]:bg-transparent [&_[data-slot=select-trigger]]:dark:bg-white/5"
+              )}
               side="bottom" // відкриваємо під тригером
               align="end" // вирівнювання по правому краю
               sideOffset={8} // відступ 8px від кнопки
@@ -515,7 +522,7 @@ export const CalendarDatePicker = React.forwardRef<
             >
               <div className="flex flex-col md:flex-row">
                 {numberOfMonths === 2 && (
-                  <div className="flex flex-col gap-1 pr-4 text-left border-r border-foreground/10">
+                  <div className="flex flex-col gap-1 pr-4 text-left border-r border-border dark:border-white/10">
                     {dateRanges.map(({ label, start, end }) => (
                       <Button
                         key={label}
@@ -635,15 +642,15 @@ export const CalendarDatePicker = React.forwardRef<
                       onSelect={handleDateSelect}
                       numberOfMonths={numberOfMonths}
                       showOutsideDays={false}
-                      className={className}
+                      className={cn("calendar-date-picker-cal [&_button]:border [&_button]:!border-white/10", className)}
                       modifiersClassNames={{
                         selected:
-                          "!bg-accent !text-foreground border border-background",
+                          "!bg-accent !text-foreground !border-white/20",
                         today:
-                          "bg-background shadow-md shadow-accent border border-accent",
+                          "bg-background/80 dark:bg-white/10 shadow-none border-white/20",
                         active: "bg-foreground/20 text-foreground",
                         hasTasks:
-                          "after:block after:absolute after:-bottom-1 after:w-1 after:h-1 after:bg-foreground after:rounded-full", // 👈 стилізуємо це окремо
+                          "after:block after:absolute after:-bottom-1 after:w-1 after:h-1 after:bg-foreground after:rounded-full",
                       }}
                     />
                   </div>

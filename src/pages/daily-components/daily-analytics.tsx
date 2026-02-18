@@ -40,6 +40,7 @@ const DailyAnalytics = () => {
         className="pb-8 md:py-8"
         data={categoryEntity}
         showCompletedOnly
+        useTimeCompletion
       />
     </div>
   );

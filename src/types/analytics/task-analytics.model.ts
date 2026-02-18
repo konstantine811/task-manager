@@ -62,6 +62,8 @@ export interface RangeTaskAnalyticsData {
   countIsNotDone: number;
   countTime: number;
   countDoneTime: number;
+  /** Категорія задачі для іконки в аналітиці (ключ з CATEGORY_STYLE) */
+  categoryId?: string;
 }
 
 export interface DailyAnalyticsData {
@@ -86,6 +88,8 @@ export interface CategoryAnalyticsData {
   countDoneTime: number;
   taskDone: string[];
   taskNoDone: string[];
+  /** Для задач: категорія для іконки (ключ з CATEGORY_STYLE) */
+  categoryId?: string;
 }
 
 export type TaskAnalyticsBarOrientation = "vertical" | "horizontal";

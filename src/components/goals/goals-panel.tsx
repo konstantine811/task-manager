@@ -1,5 +1,6 @@
 import { Flag, Calendar, Route, Plus, Pencil, Target, Trash2, Circle } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { AnimatedItem } from "@/components/ui/animated-item";
 import type { UniqueIdentifier } from "@dnd-kit/core";
 import type { Goal } from "@/types/goal.model";
 import type { Items, ItemTask } from "@/types/drag-and-drop.model";
@@ -134,14 +135,14 @@ export function GoalsPanel({ templateTasks = [] }: { templateTasks?: Items }) {
           <div className="mt-4 space-y-4">
             {goals
               .filter((g) => g.status === "active")
-              .map((goal) => {
+              .map((goal, idx) => {
                 const target = getGoalTarget(goal);
                 const progress = goal.progress ?? 0;
                 const pct = target > 0 ? Math.round((progress / target) * 100) : 0;
                 const progressColor = PROGRESS_COLORS[goal.id] ?? "bg-indigo-500/80";
                 return (
+                  <AnimatedItem key={goal.id} index={idx}>
                   <div
-                    key={goal.id}
                     className="rounded-lg border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-black/20 p-3"
                   >
                     <div className="flex items-start justify-between gap-3">
@@ -455,6 +456,7 @@ export function GoalsPanel({ templateTasks = [] }: { templateTasks?: Items }) {
                       </div>
                     </div>
                   </div>
+                  </AnimatedItem>
                 );
               })}
           </div>

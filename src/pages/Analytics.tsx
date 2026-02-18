@@ -1,5 +1,5 @@
 import { useHeaderSizeStore } from "@/storage/headerSizeStore";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { loadDailyTasksByRange } from "@/services/firebase/taskManagerData";
 import { CalendarDatePicker } from "./analytics-comonents/calendar-date-picker";
 
@@ -7,17 +7,17 @@ import AnalyticsWorker from "@/workers/analyticsWorker?worker";
 import { DailyTaskRecord } from "@/types/drag-and-drop.model";
 import {
   AnalyticsData,
-  ItemTimeMap,
-  ItemTimeMapKeys,
+  CategoryAnalyticsNameEntity,
 } from "@/types/analytics/task-analytics.model";
 import LineChartTask from "./analytics-comonents/line-chart-task";
 import { useTranslation } from "react-i18next";
 import ChartPieCategoryWrap from "./daily-components/analytics-chart/chart-pie-category/chart-pie-category-wrap";
-import ChartTitle from "./chart/chart-title";
-import ChartPieItem from "./template-components/chart-pie-item";
+import ChartPieTaskPlannedWrap from "./analytics-comonents/chart-pie-task-planned-wrap";
 import RangeAnalyticsTable from "./analytics-comonents/range-analytics-table";
 import TaskDateRangeHeader from "./analytics-comonents/task-data-range-header";
 import AnalyticsCompletedGoals from "./analytics-comonents/analytics-completed-goals";
+import { AnimatedItem } from "@/components/ui/animated-item";
+import { CATEGORY_OPTIONS } from "@/components/dnd/config/category-options";
 
 const Analytics = () => {
   const hS = useHeaderSizeStore((s) => s.size);
@@ -28,7 +28,6 @@ const Analytics = () => {
   });
   const [rangeTasks, setRangeTasks] = useState<DailyTaskRecord[]>([]);
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData>();
-  const [categoryTotalEntity, setCategoryTotalEntity] = useState<ItemTimeMap>({});
   useEffect(() => {
     loadDailyTasksByRange(range.from, range.to).then((rangeTasks) => {
       setRangeTasks(rangeTasks);
@@ -39,25 +38,33 @@ const Analytics = () => {
     const worker = new AnalyticsWorker();
     worker.postMessage(rangeTasks);
     worker.onmessage = (e: MessageEvent) => {
-      const analyticsData = e.data as AnalyticsData;
-      if (analyticsData.categoryEntity) {
-        const totalByCategory: ItemTimeMap = {};
-        Object.entries(analyticsData.categoryEntity).forEach(([key, value]) => {
-          if (value.time > 0) {
-            totalByCategory[key] = value.time;
-          }
-        });
-        setCategoryTotalEntity(totalByCategory);
-      }
-      setAnalyticsData(analyticsData);
+      setAnalyticsData(e.data as AnalyticsData);
     };
     return () => {
       worker.terminate();
     };
   }, [rangeTasks]);
+
+  const mergedCategoryEntity = useMemo(() => {
+    if (!analyticsData) return undefined;
+    const empty = {
+      time: 0,
+      countDone: 0,
+      countDoneTime: 0,
+      taskDone: [] as string[],
+      taskNoDone: [] as string[],
+    };
+    const merged: CategoryAnalyticsNameEntity = {};
+    for (const key of CATEGORY_OPTIONS) {
+      merged[key] = analyticsData.categoryEntity[key] ?? { ...empty };
+    }
+    return merged;
+  }, [analyticsData]);
+
   return (
     <div className="w-full" style={{ minHeight: `calc(100vh - ${hS}px)` }}>
-      <header className=" border-b border-border py-2">
+      <header className="border-b border-white/10 py-2">
+        <AnimatedItem index={0}>
         <div className="container mx-auto flex items-center justify-end">
           <CalendarDatePicker
             date={range}
@@ -67,6 +74,7 @@ const Analytics = () => {
             variant="outline"
           />
         </div>
+        </AnimatedItem>
       </header>
       <main className={`w-full flex-1 px-4`}>
         {/* <h2 className="text-center text-foreground/50 text-sm mb-4 mt-2">
@@ -75,32 +83,41 @@ const Analytics = () => {
         <div className="container mx-auto pt-10 pb-20">
           {analyticsData ? (
             <>
-              <TaskDateRangeHeader tasks={analyticsData.rangeTasks} />
-              <LineChartTask data={analyticsData.rangeTasks} />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start pt-10">
-                <ChartPieCategoryWrap
-                  className="w-full"
-                  data={analyticsData.categoryEntity}
-                  showCompletedOnly
+              <AnimatedItem index={0}>
+                <TaskDateRangeHeader tasks={analyticsData.rangeTasks} />
+              </AnimatedItem>
+              <AnimatedItem index={1} className="w-full min-w-0">
+                <LineChartTask
+                  data={analyticsData.rangeTasks}
+                  rangeFrom={range.from}
+                  rangeTo={range.to}
                 />
-                <div className="w-full flex flex-col items-center max-w-2xl mx-auto md:max-w-none md:mr-0">
-                  <ChartTitle
-                    title="chart.period_count_category_title"
-                    subtitle="chart.pie_category_total_subtitle"
+              </AnimatedItem>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start pt-10">
+                <AnimatedItem index={2}>
+                  <ChartPieCategoryWrap
+                    className="w-full"
+                    data={mergedCategoryEntity ?? analyticsData.categoryEntity}
+                    showCompletedOnly
+                    useTimeCompletion
+                    includeAllCategories
                   />
-                  <div className="w-full mt-4">
-                    <ChartPieItem
-                      data={categoryTotalEntity}
-                      type={ItemTimeMapKeys.category}
-                      height={320}
-                    />
-                  </div>
+                </AnimatedItem>
+                <AnimatedItem index={3}>
+                  <ChartPieTaskPlannedWrap
+                    className="w-full"
+                    data={analyticsData.rangeTaskEntity}
+                  />
+                </AnimatedItem>
+              </div>
+              <AnimatedItem index={4}>
+                <AnalyticsCompletedGoals rangeFrom={range.from} rangeTo={range.to} />
+              </AnimatedItem>
+              <AnimatedItem index={5}>
+                <div className="mt-10">
+                  <RangeAnalyticsTable data={analyticsData.rangeTaskEntity} />
                 </div>
-              </div>
-              <AnalyticsCompletedGoals rangeFrom={range.from} rangeTo={range.to} />
-              <div className="mt-10">
-                <RangeAnalyticsTable data={analyticsData.rangeTaskEntity} />
-              </div>
+              </AnimatedItem>
             </>
           ) : (
             t("not_data")

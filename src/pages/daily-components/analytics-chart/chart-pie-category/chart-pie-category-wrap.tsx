@@ -7,10 +7,15 @@ const ChartPieCateogoryWrap = ({
   data,
   className,
   showCompletedOnly = false,
+  useTimeCompletion = false,
+  includeAllCategories = false,
 }: {
   data: CategoryAnalyticsNameEntity;
   className?: string;
   showCompletedOnly?: boolean;
+  useTimeCompletion?: boolean;
+  /** When true, show all categories including those with 0 tasks (like line chart with all days) */
+  includeAllCategories?: boolean;
 }) => {
   return (
     <>
@@ -23,10 +28,19 @@ const ChartPieCateogoryWrap = ({
           <ChartTitle
             title="chart.pie_category_daily_time"
             subtitle={
-              showCompletedOnly ? "chart.pie_category_completed_subtitle" : undefined
+              showCompletedOnly
+                ? useTimeCompletion
+                  ? "chart.pie_category_planned_completed_subtitle"
+                  : "chart.pie_category_completed_subtitle"
+                : undefined
             }
           />
-          <ChartPieCategory data={data} showCompletedOnly={showCompletedOnly} />
+          <ChartPieCategory
+            data={data}
+            showCompletedOnly={showCompletedOnly}
+            useTimeCompletion={useTimeCompletion}
+            includeAllCategories={includeAllCategories}
+          />
         </div>
       )}
     </>

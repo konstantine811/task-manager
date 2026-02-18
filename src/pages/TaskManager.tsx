@@ -8,6 +8,7 @@ import { ChronoNav } from "@/components/landing";
 import { LayoutDashboard, ChartSpline } from "lucide-react";
 import { ROUTES } from "@/config/routes";
 import { cn } from "@/lib/utils";
+import { motion } from "motion/react";
 
 const NAVBAR_HEIGHT = 56;
 
@@ -50,7 +51,15 @@ const TaskManager = () => {
     <div style={{ paddingTop: NAVBAR_HEIGHT }} className="min-h-screen chrono-page-bg text-foreground relative">
       <ChronoNav variant="app" />
       <div className="relative z-10">
-        <Outlet context={outletConext} />
+        <motion.div
+          key={pathname}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, ease: [0.22, 0.61, 0.36, 1] }}
+          className="w-full"
+        >
+          <Outlet context={outletConext} />
+        </motion.div>
       </div>
       <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-20">
         <div className="flex items-center gap-1 p-1.5 rounded-full border border-zinc-300/80 dark:border-white/10 bg-white/80 dark:bg-[rgba(10,10,12,0.6)] backdrop-blur-xl shadow-lg">
