@@ -33,68 +33,8 @@ import {
   filterTasksByAnotherTasks,
 } from "@/services/task-menager/filter-tasks";
 import { normalizeItems } from "@/services/task-menager/normalize";
+import { getGoalLinksFromTemplate, resolveGoalLinksForTaskDone, resolveGoalLinksForTaskUndone } from "@/services/task-menager/task-goal-links-resolver";
 import { useGoalsStore } from "@/storage/goalsStore";
-import type { TaskGoalLink } from "@/types/drag-and-drop.model";
-import type { UniqueIdentifier } from "@dnd-kit/core";
-
-function normalizeTitle(s: string): string {
-  return s.trim().toLowerCase();
-}
-
-function getGoalLinksFromTemplate(
-  taskId: UniqueIdentifier,
-  taskTitle: string,
-  templateItems: Items
-): TaskGoalLink[] | undefined {
-  for (const cat of templateItems) {
-    const byId = cat.tasks.find((x) => x.id === taskId);
-    if (byId?.goalLinks?.length) return byId.goalLinks;
-  }
-  const titleNorm = normalizeTitle(taskTitle);
-  for (const cat of templateItems) {
-    const byTitle = cat.tasks.find((x) => normalizeTitle(x.title) === titleNorm);
-    if (byTitle?.goalLinks?.length) return byTitle.goalLinks;
-  }
-  return undefined;
-}
-
-/** Fallback: find goalLinks by scanning template for any task with same title (for active goals) */
-function getGoalLinksFromGoalsFallback(
-  taskTitle: string,
-  templateItems: Items,
-  goals: { id: UniqueIdentifier; status: string; metric?: { type: string; target?: number }; title?: string }[]
-): TaskGoalLink[] | undefined {
-  const titleNorm = normalizeTitle(taskTitle);
-  const activeGoalIds = new Set(goals.filter((g) => g.status === "active").map((g) => String(g.id)));
-  for (const cat of templateItems) {
-    for (const t of cat.tasks) {
-      if (normalizeTitle(t.title) !== titleNorm || !t.goalLinks?.length) continue;
-      const filtered = t.goalLinks.filter((l) => activeGoalIds.has(String(l.goalId)));
-      if (filtered.length > 0) return filtered;
-    }
-  }
-  return undefined;
-}
-
-/** Semantic fallback: goals "do X once" — goal title contains task title, metric count target 1 */
-function getSemanticGoalLinks(
-  taskTitle: string,
-  goals: { id: UniqueIdentifier; status: string; metric?: { type: string; target?: number }; title?: string }[]
-): TaskGoalLink[] {
-  const titleNorm = normalizeTitle(taskTitle);
-  if (!titleNorm || titleNorm.length < 2) return [];
-  const result: TaskGoalLink[] = [];
-  for (const g of goals) {
-    if (g.status !== "active") continue;
-    const metric = g.metric as { type?: string; target?: number } | undefined;
-    if (metric?.type !== "count" || metric?.target !== 1) continue;
-    const goalTitleNorm = normalizeTitle(g.title ?? "");
-    if (goalTitleNorm.includes(titleNorm) || titleNorm.includes(goalTitleNorm)) {
-      result.push({ goalId: g.id, impact: { type: "count", value: 1 } });
-    }
-  }
-  return result;
-}
 
 const DailyTaskWrapper = () => {
   const [dailyTasks, setDailyTasks] = useState<Items>([]);
@@ -152,9 +92,12 @@ const DailyTaskWrapper = () => {
         }
       }
       if (tasks && tasks.length) {
-        setDailyTasks(enrichWithGoalLinks(tasks));
+        const enriched = enrichWithGoalLinks(tasks);
+        setDailyTasks(enriched);
+        lastEnrichedRef.current = enriched;
       } else {
         setDailyTasks([]);
+        lastEnrichedRef.current = null;
       }
       setIsLoaded(true);
     });
@@ -290,46 +233,22 @@ const DailyTaskWrapper = () => {
                     ? (task) => {
                         const key = `done-${task.id}-${date}`;
                         if (lastDoneKeyRef.current === key) return;
-                        lastDoneKeyRef.current = key;
-                        let goalLinks = task.goalLinks ?? getGoalLinksFromTemplate(task.id, task.title, templatedTasks);
-                        if (!goalLinks?.length && lastEnrichedRef.current) {
-                          for (const cat of lastEnrichedRef.current) {
-                            let t = cat.tasks.find((x) => x.id === task.id);
-                            if (!t) {
-                              t = cat.tasks.find(
-                                (x) => normalizeTitle(x.title) === normalizeTitle(task.title)
-                              );
-                            }
-                            if (t?.goalLinks?.length) {
-                              goalLinks = t.goalLinks;
-                              break;
-                            }
-                          }
-                        }
-                        if (!goalLinks?.length && templatedTasks.length > 0) {
-                          goalLinks = getGoalLinksFromGoalsFallback(task.title, templatedTasks, goals);
-                        }
-                        const semanticLinks = getSemanticGoalLinks(task.title, goals);
-                        if (semanticLinks.length) {
-                          const seen = new Set((goalLinks ?? []).map((l) => String(l.goalId)));
-                          for (const l of semanticLinks) {
-                            if (!seen.has(String(l.goalId))) {
-                              seen.add(String(l.goalId));
-                              goalLinks = [...(goalLinks ?? []), l];
-                            }
-                          }
-                        }
-                        const validLinks = goalLinks?.filter((l) => {
-                          const g = goals.find((x) => String(x.id) === String(l.goalId));
-                          return g && g.status === "active";
+
+                        const validLinks = resolveGoalLinksForTaskDone({
+                          task,
+                          templateItems: templatedTasks,
+                          goals,
+                          lastEnrichedItems: lastEnrichedRef.current,
                         });
-                        if (validLinks?.length)
+                        if (validLinks?.length) {
+                          lastDoneKeyRef.current = key;
                           applyTaskDone(task.id, date, {
                             title: task.title,
                             time: task.time,
                             timeDone: task.timeDone ?? task.time,
                             goalLinks: validLinks,
                           });
+                        }
                       }
                     : undefined
                 }
@@ -337,43 +256,11 @@ const DailyTaskWrapper = () => {
                   date
                     ? (task) => {
                         lastDoneKeyRef.current = "";
-                        let goalLinks =
-                          task.goalLinks ??
-                          getGoalLinksFromTemplate(task.id, task.title, templatedTasks);
-                        if (!goalLinks?.length && lastEnrichedRef.current) {
-                          for (const cat of lastEnrichedRef.current) {
-                            let t = cat.tasks.find((x) => x.id === task.id);
-                            if (!t) {
-                              t = cat.tasks.find(
-                                (x) => normalizeTitle(x.title) === normalizeTitle(task.title)
-                              );
-                            }
-                            if (t?.goalLinks?.length) {
-                              goalLinks = t.goalLinks;
-                              break;
-                            }
-                          }
-                        }
-                        if (!goalLinks?.length && templatedTasks.length > 0) {
-                          goalLinks = getGoalLinksFromGoalsFallback(
-                            task.title,
-                            templatedTasks,
-                            goals
-                          );
-                        }
-                        const semanticLinksUndone = getSemanticGoalLinks(task.title, goals);
-                        if (semanticLinksUndone.length) {
-                          const seen = new Set((goalLinks ?? []).map((l) => String(l.goalId)));
-                          for (const l of semanticLinksUndone) {
-                            if (!seen.has(String(l.goalId))) {
-                              seen.add(String(l.goalId));
-                              goalLinks = [...(goalLinks ?? []), l];
-                            }
-                          }
-                        }
-                        const validLinksUndone = goalLinks?.filter((l) => {
-                          const g = goals.find((x) => String(x.id) === String(l.goalId));
-                          return g && g.status === "active";
+                        const validLinksUndone = resolveGoalLinksForTaskUndone({
+                          task,
+                          templateItems: templatedTasks,
+                          goals,
+                          lastEnrichedItems: lastEnrichedRef.current,
                         });
                         if (validLinksUndone?.length)
                           applyTaskUndone(task.id, date, {

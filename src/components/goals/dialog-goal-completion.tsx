@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
+import confetti from "canvas-confetti";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -36,11 +37,23 @@ export function DialogGoalCompletion() {
 
   const goal = goals.find((g) => g.id === goalId);
   const isOpen = !!goalId && !!goal;
+  const hasFiredConfetti = useRef(false);
 
   useEffect(() => {
     if (isOpen) {
       setShowExtendForm(false);
       setAddValue(5);
+      if (!hasFiredConfetti.current) {
+        hasFiredConfetti.current = true;
+        const fire = (opts: confetti.Options) =>
+          confetti({ origin: { y: 0.4 }, ...opts });
+        fire({ particleCount: 80, spread: 60 });
+        setTimeout(() => fire({ particleCount: 50, spread: 100, startVelocity: 35 }), 150);
+        setTimeout(() => fire({ particleCount: 50, spread: 100, startVelocity: 35, origin: { x: 0.2, y: 0.4 } }), 250);
+        setTimeout(() => fire({ particleCount: 50, spread: 100, startVelocity: 35, origin: { x: 0.8, y: 0.4 } }), 350);
+      }
+    } else {
+      hasFiredConfetti.current = false;
     }
   }, [isOpen]);
 

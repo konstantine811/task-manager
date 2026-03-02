@@ -76,7 +76,11 @@ const DialogTask = ({
   const [translateRandom, setTranslateRandom] = useState(1);
   const [isDetermined, setIsDetermined] = useState<boolean>(false);
   const [linkedGoalIds, setLinkedGoalIds] = useState<UniqueIdentifier[]>([]);
-  const goals = useGoalsStore((s) => s.goals).filter((g) => g.status === "active");
+  // Джерело списку цілей: тільки Zustand store (persist key: chrono-goals). Показуємо лише активні — виконані (done) не пропонуємо для прив'язки.
+  const goals = useGoalsStore((s) => s.goals).filter(
+    (g) => g.status === "active" && g.id != null && g.title != null
+  );
+
 
   function toggleDay(day: DayNumber) {
     setSelectedDays((prev) =>
@@ -84,9 +88,13 @@ const DialogTask = ({
     );
   }
 
+  // Тільки цілі з поточного списку (active/done) — не зберігати посилання на видалені
+  const validGoalIds = linkedGoalIds.filter((id) =>
+    goals.some((g) => String(g.id) === String(id))
+  );
   const goalLinks: TaskGoalLink[] | undefined =
-    linkedGoalIds.length > 0
-      ? linkedGoalIds.map((goalId) => ({
+    validGoalIds.length > 0
+      ? validGoalIds.map((goalId) => ({
           goalId,
           impact: { type: "count" as const, value: 1 },
         }))
@@ -169,7 +177,16 @@ const DialogTask = ({
       setWastedTime(task.timeDone);
       setSelectedDays(task.whenDo?.length ? task.whenDo : weekDays);
       setIsDetermined(task.isDetermined || false);
-      setLinkedGoalIds(task.goalLinks?.map((l) => l.goalId) ?? []);
+      // Тільки активні цілі з поточного списку — видалені та done не показувати й не зберігати
+      const storeGoals = useGoalsStore.getState().goals.filter(
+        (g) => g.status === "active"
+      );
+      const currentGoalIds = new Set(storeGoals.map((g) => String(g.id)));
+      setLinkedGoalIds(
+        task.goalLinks
+          ?.filter((l) => currentGoalIds.has(String(l.goalId)))
+          .map((l) => l.goalId) ?? []
+      );
       if (task.schedule) {
         if (task.schedule.type === "interval_days") {
           setScheduleType("interval_days");
@@ -215,7 +232,7 @@ const DialogTask = ({
         <div className="flex flex-col gap-2 md:gap-4">
           <div className="relative">
             <div className="flex flex-col gap-2">
-              <h3 className="text-2xl font-semibold break-words">
+              <h3 className="text-2xl font-semibold wrap-break-word">
                 {t(`task_manager.dialog_create_task.${translateRandom}.title`)}
               </h3>
               <p className="chrono-dialog-description font-mono text-sm">
@@ -531,22 +548,29 @@ const DialogTask = ({
               ) : (
                 <div className="flex flex-wrap gap-2">
                   {goals.map((g) => {
-                    const isLinked = linkedGoalIds.includes(g.id);
+                    const isLinked = linkedGoalIds.some(
+                      (id) => String(id) === String(g.id)
+                    );
                     return (
                       <label
-                        key={g.id}
-                        className="flex cursor-pointer items-center gap-2 rounded-lg border border-zinc-200 dark:border-white/10 px-3 py-2 text-sm transition-colors hover:bg-zinc-100 dark:hover:bg-white/5 data-[checked]:border-indigo-500/50 data-[checked]:bg-indigo-500/10"
+                        key={String(g.id)}
+                        className="flex cursor-pointer items-center gap-2 rounded-lg border border-zinc-200 dark:border-white/10 px-3 py-2 text-sm transition-colors hover:bg-zinc-100 dark:hover:bg-white/5 data-checked:border-indigo-500/50 data-checked:bg-indigo-500/10"
                         data-checked={isLinked}
                       >
                         <input
                           type="checkbox"
                           checked={isLinked}
                           onChange={() =>
-                            setLinkedGoalIds((prev) =>
-                              isLinked
-                                ? prev.filter((id) => id !== g.id)
-                                : [...prev, g.id]
-                            )
+                            setLinkedGoalIds((prev) => {
+                              if (isLinked) {
+                                return prev.filter(
+                                  (id) => String(id) !== String(g.id)
+                                );
+                              }
+                              if (prev.some((id) => String(id) === String(g.id)))
+                                return prev;
+                              return [...prev, g.id];
+                            })
                           }
                           className="rounded border-zinc-300 dark:border-white/20"
                         />

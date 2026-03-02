@@ -15,28 +15,29 @@ export function applyGoalImpact(
     goals.map((g) => [String(g.id), { ...g }])
   );
   const links = template.goalLinks ?? [];
-
   const seenGoals = new Set<string>();
+
   for (const link of links) {
     const goalKey = String(link.goalId);
     if (seenGoals.has(goalKey)) continue;
     seenGoals.add(goalKey);
     const goal = goalMap.get(goalKey);
-    if (!goal || goal.status !== "active") continue;
+    if (!goal || (goal.status !== "active" && goal.status !== "paused")) continue;
+
+    const oldProgress = goal.progress ?? 0;
 
     if (instance.status === "done") {
+      const impactType = (link.impact as { type?: string })?.type;
       let delta = getImpactValue(link.impact, instance, template);
-      if (link.impact.type === "count") delta = Math.min(delta, 1);
-      goal.progress = Math.max(0, (goal.progress ?? 0) + delta);
+      if (impactType === "count" || !impactType) delta = Math.min(delta, 1);
+      goal.progress = Math.max(0, oldProgress + delta);
     } else if (instance.status === "todo") {
-      /* task was unchecked — subtract impact */
+      const impactType = (link.impact as { type?: string })?.type;
       let delta = getImpactValue(link.impact, instance, template);
-      if (link.impact.type === "count") delta = Math.min(delta, 1);
-      goal.progress = Math.max(0, (goal.progress ?? 0) - delta);
-    } else if (instance.status === "skipped" && link.onMiss) {
-      if (link.onMiss.type === "decrease" && link.onMiss.value != null) {
-        goal.progress = Math.max(0, goal.progress - link.onMiss.value);
-      }
+      if (impactType === "count" || !impactType) delta = Math.min(delta, 1);
+      goal.progress = Math.max(0, oldProgress - delta);
+    } else if (instance.status === "skipped" && link.onMiss?.type === "decrease" && link.onMiss.value != null) {
+      goal.progress = Math.max(0, goal.progress - link.onMiss.value);
     }
     goalMap.set(String(goal.id), goal);
   }
@@ -49,18 +50,21 @@ function getImpactValue(
   instance: TaskInstance,
   template: TaskTemplate
 ): number {
+  if (!impact || (impact as { type?: string }).type === undefined) {
+    return instance.status === "done" ? 1 : 0;
+  }
   switch (impact.type) {
     case "count":
-      return impact.value;
+      return impact.value ?? 1;
     case "minutes":
       return impact.valueMode === "done"
         ? instance.timeDone
         : (instance.overrideTimePlanned ?? template.timePlanned);
     case "score":
-      return impact.value;
+      return impact.value ?? 1;
     case "streak":
       return 1;
     default:
-      return 0;
+      return instance.status === "done" ? 1 : 0;
   }
 }

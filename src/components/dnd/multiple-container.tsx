@@ -448,7 +448,6 @@ export function MultipleContainers({
               <AnimatedItem key={category.id} index={catIdx}>
               <DroppableContainer
                 id={category.id}
-                id={category.id}
                 templated={templated}
                 label={minimal ? undefined : category.title}
                 columns={columns}
@@ -479,7 +478,7 @@ export function MultipleContainers({
                 >
                   {category.tasks.length === 0 ? (
                     <li
-                      className={`rounded-lg border border-dashed border-white/5 flex items-center justify-center text-zinc-600 text-xs transition-all duration-200 bg-white/[0.02]
+                      className={`rounded-lg border border-dashed border-white/5 flex items-center justify-center text-zinc-600 text-xs transition-all duration-200 bg-white/2
     ${category.tasks.length > 0 ? "invisible absolute" : ""}
   `}
                       style={{

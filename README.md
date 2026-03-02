@@ -34,3 +34,7 @@ npm run preview   # перегляд production-збірки
 
 Повна міграція UI (dnd, сторінки, компоненти) описана в портфоліо:  
 [docs/TASK_MANAGER_MIGRATION.md](../3d-react-abc-folio/docs/TASK_MANAGER_MIGRATION.md).
+
+## Документація
+
+- Архітектура та потік даних: `docs/ARCHITECTURE_AND_DATA_FLOW.md`

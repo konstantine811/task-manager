@@ -82,7 +82,7 @@ export function GoalsPanel({ templateTasks = [] }: { templateTasks?: Items }) {
   };
 
   return (
-    <div className="w-full rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/[0.03] p-4">
+    <div className="w-full rounded-xl border border-zinc-200 dark:border-white/10 bg-zinc-50 dark:bg-white/3 p-4">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
@@ -211,7 +211,7 @@ export function GoalsPanel({ templateTasks = [] }: { templateTasks?: Items }) {
 
                     {/* Linked tasks from template */}
                     {templateTasks.length > 0 && (
-                      <div className="mt-2 rounded-md border border-zinc-200 dark:border-white/10 bg-zinc-50/80 dark:bg-white/[0.02] p-2">
+                      <div className="mt-2 rounded-md border border-zinc-200 dark:border-white/10 bg-zinc-50/80 dark:bg-white/2 p-2">
                         <div className="text-xs font-medium text-zinc-600 dark:text-zinc-400 flex items-center gap-1">
                           <Target className="h-3.5 w-3.5" />
                           {t("goals.linked_tasks")}

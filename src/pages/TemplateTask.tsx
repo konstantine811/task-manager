@@ -138,7 +138,7 @@ const TemplateTask = () => {
 
       {/* Права колонка — AI у drawer на мобільному */}
       {mdSize && (
-        <div className="flex-shrink-0">
+        <div className="shrink-0">
           <CustomDrawer
             title="task_manager.analytics.header.title"
             description="task_manager.analytics.header.description"

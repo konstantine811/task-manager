@@ -8,6 +8,7 @@ import type { TaskInstance } from "@/types/task-instance.model";
 import type { TaskGoalLink } from "@/types/drag-and-drop.model";
 import type { TaskTemplate } from "@/types/task-template.model";
 
+/** Ключ localStorage для персисту цілей. Якщо в діалозі задачі видно цілі, яких уже нема в панелі цілей — можна скинути в DevTools: Application → Local Storage → цей ключ. */
 const GOALS_STORAGE_KEY = "chrono-goals";
 
 function getDefaultGoals(): Goal[] {
@@ -43,9 +44,13 @@ function getDefaultGoals(): Goal[] {
 function taskGoalLinkToGoalLink(
   link: TaskGoalLink
 ): import("@/types/task-template.model").GoalLink {
+  const impact =
+    link.impact && typeof link.impact.type === "string" && link.impact.type in { count: 1, minutes: 1, score: 1, streak: 1 }
+      ? link.impact
+      : ({ type: "count" as const, value: 1 });
   return {
     goalId: link.goalId,
-    impact: link.impact,
+    impact,
     onMiss: link.onMiss,
   };
 }
@@ -53,7 +58,7 @@ function taskGoalLinkToGoalLink(
 interface GoalsState {
   goals: Goal[];
   setGoals: (goals: Goal[]) => void;
-  addGoal: (goal: Omit<Goal, "id" | "progress"> & { id?: UniqueIdentifier }) => UniqueIdentifier;
+  addGoal: (goal: Pick<Goal, "title" | "metric"> & Partial<Pick<Goal, "description" | "subGoals">> & { id?: UniqueIdentifier }) => UniqueIdentifier;
   updateGoal: (id: UniqueIdentifier, updates: Partial<Goal>) => void;
   removeGoal: (id: UniqueIdentifier) => void;
   /** Відкрити діалог створення/редагування цілі (для виклику з task dialog) */
@@ -119,16 +124,18 @@ export const useGoalsStore = create<GoalsState>()(
       },
 
       updateGoal: (id, updates) => {
+        const idStr = String(id);
         set((state) => ({
           goals: state.goals.map((g) =>
-            g.id === id ? { ...g, ...updates } : g
+            String(g.id) === idStr ? { ...g, ...updates } : g
           ),
         }));
       },
 
       removeGoal: (id) => {
+        const idStr = String(id);
         set((state) => ({
-          goals: state.goals.filter((g) => g.id !== id),
+          goals: state.goals.filter((g) => String(g.id) !== idStr),
         }));
       },
 
@@ -149,6 +156,26 @@ export const useGoalsStore = create<GoalsState>()(
         if (!links || links.length === 0) return;
 
         set((state) => {
+          const getTarget = (g: Goal): number => {
+            if (g.metric.type === "count") return g.metric.target;
+            if (g.metric.type === "minutes") return g.metric.target;
+            if (g.metric.type === "streak") return g.metric.target;
+            if (g.metric.type === "score") return g.metric.target;
+            return 0;
+          };
+
+          const linkedGoalIds = new Set(links.map((l) => String(l.goalId)));
+          const goalsForCalc = state.goals.map((g) => {
+            if (!linkedGoalIds.has(String(g.id))) return g;
+            if (g.status !== "done") return g;
+            const target = getTarget(g);
+            if (target > 0 && (g.progress ?? 0) < target) {
+              const { completedAt, ...rest } = g as Goal;
+              return { ...rest, status: "active" as const };
+            }
+            return g;
+          });
+
           const instance: TaskInstance = {
             id: taskId,
             templateId: taskId,
@@ -164,7 +191,8 @@ export const useGoalsStore = create<GoalsState>()(
             schedule: { type: "weekdays", days: [1, 2, 3, 4, 5, 6, 7] },
             goalLinks: links.map(taskGoalLinkToGoalLink),
           };
-          const updated = applyGoalImpact(instance, template, state.goals);
+          const updated = applyGoalImpact(instance, template, goalsForCalc);
+
           let completedGoalId: UniqueIdentifier | null = null;
           for (const g of updated) {
             const old = state.goals.find((o) => o.id === g.id);
@@ -173,7 +201,8 @@ export const useGoalsStore = create<GoalsState>()(
               : g.metric.type === "streak" || g.metric.type === "score"
                 ? g.metric.target
                 : 0;
-            if (target > 0 && g.progress >= target && (old?.progress ?? 0) < target && g.status === "active") {
+            const oldProgress = old?.progress ?? 0;
+            if (target > 0 && g.progress >= target && oldProgress < target && g.status === "active") {
               completedGoalId = g.id;
               break;
             }
