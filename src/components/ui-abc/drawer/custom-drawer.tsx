@@ -36,7 +36,7 @@ const CustomDrawer = ({
         <div>
           <Button
             className={cn(
-              `bg-card hover:bg-card/50 rounded-r-none !pr-7 !py-6 fixed z-30 text-foreground right-0 shadow-sm shadow-foreground`
+              "fixed right-3 z-30 h-14 w-14 rounded-full border border-zinc-300/80 bg-white/80 p-0 text-zinc-800 shadow-lg backdrop-blur-xl hover:bg-white/90 dark:border-white/10 dark:bg-[rgba(10,10,12,0.72)] dark:text-zinc-100 dark:hover:bg-[rgba(10,10,12,0.84)]"
             )}
             style={{ top: `${hs + 10}px` }}
           >
@@ -47,15 +47,15 @@ const CustomDrawer = ({
               as="div"
             >
               {open ? (
-                <PanelTopOpen className="!w-8 !h-8" />
+                <PanelTopOpen className="w-8! h-8!" />
               ) : (
-                <PanelTopClose className="!w-8 !h-8" />
+                <PanelTopClose className="w-8! h-8!" />
               )}
             </SoundHoverElement>
           </Button>
         </div>
       </DrawerTrigger>
-      <DrawerContent className="border-border z-[1000]  outline-none">
+      <DrawerContent className="z-1000 rounded-t-2xl border border-zinc-300/80 bg-white/88 text-zinc-900 shadow-2xl backdrop-blur-xl outline-none dark:border-white/10 dark:bg-[rgba(10,10,12,0.82)] dark:text-zinc-100">
         <ScrollArea className="w-full touch-auto overscroll-contain px-2 max-h-[60vh] overflow-auto">
           <DrawerHeader>
             <DrawerTitle>{t(title)}</DrawerTitle>

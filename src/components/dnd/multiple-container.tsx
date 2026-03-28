@@ -562,16 +562,17 @@ export function MultipleContainers({
                 onClick={handleAddColumn}
                 placeholder
               >
-                <div className="flex justify-center items-center">
+                <div className="mb-3 flex items-center justify-center">
                   <WrapperHoverElement className="w-full">
                     <SoundHoverElement
-                      animValue={1.09}
+                      animValue={-1}
+                      hoverAnimType="translate"
                       hoverTypeElement={SoundTypeElement.LINK}
                       hoverStyleElement={HoverStyleElement.quad}
                       className="w-full"
                     >
                       <Button
-                        className="w-full uppercase hover:bg-transparent hover:text-primary"
+                        className="w-full min-h-14 rounded-xl border border-indigo-500/25 bg-indigo-500/10 px-4 py-3 text-sm font-semibold uppercase tracking-wide text-indigo-700 whitespace-normal hover:bg-indigo-500/15 hover:text-indigo-800 dark:text-indigo-300 dark:hover:bg-indigo-500/20 dark:hover:text-indigo-200"
                         variant="ghost"
                       >
                         {t("task_manager.add_container")}

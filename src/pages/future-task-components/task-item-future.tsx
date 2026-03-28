@@ -8,6 +8,11 @@ import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { StyleWordBreak } from "@/config/styles.config";
+import {
+  CATEGORY_STYLE,
+  DEFAULT_CATEGORY_STYLE,
+} from "@/components/dnd/config/category-style.config";
+import { CATEGORY_OPTIONS } from "@/components/dnd/config/category-options";
 
 export function TaskItemFuture({
   task,
@@ -21,6 +26,19 @@ export function TaskItemFuture({
 }) {
   const hasLongWord = task.title.split(" ").some((word) => word.length > 40); // можна змінити 20 на поріг
   const [t] = useTranslation();
+  const categoryKey =
+    CATEGORY_STYLE[task.categoryName]
+      ? task.categoryName
+      : CATEGORY_OPTIONS.find(
+          (option) => t(`task_manager.categories.${option}`) === task.categoryName
+        ) ?? task.categoryName;
+  const categoryStyle = CATEGORY_STYLE[categoryKey] ?? DEFAULT_CATEGORY_STYLE;
+  const CategoryIcon = categoryStyle.icon;
+  const categoryLabel =
+    t(`task_manager.categories.${categoryKey}`) !==
+    `task_manager.categories.${categoryKey}`
+      ? t(`task_manager.categories.${categoryKey}`)
+      : task.categoryName;
   return (
     <div
       className={cn(
@@ -29,8 +47,9 @@ export function TaskItemFuture({
         }`
       )}
     >
-      <h6 className="absolute -top-5 left-5 bg-accent/30 backdrop-blur-sm px-3 rounded-full border border-border">
-        {t(task.categoryName)}
+      <h6 className="absolute -top-5 left-5 inline-flex items-center gap-2 rounded-full border border-zinc-300/80 bg-white/90 px-3 py-1 text-xs font-medium text-zinc-800 shadow-sm dark:border-white/10 dark:bg-zinc-900/90 dark:text-zinc-200">
+        <CategoryIcon className={cn("h-3.5 w-3.5 shrink-0", categoryStyle.color)} />
+        <span>{categoryLabel}</span>
       </h6>
       <div
         className="flex items-center justify-between gap-0 md:gap-2 py-1 bg-card 

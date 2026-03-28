@@ -32,6 +32,7 @@ import {
   Items,
   ItemTaskCategory,
 } from "@/types/drag-and-drop.model";
+import { DailyJournal } from "@/types/daily-journal.model";
 import { parseDates } from "@/utils/date.util";
 import { formatISO } from "date-fns";
 import { onAuthStateChanged, User } from "firebase/auth";
@@ -90,7 +91,8 @@ export const saveDailyTasks = async <T>(
     uid,
     collectionName === FirebaseCollection.plannedTasks ||
       collectionName === FirebaseCollection.dailyTasks ||
-      collectionName === FirebaseCollection.dailyAnalytics
+      collectionName === FirebaseCollection.dailyAnalytics ||
+      collectionName === FirebaseCollection.dailyJournal
       ? FirebaseCollectionProps[collectionName].days
       : "",
     date
@@ -134,7 +136,8 @@ export const loadDailyTasksByDate = async <T>(
     collectionName,
     uid,
     collectionName === FirebaseCollection.plannedTasks ||
-      collectionName === FirebaseCollection.dailyTasks
+      collectionName === FirebaseCollection.dailyTasks ||
+      collectionName === FirebaseCollection.dailyJournal
       ? FirebaseCollectionProps[collectionName].days
       : "",
     date
@@ -198,6 +201,37 @@ export const subscribeToNonEmptyTaskDates = async <
         validDates.push(docSnap.id);
       }
     });
+    onUpdate(parseDates(validDates));
+  });
+
+  return unsubscribe;
+};
+
+export const subscribeToNonEmptyJournalDates = async (
+  onUpdate: (dates: Date[]) => void
+): Promise<Unsubscribe | undefined> => {
+  const user = await waitForUserAuth();
+  if (!user) return;
+
+  const uid = user.uid;
+  const daysCollectionRef = collection(
+    db,
+    FirebaseCollection.dailyJournal,
+    uid,
+    FirebaseCollectionProps[FirebaseCollection.dailyJournal].days
+  );
+
+  const unsubscribe = onSnapshot(daysCollectionRef, (querySnapshot) => {
+    const validDates: string[] = [];
+
+    querySnapshot.forEach((docSnap) => {
+      const data = docSnap.data();
+      const journal = data.items as DailyJournal | undefined;
+      if (journal?.content?.trim()) {
+        validDates.push(docSnap.id);
+      }
+    });
+
     onUpdate(parseDates(validDates));
   });
 
@@ -295,6 +329,23 @@ export async function loadDailyTasksByRange(
 
   return results;
 }
+
+export const saveDailyJournal = async (
+  date: string,
+  journal: DailyJournal
+) => {
+  await saveDailyTasks<DailyJournal>(
+    journal,
+    date,
+    FirebaseCollection.dailyJournal
+  );
+};
+
+export const loadDailyJournalByDate = async (
+  date: string
+): Promise<DailyJournal | null> => {
+  return loadDailyTasksByDate<DailyJournal>(date, FirebaseCollection.dailyJournal);
+};
 
 const waitForUserAuth = (): Promise<User | null> => {
   return new Promise((resolve) => {

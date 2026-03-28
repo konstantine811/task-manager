@@ -202,7 +202,7 @@ const DailyTaskWrapper = () => {
               />
             </TaskManagerProvider>
           )}
-          <div className="flex flex-col gap-2 w-full">
+          <div className="flex flex-col gap-3 w-full">
             {isLoaded && (
               <DailyAddTemplateButton
                 title={"task_manager.add_template_task"}

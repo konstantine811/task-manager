@@ -53,12 +53,9 @@ export const getDailyTaskAnalyticsData = (tasks: Items): DailyTaskAnalytics => {
       } = task;
 
       const timeDo = isDetermined || isPlanned || isDone ? timeDone : time;
-      const timeDoneCategory =
-        (isDetermined || isPlanned) && !isDone
-          ? 0
-          : isDone
-            ? timeDone || time
-            : timeDone;
+      // "Completed" analytics should only include tasks that are currently marked done.
+      // Otherwise an undone task with a preserved timeDone would still appear as completed.
+      const timeDoneCategory = isDone ? timeDone || time : 0;
       dailyAnalytics.countTime += timeDo;
       dailyAnalytics.countAllTask += 1;
       dailyAnalytics.countDoneTime += timeDoneCategory;

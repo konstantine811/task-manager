@@ -56,6 +56,75 @@ export function TaskItem({
     categoryId && templated
       ? CATEGORY_CHART_COLORS[String(categoryId)] ?? null
       : null;
+  const scheduleDays =
+    templated && task.whenDo && task.whenDo.length > 0 ? (
+      <div className="flex flex-wrap gap-1">
+        {[...task.whenDo]
+          .sort((a, b) => a - b)
+          .map((d) => (
+            <span
+              key={d}
+              className="text-[10px] text-indigo-600 dark:text-indigo-400/80"
+            >
+              {t(`task_manager.day_names.${d}`)}
+            </span>
+          ))}
+      </div>
+    ) : null;
+  const timeBlock = !dragging ? (
+    <>
+      {task.isPlanned ? (
+        <div
+          className="text-xs font-mono text-zinc-600 dark:text-zinc-500 bg-zinc-200 dark:bg-zinc-900/50 px-2 py-0.5 rounded border border-zinc-300/80 dark:border-white/5"
+          title={t("task_manager.dialog_create_task.task.time.label")}
+        >
+          {timeFormatted.hours}:{timeFormatted.minutes}
+        </div>
+      ) : task.isDetermined ? (
+        <TaskDeterminedTime
+          task={task}
+          titleDeterminedTime={t(
+            "task_manager.dialog_create_task.task.time.total_time"
+          )}
+          titleSpendingTime={t(
+            "task_manager.dialog_create_task.task.time.wasted_time"
+          )}
+        />
+      ) : templated ? (
+        <div className="text-xs font-mono text-zinc-600 dark:text-zinc-500 bg-zinc-200 dark:bg-zinc-900/50 px-2 py-0.5 rounded border border-zinc-300/80 dark:border-white/5">
+          {timeFormatted.hours}:{timeFormatted.minutes}
+        </div>
+      ) : (
+        <TaskPlay templated={templated} onPlay={setIsPlay} task={task} />
+      )}
+    </>
+  ) : null;
+  const editButton =
+    onEditTask ? (
+      <WrapperHoverElement>
+        <SoundHoverElement
+          animValue={0.99}
+          hoverTypeElement={
+            task.isDone ? SoundTypeElement.NONE : SoundTypeElement.SELECT
+          }
+          hoverStyleElement={
+            task.isDone ? HoverStyleElement.none : HoverStyleElement.quad
+          }
+        >
+          <Button
+            variant="ghost"
+            size="icon"
+            disabled={task.isDone}
+            onClick={() => onEditTask(task)}
+            className={`h-6 w-6 text-zinc-700 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-white/5 ${
+              task.isDone && "text-zinc-500 dark:text-zinc-600"
+            }`}
+          >
+            <SlidersHorizontal className="w-3 h-3" />
+          </Button>
+        </SoundHoverElement>
+      </WrapperHoverElement>
+    ) : null;
 
   return (
     <div
@@ -71,16 +140,16 @@ export function TaskItem({
         />
       )}
       <div
-        className={`flex items-center justify-between gap-3 p-2 rounded-lg border border-zinc-200/80 dark:border-white/10 bg-white/80 dark:bg-white/5 hover:bg-white/90 dark:hover:bg-white/10 shadow-sm transition-all w-full ${categoryColor ? "pl-3" : ""} ${
+        className={`grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-2 p-2 rounded-lg border border-zinc-200/80 dark:border-white/10 bg-white/80 dark:bg-white/5 hover:bg-white/90 dark:hover:bg-white/10 shadow-sm transition-all w-full md:flex md:items-center md:justify-between ${categoryColor ? "pl-3" : ""} ${
           task.isDone
             ? "chrono-task-card-done text-indigo-700 dark:text-indigo-200/90 border-indigo-500/15 bg-indigo-500/10 dark:bg-indigo-500/5"
             : "text-zinc-800 dark:text-zinc-300"
         }`}
       >
-        <div className="flex items-center gap-3 min-w-0 flex-1">
+        <div className="flex items-start gap-3 min-w-0 flex-1 md:items-center">
           {!templated && (
             <SoundHoverElement
-              className="flex-shrink-0"
+              className="shrink-0 pt-0.5 md:pt-0"
               animValue={1.4}
               hoverTypeElement={SoundTypeElement.SELECT}
             >
@@ -110,100 +179,39 @@ export function TaskItem({
             {...(!handle ? listeners : undefined)}
             variant="ghost"
             size="icon"
-            className="cursor-move hover:bg-zinc-200 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white text-zinc-700 dark:text-zinc-500 flex-shrink-0 h-6 w-6 md:hidden"
+                className="cursor-move hover:bg-zinc-200 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white text-zinc-700 dark:text-zinc-500 shrink-0 h-6 w-6 md:hidden mt-0.5"
           >
             <GripVertical className="w-3 h-3" />
           </Button>
           )}
-          <p
-            className={`text-left text-sm font-medium min-w-0 max-w-[200px] break-words ${
-              task.isDone ? "text-indigo-700 dark:text-indigo-200" : ""
-            }`}
-            style={StyleWordBreak}
-            title={hasLongWord ? task.title : undefined}
-          >
-            {task.title}
-          </p>
+          <div className="min-w-0 flex-1">
+            <p
+              className={`text-left text-sm font-medium min-w-0 max-w-none wrap-break-word leading-snug md:max-w-[200px] ${
+                task.isDone ? "text-indigo-700 dark:text-indigo-200" : ""
+              }`}
+              style={StyleWordBreak}
+              title={hasLongWord ? task.title : undefined}
+            >
+              {task.title}
+            </p>
+            <div className="mt-2 flex flex-wrap items-center gap-2 md:hidden">
+              {scheduleDays}
+              {timeBlock}
+            </div>
+          </div>
         </div>
 
-        <div className="flex items-center gap-4 flex-shrink-0">
-          {templated && task.whenDo && task.whenDo.length > 0 && (
-            <div className="flex gap-1">
-              {[...task.whenDo]
-                .sort((a, b) => a - b)
-                .map((d) => (
-                  <span
-                    key={d}
-                    className="text-[10px] text-indigo-600 dark:text-indigo-400/80"
-                  >
-                    {t(`task_manager.day_names.${d}`)}
-                  </span>
-                ))}
-            </div>
-          )}
-          {!dragging && (
-            <>
-              {task.isPlanned ? (
-                <div
-                  className="text-xs font-mono text-zinc-600 dark:text-zinc-500 bg-zinc-200 dark:bg-zinc-900/50 px-2 py-0.5 rounded border border-zinc-300/80 dark:border-white/5"
-                  title={t("task_manager.dialog_create_task.task.time.label")}
-                >
-                  {timeFormatted.hours}:{timeFormatted.minutes}
-                </div>
-              ) : task.isDetermined ? (
-                <TaskDeterminedTime
-                  task={task}
-                  titleDeterminedTime={t(
-                    "task_manager.dialog_create_task.task.time.total_time"
-                  )}
-                  titleSpendingTime={t(
-                    "task_manager.dialog_create_task.task.time.wasted_time"
-                  )}
-                />
-              ) : templated ? (
-                <div className="text-xs font-mono text-zinc-600 dark:text-zinc-500 bg-zinc-200 dark:bg-zinc-900/50 px-2 py-0.5 rounded border border-zinc-300/80 dark:border-white/5">
-                  {timeFormatted.hours}:{timeFormatted.minutes}
-                </div>
-              ) : (
-                <TaskPlay
-                  templated={templated}
-                  onPlay={setIsPlay}
-                  task={task}
-                />
-              )}
-            </>
-          )}
+        <div className="flex items-start justify-end gap-1 md:hidden">
+          {!readOnly && editButton}
+          {children}
+        </div>
+
+        <div className="hidden items-center gap-4 shrink-0 md:flex">
+          {scheduleDays}
+          {timeBlock}
           {!readOnly && (
           <div className="w-12 flex justify-end gap-1">
-            {onEditTask && (
-              <WrapperHoverElement>
-                <SoundHoverElement
-                  animValue={0.99}
-                  hoverTypeElement={
-                    task.isDone
-                      ? SoundTypeElement.NONE
-                      : SoundTypeElement.SELECT
-                  }
-                  hoverStyleElement={
-                    task.isDone
-                      ? HoverStyleElement.none
-                      : HoverStyleElement.quad
-                  }
-                >
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    disabled={task.isDone}
-                    onClick={() => onEditTask(task)}
-                    className={`h-6 w-6 text-zinc-700 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-white/5 ${
-                      task.isDone && "text-zinc-500 dark:text-zinc-600"
-                    }`}
-                  >
-                    <SlidersHorizontal className="w-3 h-3" />
-                  </Button>
-                </SoundHoverElement>
-              </WrapperHoverElement>
-            )}
+            {editButton}
             <SoundHoverElement
               animValue={0.9}
               hoverTypeElement={SoundTypeElement.SHIFT}

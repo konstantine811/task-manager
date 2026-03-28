@@ -8,6 +8,8 @@ import DailySidePanelWrapper from "./daily-components/daily-side-panel-wrapper";
 import { useCallback, useEffect, useState } from "react";
 import {
   loadDailyTasksByDate,
+  loadDailyJournalByDate,
+  saveDailyJournal,
   updatePlannedTasksOnServer,
 } from "@/services/firebase/taskManagerData";
 import { FirebaseCollection } from "@/config/firebase.config";
@@ -21,6 +23,7 @@ import DailySidePanelContent from "./daily-components/daily-side-panel-content";
 import DailyAnalytics from "./daily-components/daily-analytics";
 import { BreakPoints } from "@/config/adaptive.config";
 import { DailyTaskAnalytics } from "@/types/analytics/task-analytics.model";
+import DailyJournalCard from "./daily-components/daily-journal-card";
 
 const DailyTask = () => {
   const { isAdoptiveSize: mdSize, screenWidth } = useIsAdoptive("lg");
@@ -32,6 +35,8 @@ const DailyTask = () => {
   const [plannedTasks, setPlannedTasks] = useState<ItemTaskCategory[] | null>(
     null,
   );
+  const [journalContent, setJournalContent] = useState("");
+  const [isJournalLoading, setIsJournalLoading] = useState(false);
   const [dailyAnalyticsData, setDailyAnalyticsData] =
     useState<DailyTaskAnalytics | null>(null);
   const [t] = useTranslation();
@@ -129,6 +134,27 @@ const DailyTask = () => {
       setPlannedTasks(data ?? []);
     });
   }, [date]);
+
+  useEffect(() => {
+    if (!date) return;
+
+    setIsJournalLoading(true);
+    loadDailyJournalByDate(date)
+      .then((journal) => {
+        setJournalContent(journal?.content ?? "");
+      })
+      .finally(() => setIsJournalLoading(false));
+  }, [date]);
+
+  const handleSaveJournal = useCallback(
+    async (content: string) => {
+      if (!date) return;
+
+      await saveDailyJournal(date, { content });
+    },
+    [date],
+  );
+
   return (
     <DailyTaskContext.Provider
       value={{
@@ -164,6 +190,15 @@ const DailyTask = () => {
           <h2 className="text-center text-foreground/50 text-sm mb-4 mt-2">
             {`${t("task_manager.daily_task_title")} : ${dateVal || ""}`}
           </h2>
+
+          {date && (
+            <DailyJournalCard
+              date={date}
+              initialContent={journalContent}
+              isLoading={isJournalLoading}
+              onSave={handleSaveJournal}
+            />
+          )}
 
           <DailyTaskWrapper />
         </main>

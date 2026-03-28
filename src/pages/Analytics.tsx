@@ -9,7 +9,6 @@ import {
   AnalyticsData,
   CategoryAnalyticsNameEntity,
 } from "@/types/analytics/task-analytics.model";
-import LineChartTask from "./analytics-comonents/line-chart-task";
 import { useTranslation } from "react-i18next";
 import ChartPieCategoryWrap from "./daily-components/analytics-chart/chart-pie-category/chart-pie-category-wrap";
 import ChartPieTaskPlannedWrap from "./analytics-comonents/chart-pie-task-planned-wrap";
@@ -17,6 +16,7 @@ import RangeAnalyticsTable from "./analytics-comonents/range-analytics-table";
 import TaskDateRangeHeader from "./analytics-comonents/task-data-range-header";
 import { AnimatedItem } from "@/components/ui/animated-item";
 import { CATEGORY_OPTIONS } from "@/components/dnd/config/category-options";
+import CompletedProgressBarChart from "./analytics-comonents/completed-progress-bar-chart";
 
 const Analytics = () => {
   const hS = useHeaderSizeStore((s) => s.size);
@@ -86,7 +86,7 @@ const Analytics = () => {
                 <TaskDateRangeHeader tasks={analyticsData.rangeTasks} />
               </AnimatedItem>
               <AnimatedItem index={1} className="w-full min-w-0">
-                <LineChartTask
+                <CompletedProgressBarChart
                   data={analyticsData.rangeTasks}
                   rangeFrom={range.from}
                   rangeTo={range.to}
@@ -109,7 +109,7 @@ const Analytics = () => {
                   />
                 </AnimatedItem>
               </div>
-              <AnimatedItem index={5}>
+              <AnimatedItem index={4}>
                 <div className="mt-10">
                   <RangeAnalyticsTable data={analyticsData.rangeTaskEntity} />
                 </div>

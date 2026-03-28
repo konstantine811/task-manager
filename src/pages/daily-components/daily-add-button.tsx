@@ -27,9 +27,9 @@ const DailyAddTemplateButton = ({
           {...rest}
           style={StyleWordBreak}
           variant="ghost"
-          className="w-full truncate text-indigo-400 border border-white/5 hover:bg-white/5 hover:text-indigo-300"
+          className="w-full min-h-14 rounded-xl border border-indigo-500/25 bg-indigo-500/10 px-4 py-3 text-sm font-medium leading-snug text-indigo-700 whitespace-normal hover:bg-indigo-500/15 hover:text-indigo-800 dark:text-indigo-300 dark:hover:bg-indigo-500/20 dark:hover:text-indigo-200"
         >
-          <Plus />
+          <Plus className="shrink-0" />
           {t(title)}
         </Button>
       </SoundHoverElement>

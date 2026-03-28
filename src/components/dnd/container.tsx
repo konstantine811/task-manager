@@ -157,7 +157,7 @@ export const Container = forwardRef<HTMLDivElement, Props>(
             )}
           </div>
         ) : null}
-        {placeholder ? children : <ul className="space-y-[1px]">{children}</ul>}
+        {placeholder ? children : <ul className="m-0 list-none space-y-[1px] p-0">{children}</ul>}
         {isEdit && (
           <div
             onClick={() => {

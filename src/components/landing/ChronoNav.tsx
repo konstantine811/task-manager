@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import {
   Infinity,
   ArrowRight,
@@ -11,6 +11,9 @@ import { ThemeType } from "@/config/theme-colors.config";
 import { ROUTES } from "@/config/routes";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from "react-i18next";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { DateTemplate } from "@/config/data-config";
 
 type ChronoNavProps = {
   /** Right side: landing = Login/Register or Tasks/Logout; app = minimal (logo = home) */
@@ -21,8 +24,16 @@ export function ChronoNav({ variant = "landing" }: ChronoNavProps) {
   const { isAuthenticated, logout, loginWithGoogle } = useAuth();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const selectedTheme = useThemeStore((s) => s.selectedTheme);
   const onSetTheme = useThemeStore((s) => s.onSetTheme);
+
+  const appNavItems = [
+    { to: ROUTES.TEMPLATE, key: "template" },
+    { to: ROUTES.DAILY, key: "daily" },
+    { to: ROUTES.ANALYTICS, key: "analytics" },
+  ];
+  const today = format(new Date(), DateTemplate.dayMonthYear);
 
   const toggleTheme = () => {
     onSetTheme(
@@ -51,6 +62,28 @@ export function ChronoNav({ variant = "landing" }: ChronoNavProps) {
             Chrono
           </span>
         </Link>
+
+        {variant === "app" && isAuthenticated && (
+          <div className="hidden md:flex items-center gap-2">
+            {appNavItems.map((item) => {
+              const isActive = pathname.startsWith(item.to);
+              return (
+                <Link
+                  key={item.key}
+                  to={item.key === "daily" ? `${ROUTES.DAILY}/${today}` : item.to}
+                  className={cn(
+                    "rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
+                    isActive
+                      ? "bg-indigo-500/15 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-200"
+                      : "text-zinc-600 hover:bg-zinc-200/80 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-white/5 dark:hover:text-white"
+                  )}
+                >
+                  {t(`pages.task.${item.key}`)}
+                </Link>
+              );
+            })}
+          </div>
+        )}
 
         <div className="flex items-center gap-4 min-w-0">
           <button

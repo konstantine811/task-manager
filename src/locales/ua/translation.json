@@ -202,6 +202,22 @@
     "add_template_task": "Додати шаблони завдань за сьогодні",
     "add_container": "Додати категорію",
     "planned_tasks": "Заплановані завдання",
+    "journal": {
+      "title": "Щоденник дня",
+      "description": "Markdown-нотатка для цього дня у стилі Obsidian.",
+      "info_label": "Інформація про markdown",
+      "editor": "Редагування",
+      "preview": "Перегляд",
+      "placeholder": "# День\n\n## Фокус\n- \n\n## Нотатки\n",
+      "empty_preview": "Напиши нотатку зліва, і тут з’явиться preview.",
+      "use_template": "Вставити шаблон",
+      "status": {
+        "idle": "Готово до запису",
+        "saving": "Збереження...",
+        "saved": "Збережено",
+        "error": "Помилка збереження"
+      }
+    },
     "drag_task_here": "Перетягни сюди задачу",
     "edit": "Редагувати завдання",
     "delete": "Видалити завдання",
@@ -366,6 +382,10 @@
     "period_count_task_title": "Загальна тривалість завдань за період",
     "period_count_person_title": "Загальна тривалість за період",
     "range_count_task_title": "Аналітика витраченого часу на завдання за обраний період",
+    "range_done_bar_title": "Виконаний час за кожен день",
+    "range_done_bar_subtitle": "Лише виконані задачі за обраний період",
+    "done_bar_legend": "Гістограма виконання",
+    "line_overlay_label": "Лінійний шар",
     "period": "Період",
     "category": "Категорії",
     "task": "Завдання",

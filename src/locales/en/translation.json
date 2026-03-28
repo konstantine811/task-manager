@@ -179,6 +179,22 @@
     "add": "Add Task",
     "add_container": "Add category",
     "add_template_task": "Add Task Template for Today",
+    "journal": {
+      "title": "Daily journal",
+      "description": "A markdown note for this day in an Obsidian-like style.",
+      "info_label": "Markdown info",
+      "editor": "Editor",
+      "preview": "Preview",
+      "placeholder": "# Day\n\n## Focus\n- \n\n## Notes\n",
+      "empty_preview": "Start writing on the left and the preview will appear here.",
+      "use_template": "Use template",
+      "status": {
+        "idle": "Ready to write",
+        "saving": "Saving...",
+        "saved": "Saved",
+        "error": "Save error"
+      }
+    },
     "template_daily_task_title": "Daily Task Template",
     "daily_task_title": "Your Tasks for",
     "edit": "Edit Task",
@@ -361,6 +377,10 @@
     "period_count_task_title": "Total Duration of Tasks for Period",
     "period_count_person_title": "Total Duration for Period",
     "range_count_task_title": "Analytics of Time Spent on Tasks for Selected Period",
+    "range_done_bar_title": "Completed Time for Each Day",
+    "range_done_bar_subtitle": "Completed tasks only for the selected period",
+    "done_bar_legend": "Completion bars",
+    "line_overlay_label": "Line overlay",
     "period": "Period",
     "category": "Categories",
     "task": "Tasks",

@@ -21,16 +21,19 @@ const TASK_MANAGER_ROUTERS = [
     path: ROUTES.TEMPLATE,
     id: "task-manager-template",
     icon: <LayoutDashboard />,
+    labelKey: "template",
   },
   {
     path: ROUTES.DAILY_ID,
     id: "task-manager-daily",
     icon: <span className="text-base leading-none">🚶</span>,
+    labelKey: "daily",
   },
   {
     path: ROUTES.ANALYTICS,
     id: "task-manager-analytics",
     icon: <ChartSpline />,
+    labelKey: "analytics",
   },
 ];
 
@@ -83,7 +86,7 @@ const TaskManager = () => {
                 key={item.id}
                 title={t(`pages.task.${title}`)}
                 className={cn(
-                  "w-9 h-9 rounded-full flex items-center justify-center transition-colors",
+                  "min-w-18 px-2 py-1.5 rounded-2xl flex flex-col items-center justify-center gap-1 transition-colors text-[10px] font-medium leading-none",
                   isActive
                     ? "bg-indigo-500/20 text-indigo-600 dark:text-indigo-200"
                     : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/80 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white"
@@ -91,6 +94,9 @@ const TaskManager = () => {
               >
                 <span className="w-4 h-4 flex items-center justify-center [&>svg]:w-4 [&>svg]:h-4 [&>span]:text-sm">
                   {item.icon}
+                </span>
+                <span className="truncate max-w-full">
+                  {t(`pages.task.${item.labelKey}`)}
                 </span>
               </Link>
             );
