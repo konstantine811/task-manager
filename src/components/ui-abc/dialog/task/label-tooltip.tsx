@@ -40,8 +40,12 @@ const LabelTimePicker = ({ label, tooltip, children }: LabelTooltipProps) => {
               </Button>
             </div>
           </TooltipTrigger>
-          <TooltipContent side="top">
-            <p>{tooltip}</p>
+          <TooltipContent
+            side="top"
+            sideOffset={8}
+            className="max-w-[280px] whitespace-normal wrap-break-word border border-zinc-300/80 bg-white/95 text-zinc-900 shadow-lg backdrop-blur-sm dark:border-white/10 dark:bg-zinc-950/95 dark:text-zinc-100"
+          >
+            <p className="leading-5">{tooltip}</p>
           </TooltipContent>
         </Tooltip>
       </div>

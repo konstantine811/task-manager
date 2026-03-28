@@ -20,7 +20,6 @@ import LabelSelectWeek from "../ui-abc/dialog/task/label-select-week";
 import LabelCheckData from "../ui-abc/dialog/task/label-check-data";
 import LabelTooltip from "../ui-abc/dialog/task/label-tooltip";
 import Dialog from "@/components/ui-abc/dialog/dialog";
-import { ScrollArea } from "@radix-ui/react-scroll-area";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -197,185 +196,92 @@ const DialogTask = ({
 
   return (
     <Dialog isOpen={isOpen} setOpen={setOpen} className="p-4 md:p-6">
-      <ScrollArea className="w-full h-full touch-auto overscroll-contain">
-        <div className="flex flex-col gap-2 md:gap-4">
-          <div className="relative">
-            <div className="flex flex-col gap-2">
-              <h3 className="text-2xl font-semibold wrap-break-word">
-                {t(`task_manager.dialog_create_task.${translateRandom}.title`)}
-              </h3>
-              <p className="chrono-dialog-description font-mono text-sm">
-                {t(
-                  `task_manager.dialog_create_task.${translateRandom}.description`,
-                )}
-              </p>
+      <div className="relative w-full">
+        <WrapperHoverElement>
+          <SoundHoverElement
+            className="absolute top-[-19px] right-[-19px] z-20 rounded-full"
+            hoverTypeElement={SoundTypeElement.SELECT_2}
+            hoverStyleElement={HoverStyleElement.quad}
+          >
+            <Button
+              size="icon"
+              variant="ghost"
+              className="rounded-full bg-white/80 text-zinc-500 backdrop-blur-sm transition duration-200 hover:bg-zinc-200/80 hover:text-zinc-900 dark:bg-zinc-950/85 dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-zinc-200"
+              onClick={() => setOpen(false)}
+            >
+              <X />
+            </Button>
+          </SoundHoverElement>
+        </WrapperHoverElement>
+
+        <div className="w-full max-h-[calc(100dvh-10rem)] md:max-h-[72dvh] overflow-y-auto touch-auto overscroll-contain pr-1 pb-2">
+          <div className="flex flex-col gap-2 md:gap-4">
+            <div className="mb-2 pr-14">
+              <div className="flex flex-col gap-2">
+                <h3 className="text-2xl font-semibold wrap-break-word">
+                  {t(
+                    `task_manager.dialog_create_task.${translateRandom}.title`,
+                  )}
+                </h3>
+                <p className="chrono-dialog-description font-mono text-sm">
+                  {t(
+                    `task_manager.dialog_create_task.${translateRandom}.description`,
+                  )}
+                </p>
+              </div>
             </div>
-            <WrapperHoverElement>
-              <SoundHoverElement
-                className="absolute -top-4 -right-2 rounded-full"
-                hoverTypeElement={SoundTypeElement.SELECT_2}
-                hoverStyleElement={HoverStyleElement.quad}
-              >
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="text-zinc-500 hover:text-zinc-900 hover:bg-zinc-200/80 dark:text-zinc-400 dark:hover:text-zinc-200 dark:hover:bg-white/10 rounded-full transition duration-200"
-                  onClick={() => setOpen(false)}
-                >
-                  <X />
-                </Button>
-              </SoundHoverElement>
-            </WrapperHoverElement>
-          </div>
-          <div className="grid gap-6 md:py-4">
-            <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 md:gap-4 sm:gap-4">
-              <LabelTextArea
-                id="task-title"
-                label={t("task_manager.dialog_create_task.task.title.label")}
-                placeholder={t(
-                  "task_manager.dialog_create_task.task.title.description",
-                )}
-                value={title}
-                onChange={(e) => {
-                  setTitle(e.target.value);
-                }}
-              />
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 md:gap-4 sm:gap-4">
-              <LabelSelectOption<Priority>
-                id="priority"
-                label={"task_manager.dialog_create_task.task.priority.label"}
-                options={Priority}
-                value={priority}
-                onChange={setPriority}
-                prefixTranslationPath="task_manager.dialog_create_task.task.priority.options"
-                classPrefixFunction={getPriorityClassByPrefix}
-                placeholder={
-                  "task_manager.dialog_create_task.task.priority.description"
-                }
-                selectLabel={
-                  "task_manager.dialog_create_task.task.priority.description"
-                }
-              />
-            </div>
-            {task?.isPlanned ? (
-              <>
-                <div className="grid grid-cols-1 xs:grid-cols-4 items-start xs:items-center gap-2 md:gap-4 ">
-                  <LabelTooltip
-                    label={t(
-                      "task_manager.dialog_create_task.task.time.determined.label",
-                    )}
-                    tooltip={t(
-                      "task_manager.dialog_create_task.task.time.determined.description",
-                    )}
-                  >
-                    <TimePicker
-                      className="col-span-3"
-                      onChange={(time) => {
-                        setTime(time);
-                      }}
-                      time={task ? task.time : 0}
-                    />
-                  </LabelTooltip>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 md:gap-4">
-                  <LabelTooltip
-                    label={t(
-                      "task_manager.dialog_create_task.task.time.wasted.label",
-                    )}
-                    tooltip={t(
-                      "task_manager.dialog_create_task.task.time.wasted.description",
-                    )}
-                  >
-                    <TimePickerInputs
-                      time={wastedTime}
-                      onChange={(value) => {
-                        setWastedTime(value);
-                      }}
-                    />
-                  </LabelTooltip>
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="flex items-center gap-2 md:gap-4">
-                  <LabelCheckData
-                    id="is_determined_task"
-                    label={t(
-                      "task_manager.dialog_create_task.task.time.is_determined_task",
-                    )}
-                    onCheckedChange={() => {
-                      setIsDetermined((prev) => {
-                        setTime(0);
-                        setWastedTime(0);
-                        return !prev;
-                      });
-                    }}
-                    checked={isDetermined}
-                  />
-                </div>
-                {isDetermined && (
-                  <>
-                    <div className="grid grid-cols-4 items-center gap-2 md:gap-4">
-                      <LabelTooltip
-                        label={t(
-                          "task_manager.dialog_create_task.task.time.determined.label",
-                        )}
-                        tooltip={t(
-                          "task_manager.dialog_create_task.task.time.determined.description",
-                        )}
-                      >
-                        <TimePicker
-                          onChange={(time) => {
-                            setTime(time);
-                          }}
-                          time={task ? task.time : 0}
-                          className="col-span-3"
-                        ></TimePicker>
-                      </LabelTooltip>
-                    </div>
-                    {templated && (
-                      <div className="grid grid-cols-4 items-center gap-2 md:gap-4">
-                        <LabelTooltip
-                          label={t(
-                            "task_manager.dialog_create_task.task.time.wasted.label",
-                          )}
-                          tooltip={t(
-                            "task_manager.dialog_create_task.task.time.wasted.description",
-                          )}
-                        >
-                          <TimePickerInputs
-                            time={wastedTime}
-                            onChange={(value) => {
-                              setWastedTime(value);
-                            }}
-                          />
-                        </LabelTooltip>
-                      </div>
-                    )}
-                  </>
-                )}
-                {!isDetermined && (
-                  <div className="grid grid-cols-4 items-center gap-2 md:gap-4">
+            <div className="grid gap-6 md:py-4">
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 md:gap-4 sm:gap-4">
+                <LabelTextArea
+                  id="task-title"
+                  label={t("task_manager.dialog_create_task.task.title.label")}
+                  placeholder={t(
+                    "task_manager.dialog_create_task.task.title.description",
+                  )}
+                  value={title}
+                  onChange={(e) => {
+                    setTitle(e.target.value);
+                  }}
+                />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 md:gap-4 sm:gap-4">
+                <LabelSelectOption<Priority>
+                  id="priority"
+                  label={"task_manager.dialog_create_task.task.priority.label"}
+                  options={Priority}
+                  value={priority}
+                  onChange={setPriority}
+                  prefixTranslationPath="task_manager.dialog_create_task.task.priority.options"
+                  classPrefixFunction={getPriorityClassByPrefix}
+                  placeholder={
+                    "task_manager.dialog_create_task.task.priority.description"
+                  }
+                  selectLabel={
+                    "task_manager.dialog_create_task.task.priority.description"
+                  }
+                />
+              </div>
+              {task?.isPlanned ? (
+                <>
+                  <div className="grid grid-cols-1 xs:grid-cols-4 items-start xs:items-center gap-2 md:gap-4 ">
                     <LabelTooltip
                       label={t(
-                        "task_manager.dialog_create_task.task.time.duration.label",
+                        "task_manager.dialog_create_task.task.time.determined.label",
                       )}
                       tooltip={t(
-                        "task_manager.dialog_create_task.task.time.duration.description",
+                        "task_manager.dialog_create_task.task.time.determined.description",
                       )}
                     >
-                      <TimePickerInputs
-                        time={time}
-                        onChange={(value) => {
-                          setTime(value);
+                      <TimePicker
+                        className="col-span-3"
+                        onChange={(time) => {
+                          setTime(time);
                         }}
+                        time={task ? task.time : 0}
                       />
                     </LabelTooltip>
                   </div>
-                )}
-                {task && !templated && (
-                  <div className="grid grid-cols-4 items-center gap-2 md:gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 md:gap-4">
                     <LabelTooltip
                       label={t(
                         "task_manager.dialog_create_task.task.time.wasted.label",
@@ -392,144 +298,244 @@ const DialogTask = ({
                       />
                     </LabelTooltip>
                   </div>
-                )}
-              </>
-            )}
-          </div>
-          {templated && (
-            <div className="grid grid-cols-1 gap-4">
-              <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2">
-                <Label>
-                  {t(
-                    "task_manager.dialog_create_task.task.time.schedule_type.label",
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center gap-2 md:gap-4">
+                    <LabelCheckData
+                      id="is_determined_task"
+                      label={t(
+                        "task_manager.dialog_create_task.task.time.is_determined_task",
+                      )}
+                      onCheckedChange={() => {
+                        setIsDetermined((prev) => {
+                          setTime(0);
+                          setWastedTime(0);
+                          return !prev;
+                        });
+                      }}
+                      checked={isDetermined}
+                    />
+                  </div>
+                  {isDetermined && (
+                    <>
+                      <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 md:gap-4">
+                        <LabelTooltip
+                          label={t(
+                            "task_manager.dialog_create_task.task.time.determined.label",
+                          )}
+                          tooltip={t(
+                            "task_manager.dialog_create_task.task.time.determined.description",
+                          )}
+                        >
+                          <TimePicker
+                            onChange={(time) => {
+                              setTime(time);
+                            }}
+                            time={task ? task.time : 0}
+                            className="col-span-3"
+                          ></TimePicker>
+                        </LabelTooltip>
+                      </div>
+                      {templated && (
+                        <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 md:gap-4">
+                          <LabelTooltip
+                            label={t(
+                              "task_manager.dialog_create_task.task.time.wasted.label",
+                            )}
+                            tooltip={t(
+                              "task_manager.dialog_create_task.task.time.wasted.description",
+                            )}
+                          >
+                            <TimePickerInputs
+                              time={wastedTime}
+                              onChange={(value) => {
+                                setWastedTime(value);
+                              }}
+                            />
+                          </LabelTooltip>
+                        </div>
+                      )}
+                    </>
                   )}
-                </Label>
-                <Select
-                  value={scheduleType}
-                  onValueChange={(v) => setScheduleType(v as ScheduleType)}
-                >
-                  <SelectTrigger className="col-span-3 chrono-select-trigger">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="chrono-select-content">
-                    <SelectItem value="weekdays">
-                      {t(
-                        "task_manager.dialog_create_task.task.time.schedule_type.weekdays",
-                      )}
-                    </SelectItem>
-                    <SelectItem value="interval_days">
-                      {t(
-                        "task_manager.dialog_create_task.task.time.schedule_type.interval_days",
-                      )}
-                    </SelectItem>
-                    <SelectItem value="times_per_week">
-                      {t(
-                        "task_manager.dialog_create_task.task.time.schedule_type.times_per_week",
-                      )}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              {scheduleType === "weekdays" && (
-                <div className="grid grid-cols-4 items-center gap-2 md:gap-4">
-                  <LabelSelectWeek
-                    weekData={weekDays}
-                    selectedDays={selectedDays}
-                    label={"task_manager.dialog_create_task.task.time.when_day"}
-                    prefixWeedDay={"task_manager.day_names"}
-                    toggleDay={toggleDay}
-                  />
-                </div>
+                  {!isDetermined && (
+                    <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 md:gap-4">
+                      <LabelTooltip
+                        label={t(
+                          "task_manager.dialog_create_task.task.time.duration.label",
+                        )}
+                        tooltip={t(
+                          "task_manager.dialog_create_task.task.time.duration.description",
+                        )}
+                      >
+                        <TimePickerInputs
+                          time={time}
+                          onChange={(value) => {
+                            setTime(value);
+                          }}
+                        />
+                      </LabelTooltip>
+                    </div>
+                  )}
+                  {task && !templated && (
+                    <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 md:gap-4">
+                      <LabelTooltip
+                        label={t(
+                          "task_manager.dialog_create_task.task.time.wasted.label",
+                        )}
+                        tooltip={t(
+                          "task_manager.dialog_create_task.task.time.wasted.description",
+                        )}
+                      >
+                        <TimePickerInputs
+                          time={wastedTime}
+                          onChange={(value) => {
+                            setWastedTime(value);
+                          }}
+                        />
+                      </LabelTooltip>
+                    </div>
+                  )}
+                </>
               )}
-              {scheduleType === "interval_days" && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            </div>
+            {templated && (
+              <div className="grid grid-cols-1 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2">
+                  <Label>
+                    {t(
+                      "task_manager.dialog_create_task.task.time.schedule_type.label",
+                    )}
+                  </Label>
+                  <Select
+                    value={scheduleType}
+                    onValueChange={(v) => setScheduleType(v as ScheduleType)}
+                  >
+                    <SelectTrigger className="col-span-3 chrono-select-trigger">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="chrono-select-content">
+                      <SelectItem value="weekdays">
+                        {t(
+                          "task_manager.dialog_create_task.task.time.schedule_type.weekdays",
+                        )}
+                      </SelectItem>
+                      <SelectItem value="interval_days">
+                        {t(
+                          "task_manager.dialog_create_task.task.time.schedule_type.interval_days",
+                        )}
+                      </SelectItem>
+                      <SelectItem value="times_per_week">
+                        {t(
+                          "task_manager.dialog_create_task.task.time.schedule_type.times_per_week",
+                        )}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {scheduleType === "weekdays" && (
+                  <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 md:gap-4">
+                    <LabelSelectWeek
+                      weekData={weekDays}
+                      selectedDays={selectedDays}
+                      label={
+                        "task_manager.dialog_create_task.task.time.when_day"
+                      }
+                      prefixWeedDay={"task_manager.day_names"}
+                      toggleDay={toggleDay}
+                    />
+                  </div>
+                )}
+                {scheduleType === "interval_days" && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="flex items-center gap-2">
+                      <Label className="shrink-0">
+                        {t(
+                          "task_manager.dialog_create_task.task.time.schedule_interval_every",
+                        )}
+                      </Label>
+                      <Input
+                        type="number"
+                        min={1}
+                        max={365}
+                        value={intervalEvery}
+                        onChange={(e) =>
+                          setIntervalEvery(
+                            Math.max(1, parseInt(e.target.value, 10) || 1),
+                          )
+                        }
+                        className="w-20"
+                      />
+                      <span className="text-sm text-muted-foreground">
+                        {t(
+                          "task_manager.dialog_create_task.task.time.schedule_interval_days",
+                        )}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Label className="shrink-0">
+                        {t(
+                          "task_manager.dialog_create_task.task.time.schedule_interval_anchor",
+                        )}
+                      </Label>
+                      <Input
+                        type="date"
+                        value={intervalAnchorDate}
+                        onChange={(e) =>
+                          setIntervalAnchorDate(e.target.value as ISODate)
+                        }
+                        className="w-40"
+                      />
+                    </div>
+                  </div>
+                )}
+                {scheduleType === "times_per_week" && (
                   <div className="flex items-center gap-2">
-                    <Label className="shrink-0">
+                    <Label>
                       {t(
-                        "task_manager.dialog_create_task.task.time.schedule_interval_every",
+                        "task_manager.dialog_create_task.task.time.schedule_times_per_week",
                       )}
                     </Label>
                     <Input
                       type="number"
                       min={1}
-                      max={365}
-                      value={intervalEvery}
+                      max={7}
+                      value={timesPerWeek}
                       onChange={(e) =>
-                        setIntervalEvery(
-                          Math.max(1, parseInt(e.target.value, 10) || 1),
+                        setTimesPerWeek(
+                          Math.max(
+                            1,
+                            Math.min(7, parseInt(e.target.value, 10) || 1),
+                          ),
                         )
                       }
                       className="w-20"
                     />
-                    <span className="text-sm text-muted-foreground">
-                      {t(
-                        "task_manager.dialog_create_task.task.time.schedule_interval_days",
-                      )}
-                    </span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Label className="shrink-0">
-                      {t(
-                        "task_manager.dialog_create_task.task.time.schedule_interval_anchor",
-                      )}
-                    </Label>
-                    <Input
-                      type="date"
-                      value={intervalAnchorDate}
-                      onChange={(e) =>
-                        setIntervalAnchorDate(e.target.value as ISODate)
-                      }
-                      className="w-40"
-                    />
-                  </div>
-                </div>
-              )}
-              {scheduleType === "times_per_week" && (
-                <div className="flex items-center gap-2">
-                  <Label>
-                    {t(
-                      "task_manager.dialog_create_task.task.time.schedule_times_per_week",
-                    )}
-                  </Label>
-                  <Input
-                    type="number"
-                    min={1}
-                    max={7}
-                    value={timesPerWeek}
-                    onChange={(e) =>
-                      setTimesPerWeek(
-                        Math.max(
-                          1,
-                          Math.min(7, parseInt(e.target.value, 10) || 1),
-                        ),
-                      )
-                    }
-                    className="w-20"
-                  />
-                </div>
-              )}
-            </div>
-          )}
-          <div className="flex gap-1 justify-end">
-            <SoundHoverElement
-              animValue={0.98}
-              hoverTypeElement={SoundTypeElement.LINK}
-              hoverStyleElement={HoverStyleElement.none}
-            >
-              <Button
-                onClick={() => {
-                  handleCreateTask();
-                }}
-                disabled={title === ""}
-                variant="outline"
-                className="chrono-dialog-submit cursor-pointer"
+                )}
+              </div>
+            )}
+            <div className="flex gap-1 justify-end">
+              <SoundHoverElement
+                animValue={0.98}
+                hoverTypeElement={SoundTypeElement.LINK}
+                hoverStyleElement={HoverStyleElement.none}
               >
-                {task ? t("task_manager.edit") : t("task_manager.add")}
-              </Button>
-            </SoundHoverElement>
+                <Button
+                  onClick={() => {
+                    handleCreateTask();
+                  }}
+                  disabled={title === ""}
+                  variant="outline"
+                  className="chrono-dialog-submit cursor-pointer"
+                >
+                  {task ? t("task_manager.edit") : t("task_manager.add")}
+                </Button>
+              </SoundHoverElement>
+            </div>
           </div>
         </div>
-      </ScrollArea>
+      </div>
     </Dialog>
   );
 };

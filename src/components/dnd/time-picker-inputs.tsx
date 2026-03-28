@@ -46,7 +46,7 @@ export function TimePickerInputs({
 
   return (
     <>
-      <div className="col-span-3 flex gap-1">
+      <div className="col-span-3 grid grid-cols-2 gap-2 sm:gap-1">
         <div className="flex flex-col items-center space-y-1">
           <Label htmlFor="hours" className="text-xs text-zinc-500">
             {t("task_manager.dialog_create_task.task.time.hours")}
@@ -58,6 +58,7 @@ export function TimePickerInputs({
             onChange={(value) => {
               handleHoursChange(value);
             }}
+            className="w-full justify-between"
           />
         </div>
 
@@ -72,6 +73,7 @@ export function TimePickerInputs({
             onChange={(value) => {
               handleMinutesChange(value);
             }}
+            className="w-full justify-between"
           />
         </div>
       </div>
