@@ -7,7 +7,11 @@ import {
   RangeTaskAnalyticsNameEntity,
   TaskAnalyticsIdEntity,
 } from "@/types/analytics/task-analytics.model";
-import { DailyTaskRecord, Items } from "@/types/drag-and-drop.model";
+import {
+  DailyTaskRecord,
+  ItemTask,
+  Items,
+} from "@/types/drag-and-drop.model";
 
 export const getDailyTaskAnalyticsData = (tasks: Items): DailyTaskAnalytics => {
   const dailyEntity: TaskAnalyticsIdEntity = {};
@@ -35,7 +39,8 @@ export const getDailyTaskAnalyticsData = (tasks: Items): DailyTaskAnalytics => {
       taskNoDone: [],
     };
 
-    taskList.forEach((task) => {
+    taskList.forEach((raw) => {
+      const task = raw as ItemTask;
       const {
         id,
         title,
@@ -130,7 +135,8 @@ export const getRangeAnalyticsData = (
       };
     }
 
-    taskList.forEach((task) => {
+    taskList.forEach((raw) => {
+      const task = raw as ItemTask;
       const { title, isDone, isDetermined, isPlanned, time, timeDone } = task;
 
       if (!taskEntity[title]) {

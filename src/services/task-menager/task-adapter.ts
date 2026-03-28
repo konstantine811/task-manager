@@ -26,7 +26,6 @@ export function itemTaskToTaskTemplate(task: ItemTask): TaskTemplate {
     schedule: getScheduleFromItemTask(task),
     isPlanned: task.isPlanned,
     isDetermined: task.isDetermined,
-    goalLinks: task.goalLinks,
   };
 }
 
@@ -52,7 +51,6 @@ export function taskTemplateToItemTask(
     isPlanned: template.isPlanned,
     whenDo: days,
     isDetermined: template.isDetermined,
-    goalLinks: template.goalLinks,
     schedule: template.schedule,
   };
 }

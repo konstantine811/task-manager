@@ -52,6 +52,10 @@ html:not(.dark) body {
   mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
   -webkit-mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
 }
+html:not(.dark) .bg-grid {
+  background-image: linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+}
 .hero-perspective {
   perspective: 2000px;
 }
@@ -68,6 +72,11 @@ html:not(.dark) body {
   border: 1px solid rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(10px);
 }
+html:not(.dark) .glass-card {
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 16px 40px -24px rgba(15, 23, 42, 0.18);
+}
 .dropdown-glass {
   background: rgba(10, 10, 12, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -81,6 +90,9 @@ html:not(.dark) .dropdown-glass {
 }
 .text-glow {
   text-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+}
+html:not(.dark) .text-glow {
+  text-shadow: 0 10px 30px rgba(99, 102, 241, 0.12);
 }
 @keyframes fadeInUp {
   0% {
@@ -125,6 +137,21 @@ html:not(.dark) .dropdown-glass {
 .chrono-task-card-done:hover {
   border-color: rgba(99, 102, 241, 0.25);
 }
+html:not(.dark) .chrono-task-card {
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+html:not(.dark) .chrono-task-card:hover {
+  border-color: rgba(0, 0, 0, 0.14);
+  background: rgba(244, 244, 245, 0.98);
+}
+html:not(.dark) .chrono-task-card-done {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: rgba(99, 102, 241, 0.22);
+}
+html:not(.dark) .chrono-task-card-done:hover {
+  border-color: rgba(99, 102, 241, 0.32);
+}
 .chrono-card {
   background: rgba(24, 24, 27, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.05);
@@ -132,6 +159,13 @@ html:not(.dark) .dropdown-glass {
 }
 .chrono-card:hover {
   background: rgba(39, 39, 42, 0.6);
+}
+html:not(.dark) .chrono-card {
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+html:not(.dark) .chrono-card:hover {
+  background: rgba(244, 244, 245, 0.98);
 }
 .chrono-btn-icon {
   background: rgba(24, 24, 27, 0.8);
@@ -145,6 +179,14 @@ html:not(.dark) .dropdown-glass {
   background: rgba(39, 39, 42, 0.9);
   border-color: rgba(255, 255, 255, 0.08);
 }
+html:not(.dark) .chrono-btn-icon {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+html:not(.dark) .chrono-btn-icon:hover {
+  background: rgba(244, 244, 245, 0.98);
+  border-color: rgba(0, 0, 0, 0.14);
+}
 .chrono-btn-secondary {
   background: rgba(24, 24, 27, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.05);
@@ -155,6 +197,16 @@ html:not(.dark) .dropdown-glass {
 .chrono-btn-secondary:hover {
   color: white;
   border-color: rgba(255, 255, 255, 0.08);
+}
+html:not(.dark) .chrono-btn-secondary {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  color: #52525b;
+}
+html:not(.dark) .chrono-btn-secondary:hover {
+  color: #18181b;
+  border-color: rgba(0, 0, 0, 0.14);
+  background: rgba(244, 244, 245, 0.98);
 }
 /* Chrono day badge - subtle border */
 .chrono-day-badge {

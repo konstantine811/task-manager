@@ -17,7 +17,7 @@ import { StyleWordBreak } from "@/config/styles.config";
 import { CATEGORY_CHART_COLORS } from "@/config/chart-colors.config";
 
 export function TaskItem({
-  index = "",
+  index: _index = "",
   task,
   onToggle,
   children,

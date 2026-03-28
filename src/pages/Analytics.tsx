@@ -15,7 +15,6 @@ import ChartPieCategoryWrap from "./daily-components/analytics-chart/chart-pie-c
 import ChartPieTaskPlannedWrap from "./analytics-comonents/chart-pie-task-planned-wrap";
 import RangeAnalyticsTable from "./analytics-comonents/range-analytics-table";
 import TaskDateRangeHeader from "./analytics-comonents/task-data-range-header";
-import AnalyticsCompletedGoals from "./analytics-comonents/analytics-completed-goals";
 import { AnimatedItem } from "@/components/ui/animated-item";
 import { CATEGORY_OPTIONS } from "@/components/dnd/config/category-options";
 
@@ -65,15 +64,15 @@ const Analytics = () => {
     <div className="w-full" style={{ minHeight: `calc(100vh - ${hS}px)` }}>
       <header className="border-b border-white/10 py-2">
         <AnimatedItem index={0}>
-        <div className="container mx-auto flex items-center justify-end">
-          <CalendarDatePicker
-            date={range}
-            onDateSelect={(newRange) => {
-              setRange(newRange);
-            }}
-            variant="outline"
-          />
-        </div>
+          <div className="container mx-auto flex items-center justify-end">
+            <CalendarDatePicker
+              date={range}
+              onDateSelect={(newRange) => {
+                setRange(newRange);
+              }}
+              variant="outline"
+            />
+          </div>
         </AnimatedItem>
       </header>
       <main className={`w-full flex-1 px-4`}>
@@ -110,9 +109,6 @@ const Analytics = () => {
                   />
                 </AnimatedItem>
               </div>
-              <AnimatedItem index={4}>
-                <AnalyticsCompletedGoals rangeFrom={range.from} rangeTo={range.to} />
-              </AnimatedItem>
               <AnimatedItem index={5}>
                 <div className="mt-10">
                   <RangeAnalyticsTable data={analyticsData.rangeTaskEntity} />

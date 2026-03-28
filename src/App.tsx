@@ -9,7 +9,13 @@ function App() {
 
   return (
     <>
-      <Suspense fallback={<div className="flex min-h-screen items-center justify-center">Loading…</div>}>
+      <Suspense
+        fallback={
+          <div className="flex min-h-screen items-center justify-center">
+            Loading…
+          </div>
+        }
+      >
         <Routes>
           {routes.map(({ path, element, children }) => (
             <Route key={path} path={path} element={element}>
@@ -17,8 +23,12 @@ function App() {
                 child.path === "" ? (
                   <Route key="index" index element={child.element} />
                 ) : (
-                  <Route key={child.path} path={child.path} element={child.element} />
-                )
+                  <Route
+                    key={child.path}
+                    path={child.path}
+                    element={child.element}
+                  />
+                ),
               )}
             </Route>
           ))}

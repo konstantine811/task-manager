@@ -18,7 +18,6 @@ import { UniqueIdentifier } from "@dnd-kit/core";
 import { useTranslation } from "react-i18next";
 import CustomDrawer from "@/components/ui-abc/drawer/custom-drawer";
 import DailySidePanelContent from "./daily-components/daily-side-panel-content";
-import { DialogGoalCompletion } from "@/components/goals/dialog-goal-completion";
 import DailyAnalytics from "./daily-components/daily-analytics";
 import { BreakPoints } from "@/config/adaptive.config";
 import { DailyTaskAnalytics } from "@/types/analytics/task-analytics.model";
@@ -31,7 +30,7 @@ const DailyTask = () => {
   const [dateVal, setDateVal] = useState<string | undefined>();
   const { id: date } = useParams(); // ← id це твоя дата у форматі "dd.MM.yyyy"
   const [plannedTasks, setPlannedTasks] = useState<ItemTaskCategory[] | null>(
-    null
+    null,
   );
   const [dailyAnalyticsData, setDailyAnalyticsData] =
     useState<DailyTaskAnalytics | null>(null);
@@ -45,7 +44,7 @@ const DailyTask = () => {
       //
       if (!plannedTasks) return;
       const index = plannedTasks.findIndex(
-        (task) => task.id === updatedTask.id
+        (task) => task.id === updatedTask.id,
       );
       if (index === -1) return;
 
@@ -64,7 +63,7 @@ const DailyTask = () => {
         })
         .catch((err) => console.error("❌ Failed to update task:", err));
     },
-    [plannedTasks, date]
+    [plannedTasks, date],
   );
 
   const addPlannedTask = useCallback(
@@ -77,7 +76,7 @@ const DailyTask = () => {
         })
         .catch((err) => console.error("❌ Failed to save planned tasks:", err));
     },
-    [plannedTasks, date]
+    [plannedTasks, date],
   );
 
   const deletePlannedTask = useCallback(
@@ -91,7 +90,7 @@ const DailyTask = () => {
         })
         .catch((err) => console.error("❌ Failed to delete task:", err));
     },
-    [plannedTasks, date]
+    [plannedTasks, date],
   );
 
   const setDailyTasks = useCallback((newDailyTasks: Items) => {
@@ -125,7 +124,7 @@ const DailyTask = () => {
     }
     loadDailyTasksByDate<ItemTaskCategory[]>(
       date,
-      FirebaseCollection.plannedTasks
+      FirebaseCollection.plannedTasks,
     ).then((data) => {
       setPlannedTasks(data ?? []);
     });
@@ -183,7 +182,6 @@ const DailyTask = () => {
           )}
         </div>
       </div>
-      <DialogGoalCompletion />
     </DailyTaskContext.Provider>
   );
 };

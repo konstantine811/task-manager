@@ -83,7 +83,7 @@ interface Props {
   emptyStateCenter?: React.ReactNode;
   /** When true, template has no tasks */
   isEmptyTemplate?: boolean;
-  /** Rendered above categories (e.g. Goals panel) */
+  /** Rendered above categories */
   beforeCategories?: React.ReactNode;
   /** Called when a suggested task is dropped into template — remove it from AI list */
   onSuggestedTaskMovedToTemplate?: (advisorTask: import("@/services/ai/gemini.types").AdvisorTask) => void;

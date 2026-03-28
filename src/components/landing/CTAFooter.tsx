@@ -1,22 +1,44 @@
+import { useNavigate } from "react-router";
+import { ArrowRight } from "lucide-react";
+import { ROUTES } from "@/config/routes";
+import { useAuth } from "@/hooks/useAuth";
+
 export function CTAFooter() {
+  const { isAuthenticated, loginWithGoogle } = useAuth();
+  const navigate = useNavigate();
+
+  const handleStart = () => {
+    if (isAuthenticated) {
+      navigate(ROUTES.TEMPLATE);
+      return;
+    }
+
+    loginWithGoogle()
+      .then(() => navigate(ROUTES.TEMPLATE, { replace: true }))
+      .catch((err) => console.error("Google sign-in error:", err));
+  };
+
   return (
-    <section className="max-w-4xl mx-auto px-6 text-center py-20 border-t border-white/5">
-      <h2 className="text-3xl md:text-4xl font-medium text-white tracking-tight mb-6">Готові оптимізувати свій день?</h2>
-      <p className="text-zinc-400 mb-10">Приєднуйтесь до 10,000+ професіоналів, які вже використовують Chrono.</p>
-      <form className="max-w-sm mx-auto flex gap-2" onSubmit={(e) => e.preventDefault()}>
-        <input
-          type="email"
-          placeholder="example@work.com"
-          className="flex-1 bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-zinc-600"
-        />
+    <section className="mx-auto max-w-4xl border-t border-zinc-200/80 px-6 py-20 text-center dark:border-white/5">
+      <h2 className="mb-6 text-3xl font-medium tracking-tight text-zinc-900 dark:text-white md:text-4xl">
+        Побудуйте свої шаблони і перейдіть до реального дня
+      </h2>
+      <p className="mb-10 text-zinc-600 dark:text-zinc-400">
+        У поточній версії Chrono ви вже можете зібрати структуру задач, працювати з днем і
+        дивитися аналітику без зайвих екранів та складного онбордингу.
+      </p>
+      <div className="max-w-lg mx-auto flex flex-col sm:flex-row gap-3 justify-center">
         <button
-          type="submit"
-          className="bg-white text-black text-sm font-medium px-5 py-2 rounded-lg hover:bg-zinc-200 transition-colors shadow-lg shadow-white/5"
+          type="button"
+          onClick={handleStart}
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-zinc-900 px-5 py-3 text-sm font-medium text-white shadow-lg shadow-zinc-200/80 transition-colors hover:bg-zinc-800 dark:bg-white dark:text-black dark:shadow-white/5 dark:hover:bg-zinc-200"
         >
-          Почати
+          Відкрити застосунок <ArrowRight className="w-4 h-4" />
         </button>
-      </form>
-      <p className="text-xs text-zinc-600 mt-4">14 днів безкоштовно. Кредитна карта не потрібна.</p>
+      </div>
+      <p className="mt-4 text-xs text-zinc-500 dark:text-zinc-600">
+        Вхід через Google. Основний сценарій: шаблони, day view, analytics, AI support.
+      </p>
     </section>
   );
 }

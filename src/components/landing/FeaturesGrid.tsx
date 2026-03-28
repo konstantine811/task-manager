@@ -1,43 +1,49 @@
-import { Clock, TrendingUp, Users } from "lucide-react";
+import { Bot, CalendarDays, ChartColumn, LayoutTemplate } from "lucide-react";
 
 export function FeaturesGrid() {
   const features = [
     {
-      icon: Clock,
-      title: "Глибокий фокус",
+      icon: LayoutTemplate,
+      title: "Шаблони задач",
       description:
-        'Режим "Zen" блокує всі сповіщення та приховує зайві елементи інтерфейсу, коли ви працюєте над важливим завданням.',
+        "Створюйте базовий набір повторюваних задач, розкладайте їх по категоріях і задавайте періодичність для щоденної роботи.",
     },
     {
-      icon: TrendingUp,
-      title: "Розумна аналітика",
+      icon: CalendarDays,
+      title: "План на день",
       description:
-        "Chrono аналізує ваші піки продуктивності та пропонує оптимальний час для складних завдань на основі історії.",
+        "Підтягуйте задачі з шаблонів у конкретну дату, редагуйте їх під день, відмічайте виконання та керуйте planned або determined задачами.",
     },
     {
-      icon: Users,
-      title: "Командний ритм",
+      icon: ChartColumn,
+      title: 'Аналітика виконання',
       description:
-        'Синхронізуйте графіки без зайвих зустрічей. Бачте, коли колеги доступні для "deep work", а коли — для дзвінків.',
+        "Переглядайте статистику за діапазон дат: час, виконані задачі, категорії та зведення по окремих задачах.",
+    },
+    {
+      icon: Bot,
+      title: "AI quick start",
+      description:
+        "Швидко наповнюйте шаблони через AI-помічника та стартові сценарії, коли не хочеться збирати систему вручну з нуля.",
     },
   ];
 
   return (
-    <section className="max-w-7xl mx-auto px-6 py-32">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <section id="landing-features" className="max-w-7xl mx-auto px-6 py-32">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
         {features.map(({ icon: Icon, title, description }) => (
           <div
             key={title}
-            className="glass-card p-8 rounded-2xl relative overflow-hidden group hover:bg-white/5 transition-colors duration-300"
+            className="glass-card group relative overflow-hidden rounded-2xl p-8 transition-colors duration-300 hover:bg-zinc-100/80 dark:hover:bg-white/5"
           >
-            {title === "Розумна аналітика" && (
+            {title === "Аналітика виконання" && (
               <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 blur-[50px] rounded-full group-hover:bg-indigo-500/20 transition-colors" />
             )}
-            <div className="w-12 h-12 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-white mb-6 group-hover:scale-110 group-hover:bg-zinc-800 transition-all relative z-10">
+            <div className="relative z-10 mb-6 flex h-12 w-12 items-center justify-center rounded-lg border border-zinc-200 bg-white text-zinc-900 transition-all group-hover:scale-110 group-hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white dark:group-hover:bg-zinc-800">
               <Icon className="w-6 h-6" />
             </div>
-            <h3 className="text-xl font-medium text-white mb-2">{title}</h3>
-            <p className="text-zinc-400 text-sm leading-relaxed">{description}</p>
+            <h3 className="mb-2 text-xl font-medium text-zinc-900 dark:text-white">{title}</h3>
+            <p className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">{description}</p>
           </div>
         ))}
       </div>

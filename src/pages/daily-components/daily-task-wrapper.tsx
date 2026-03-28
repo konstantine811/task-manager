@@ -33,8 +33,6 @@ import {
   filterTasksByAnotherTasks,
 } from "@/services/task-menager/filter-tasks";
 import { normalizeItems } from "@/services/task-menager/normalize";
-import { getGoalLinksFromTemplate, resolveGoalLinksForTaskDone, resolveGoalLinksForTaskUndone } from "@/services/task-menager/task-goal-links-resolver";
-import { useGoalsStore } from "@/storage/goalsStore";
 
 const DailyTaskWrapper = () => {
   const [dailyTasks, setDailyTasks] = useState<Items>([]);
@@ -53,11 +51,6 @@ const DailyTaskWrapper = () => {
     addPlannedTask,
     setDailyTasks: setProviderDailyTask,
   } = useDailyTaskContext();
-  const goals = useGoalsStore((s) => s.goals);
-  const applyTaskDone = useGoalsStore((s) => s.applyTaskDone);
-  const applyTaskUndone = useGoalsStore((s) => s.applyTaskUndone);
-  const lastDoneKeyRef = useRef<string>("");
-  const lastEnrichedRef = useRef<Items | null>(null);
 
   useEffect(() => {
     // 💡 Очищення попередніх даних при зміні дати
@@ -73,15 +66,6 @@ const DailyTaskWrapper = () => {
     ]).then(([tasks, templateTasks]) => {
       setTemplatedTasks(templateTasks || []);
       const templateItems = templateTasks || [];
-      const enrichWithGoalLinks = (items: Items): Items =>
-        items.map((cat) => ({
-          ...cat,
-          tasks: cat.tasks.map((t) => {
-            if (t.goalLinks?.length) return t;
-            const links = getGoalLinksFromTemplate(t.id, t.title, templateItems);
-            return links ? { ...t, goalLinks: links } : t;
-          }),
-        }));
       if (templateItems.length) {
         if (tasks && tasks.length) {
           setAnotherNormalizedTasks(
@@ -92,12 +76,9 @@ const DailyTaskWrapper = () => {
         }
       }
       if (tasks && tasks.length) {
-        const enriched = enrichWithGoalLinks(tasks);
-        setDailyTasks(enriched);
-        lastEnrichedRef.current = enriched;
+        setDailyTasks(tasks);
       } else {
         setDailyTasks([]);
-        lastEnrichedRef.current = null;
       }
       setIsLoaded(true);
     });
@@ -168,7 +149,6 @@ const DailyTaskWrapper = () => {
           whenDo: task.whenDo || [],
           isDetermined: task.isDetermined || false,
           categoryName: task.categoryName,
-          goalLinks: task.goalLinks,
         } as ItemTaskCategory;
       });
       addPlannedTask(plannedTasks);
@@ -178,25 +158,16 @@ const DailyTaskWrapper = () => {
 
   const handleChangeTasks = useCallback(
     (tasks: Items) => {
-      const enriched = tasks.map((cat) => ({
-        ...cat,
-        tasks: cat.tasks.map((t) => {
-          if (t.goalLinks?.length) return t;
-          const links = getGoalLinksFromTemplate(t.id, t.title, templatedTasks);
-          return links ? { ...t, goalLinks: links } : t;
-        }),
-      }));
-      lastEnrichedRef.current = enriched;
       if (!isLoaded) return;
       setTimeout(() => {
-        setDailyTasks(enriched);
+        setDailyTasks(tasks);
         setAnotherNormalizedTasks(
-          filterTasksByAnotherTasks(templatedTasks, enriched)
+          filterTasksByAnotherTasks(templatedTasks, tasks)
         );
-        updatePlannedDeterminedTask(enriched);
+        updatePlannedDeterminedTask(tasks);
       }, 0);
       saveDailyTasks<Items>(
-        enriched,
+        tasks,
         currentDateRef.current || "",
         FirebaseCollection.dailyTasks
       );
@@ -228,50 +199,6 @@ const DailyTaskWrapper = () => {
                 onDeletePlannedTask={deletePlannedTask}
                 onChangeTasks={handleChangeTasks}
                 onEditPlannedTask={onUpdatePlannedTask}
-                onTaskDone={
-                  date
-                    ? (task) => {
-                        const key = `done-${task.id}-${date}`;
-                        if (lastDoneKeyRef.current === key) return;
-
-                        const validLinks = resolveGoalLinksForTaskDone({
-                          task,
-                          templateItems: templatedTasks,
-                          goals,
-                          lastEnrichedItems: lastEnrichedRef.current,
-                        });
-                        if (validLinks?.length) {
-                          lastDoneKeyRef.current = key;
-                          applyTaskDone(task.id, date, {
-                            title: task.title,
-                            time: task.time,
-                            timeDone: task.timeDone ?? task.time,
-                            goalLinks: validLinks,
-                          });
-                        }
-                      }
-                    : undefined
-                }
-                onTaskUndone={
-                  date
-                    ? (task) => {
-                        lastDoneKeyRef.current = "";
-                        const validLinksUndone = resolveGoalLinksForTaskUndone({
-                          task,
-                          templateItems: templatedTasks,
-                          goals,
-                          lastEnrichedItems: lastEnrichedRef.current,
-                        });
-                        if (validLinksUndone?.length)
-                          applyTaskUndone(task.id, date, {
-                            title: task.title,
-                            time: task.time,
-                            timeDone: task.timeDone ?? task.time,
-                            goalLinks: validLinksUndone,
-                          });
-                      }
-                    : undefined
-                }
               />
             </TaskManagerProvider>
           )}

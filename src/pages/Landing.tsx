@@ -10,7 +10,7 @@ import {
 
 export default function Landing() {
   return (
-    <div className="text-zinc-300 font-sans antialiased selection:bg-indigo-500/30 selection:text-indigo-200 min-h-screen">
+    <div className="min-h-screen font-sans antialiased text-zinc-700 dark:text-zinc-300 selection:bg-indigo-500/30 selection:text-indigo-200">
       <LandingBackground />
       <ChronoNav variant="landing" />
       <main className="relative z-10 pt-32 pb-20">
@@ -18,8 +18,8 @@ export default function Landing() {
         <SocialProof />
         <FeaturesGrid />
         <CTAFooter />
-        <LandingFooter />
       </main>
+      <LandingFooter />
     </div>
   );
 }

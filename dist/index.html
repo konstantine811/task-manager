@@ -6,10 +6,19 @@
       (function() {
         try {
           var t = localStorage.getItem('theme');
-          if (t === 'light') document.documentElement.classList.remove('dark');
-          else document.documentElement.classList.add('dark');
+          var isLight = t === 'light';
+          if (isLight) {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.style.setProperty('--background', '#fbfcf8');
+            document.documentElement.style.setProperty('--foreground', '#333333');
+          } else {
+            document.documentElement.classList.add('dark');
+            document.documentElement.style.setProperty('--background', '#000000');
+            document.documentElement.style.setProperty('--foreground', '#d4d4d4');
+          }
         } catch (e) {}
       })();
+    </script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chrono // Керування часом</title>
@@ -19,9 +28,10 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
+    <script type="module" crossorigin src="/assets/index--RdlNSyL.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-BDxhTt3o.css">
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

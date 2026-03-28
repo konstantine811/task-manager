@@ -16,7 +16,6 @@ import TemplateRightPanel from "./template-components/template-right-panel";
 import TemplateChartsPanel from "./template-components/template-charts-panel";
 import { AiAssistantPanel } from "@/components/ai/ai-assistant-panel";
 import { QuickStartOnboarding } from "@/components/ai/quick-start-onboarding";
-import { GoalsPanel } from "@/components/goals/goals-panel";
 import { useIsAdoptive } from "@/hooks/useIsAdoptive";
 import CustomDrawer from "@/components/ui-abc/drawer/custom-drawer";
 import { AnimatedItem } from "@/components/ui/animated-item";
@@ -30,9 +29,12 @@ const TemplateTask = () => {
   const hS = useHeaderSizeStore((s) => s.size);
   const [t] = useTranslation();
   const removeSuggestedTaskRef = useRef<
-    ((advisorTask: import("@/services/ai/gemini.types").AdvisorTask) => void) | null
+    | ((advisorTask: import("@/services/ai/gemini.types").AdvisorTask) => void)
+    | null
   >(null);
-  const promptFromQuickStartRef = useRef<((prompt: string) => void) | null>(null);
+  const promptFromQuickStartRef = useRef<((prompt: string) => void) | null>(
+    null,
+  );
   useEffect(() => {
     setIsLoaded(true);
     loadTemplateTasks()
@@ -71,14 +73,17 @@ const TemplateTask = () => {
       </AnimatedItem>
 
       {/* Колонки 2+3 — Quick Start/задачі та AI (рівно по 1/3) */}
-      <AnimatedItem index={2} className="flex min-w-0 flex-1 lg:col-span-2 overflow-auto">
-      <main
-        className={`flex min-w-0 flex-1 lg:col-span-2 overflow-auto ${outletContext.className}`}
-        style={{ minHeight: 0 }}
+      <AnimatedItem
+        index={2}
+        className="flex min-w-0 flex-1 lg:col-span-2 overflow-auto"
       >
-        {!isLoaded ? (
-          <div className="flex-1 flex flex-col items-stretch justify-start min-w-0 min-h-0 w-full px-4 overflow-auto">
-            <TaskManagerProvider>
+        <main
+          className={`flex min-w-0 flex-1 lg:col-span-2 overflow-auto ${outletContext.className}`}
+          style={{ minHeight: 0 }}
+        >
+          {!isLoaded ? (
+            <div className="flex-1 flex flex-col items-stretch justify-start min-w-0 min-h-0 w-full px-4 overflow-auto">
+              <TaskManagerProvider>
                 <MultipleContainers
                   strategy={rectSortingStrategy}
                   vertical
@@ -86,7 +91,6 @@ const TemplateTask = () => {
                   templated={true}
                   items={dailyTasks}
                   isEmptyTemplate={templatedTask.length === 0}
-                  beforeCategories={<GoalsPanel templateTasks={templatedTask} />}
                   emptyStateCenter={
                     templatedTask.length === 0 ? (
                       <QuickStartOnboarding
@@ -112,16 +116,16 @@ const TemplateTask = () => {
                   sidePanel={
                     !mdSize ? (
                       <AiAssistantPanel
-                          templateTasks={templatedTask}
-                          onReplaceTasks={(items) => {
-                            saveTemplateTasks(items);
-                            setDailyTasks(items);
-                            setTemplatedTask(items);
-                          }}
-                          hideQuickStart={templatedTask.length === 0}
-                          onPromptFromQuickStartRef={promptFromQuickStartRef}
-                          onRemoveSuggestedTaskRef={removeSuggestedTaskRef}
-                        />
+                        templateTasks={templatedTask}
+                        onReplaceTasks={(items) => {
+                          saveTemplateTasks(items);
+                          setDailyTasks(items);
+                          setTemplatedTask(items);
+                        }}
+                        hideQuickStart={templatedTask.length === 0}
+                        onPromptFromQuickStartRef={promptFromQuickStartRef}
+                        onRemoveSuggestedTaskRef={removeSuggestedTaskRef}
+                      />
                     ) : undefined
                   }
                   onSuggestedTaskMovedToTemplate={(advisorTask) =>
@@ -129,11 +133,11 @@ const TemplateTask = () => {
                   }
                 />
               </TaskManagerProvider>
-          </div>
-        ) : (
-          <Preloader />
-        )}
-      </main>
+            </div>
+          ) : (
+            <Preloader />
+          )}
+        </main>
       </AnimatedItem>
 
       {/* Права колонка — AI у drawer на мобільному */}
