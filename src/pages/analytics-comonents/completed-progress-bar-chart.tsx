@@ -43,7 +43,8 @@ const CompletedProgressBarChart = ({
   const shadowId = useId().replace(/:/g, "-");
   const selectedTheme = useThemeStore((s) => s.selectedTheme);
   const themeColors =
-    ThemePalette[selectedTheme ?? ThemeType.DARK] ?? ThemePalette[ThemeType.DARK];
+    ThemePalette[selectedTheme ?? ThemeType.DARK] ??
+    ThemePalette[ThemeType.DARK];
 
   const parsedData = useMemo(() => {
     const dataByDate = new Map(
@@ -53,14 +54,14 @@ const CompletedProgressBarChart = ({
           timeDone: d.data.countTimeDone,
           notTimeDone: d.data.countNotTimeDone,
         },
-      ])
+      ]),
     );
 
     if (rangeFrom && rangeTo) {
       const allDates = getAllDatesInRange(rangeFrom, rangeTo);
       const toKey = (date: Date) =>
         `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
-          date.getDate()
+          date.getDate(),
         ).padStart(2, "0")}`;
 
       return allDates.map((date) => ({
@@ -79,7 +80,7 @@ const CompletedProgressBarChart = ({
 
   const trimmedData = useMemo(() => {
     const firstIdx = parsedData.findIndex(
-      (d) => d.doneTime > 0 || d.notTimeDone > 0
+      (d) => d.doneTime > 0 || d.notTimeDone > 0,
     );
     if (firstIdx < 0) {
       return parsedData;
@@ -189,7 +190,10 @@ const CompletedProgressBarChart = ({
     gradient.append("stop").attr("offset", "0%").attr("stop-color", "#34d399");
     gradient.append("stop").attr("offset", "50%").attr("stop-color", "#22d3ee");
     gradient.append("stop").attr("offset", "85%").attr("stop-color", "#818cf8");
-    gradient.append("stop").attr("offset", "100%").attr("stop-color", "#fb7185");
+    gradient
+      .append("stop")
+      .attr("offset", "100%")
+      .attr("stop-color", "#fb7185");
 
     defs
       .append("filter")
@@ -240,7 +244,9 @@ const CompletedProgressBarChart = ({
         d3
           .axisLeft(y)
           .tickValues(tickValues)
-          .tickFormat((time) => String(paresSecondToTime(time as number).hours))
+          .tickFormat((time) =>
+            String(paresSecondToTime(time as number).hours),
+          ),
       )
       .call((g) => {
         g.selectAll(".domain").remove();
@@ -252,10 +258,13 @@ const CompletedProgressBarChart = ({
       .attr("transform", `translate(0, ${innerHeight})`)
       .attr("class", "text-zinc-400 text-[14px]")
       .call(
-        d3.axisBottom(x).tickValues(xTickValues).tickFormat((value) => {
-          const date = new Date(`${value}T00:00:00`);
-          return format(date, chartData.length > 14 ? "dd.MM" : "EEE");
-        })
+        d3
+          .axisBottom(x)
+          .tickValues(xTickValues)
+          .tickFormat((value) => {
+            const date = new Date(`${value}T00:00:00`);
+            return format(date, chartData.length > 14 ? "dd.MM" : "EEE");
+          }),
       )
       .call((g) => {
         g.selectAll(".domain").remove();
@@ -276,18 +285,21 @@ const CompletedProgressBarChart = ({
     group
       .append("text")
       .attr("x", innerWidth / 2)
-      .attr("y", innerHeight + 44)
+      .attr("y", innerHeight + 54)
       .attr("text-anchor", "middle")
       .attr("class", "fill-zinc-400 text-lg")
       .text(t("chart.days"));
 
-    const showTooltip = (event: MouseEvent, item: (typeof parsedData)[number]) => {
+    const showTooltip = (
+      event: MouseEvent,
+      item: (typeof parsedData)[number],
+    ) => {
       const tooltip = tooltipRef.current;
       if (!tooltip) return;
 
       const { hours, minutes } = paresSecondToTime(item.doneTime);
       const { hours: undoneHours, minutes: undoneMinutes } = paresSecondToTime(
-        item.notTimeDone
+        item.notTimeDone,
       );
       tooltip.innerHTML = `
         <div><strong>${format(item.date, "dd.MM.yyyy")}</strong></div>
@@ -355,7 +367,10 @@ const CompletedProgressBarChart = ({
       .data(chartData.filter((d) => d.doneTime > 0))
       .enter()
       .append("circle")
-      .attr("cx", (d) => (x(format(d.date, "yyyy-MM-dd")) ?? 0) + x.bandwidth() / 2)
+      .attr(
+        "cx",
+        (d) => (x(format(d.date, "yyyy-MM-dd")) ?? 0) + x.bandwidth() / 2,
+      )
       .attr("cy", (d) => y(d.doneTime))
       .attr("r", 2)
       .attr("fill", themeColors.accent)
@@ -367,7 +382,10 @@ const CompletedProgressBarChart = ({
       .data(chartData.filter((d) => d.notTimeDone > 0))
       .enter()
       .append("circle")
-      .attr("cx", (d) => (x(format(d.date, "yyyy-MM-dd")) ?? 0) + x.bandwidth() / 2)
+      .attr(
+        "cx",
+        (d) => (x(format(d.date, "yyyy-MM-dd")) ?? 0) + x.bandwidth() / 2,
+      )
       .attr("cy", (d) => y(d.notTimeDone))
       .attr("r", 2)
       .attr("fill", themeColors["muted-foreground"])
@@ -458,7 +476,7 @@ const CompletedProgressBarChart = ({
           .select("line")
           .attr(
             "transform",
-            `translate(${(x(format(d.date, "yyyy-MM-dd")) ?? 0) + x.bandwidth() / 2}, 0)`
+            `translate(${(x(format(d.date, "yyyy-MM-dd")) ?? 0) + x.bandwidth() / 2}, 0)`,
           );
         showTooltip(event, d);
       })
@@ -467,7 +485,7 @@ const CompletedProgressBarChart = ({
           .select("line")
           .attr(
             "transform",
-            `translate(${(x(format(d.date, "yyyy-MM-dd")) ?? 0) + x.bandwidth() / 2}, 0)`
+            `translate(${(x(format(d.date, "yyyy-MM-dd")) ?? 0) + x.bandwidth() / 2}, 0)`,
           );
         showTooltip(event, d);
       })
@@ -512,7 +530,10 @@ const CompletedProgressBarChart = ({
           </div>
           <div className="relative">
             <div className="absolute inset-0 rounded-full blur-3xl bg-indigo-500/10 dark:bg-indigo-500/15 pointer-events-none" />
-            <svg ref={svgRef} className="relative w-full h-auto drop-shadow-[0_12px_28px_rgba(0,0,0,0.4)]" />
+            <svg
+              ref={svgRef}
+              className="relative w-full h-auto drop-shadow-[0_12px_28px_rgba(0,0,0,0.4)]"
+            />
           </div>
         </div>
       </div>

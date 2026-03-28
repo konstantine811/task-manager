@@ -60,7 +60,7 @@ const ChartTimeCount = ({ templateTasks }: { templateTasks: Items }) => {
         time: timeInSeconds,
       });
     },
-    [showTooltip, hideTooltip, onHideTooltip]
+    [showTooltip, hideTooltip, onHideTooltip],
   );
 
   useEffect(() => {
@@ -100,13 +100,13 @@ const ChartTimeCount = ({ templateTasks }: { templateTasks: Items }) => {
 
     keys.forEach((key) => {
       const total = d3.sum(
-        tasks.filter((t) => t.title === key).map((t) => t.duration || 0)
+        tasks.filter((t) => t.title === key).map((t) => t.duration || 0),
       );
       keyDurations.set(key, total);
     });
 
     const sortedKeys = [...keys].sort(
-      (a, b) => (keyDurations.get(a) ?? 0) - (keyDurations.get(b) ?? 0)
+      (a, b) => (keyDurations.get(a) ?? 0) - (keyDurations.get(b) ?? 0),
     );
     // потім вже стек
     const stack = d3.stack<StackedDay>().keys(sortedKeys)(stackData);
@@ -138,7 +138,7 @@ const ChartTimeCount = ({ templateTasks }: { templateTasks: Items }) => {
       .call(
         d3.axisBottom(x).tickFormat((d) => {
           return t(`task_manager.day_names.${d}`);
-        })
+        }),
       )
       .call((g) => {
         g.select(".domain").remove(); // <– ця лінія внизу
@@ -157,7 +157,7 @@ const ChartTimeCount = ({ templateTasks }: { templateTasks: Items }) => {
           .tickFormat((time) => {
             const { hours } = paresSecondToTime(time as number);
             return String(Number(hours));
-          })
+          }),
       )
       .call((g) => {
         g.selectAll(".domain").remove();
@@ -223,20 +223,11 @@ const ChartTimeCount = ({ templateTasks }: { templateTasks: Items }) => {
       .attr("x2", "0")
       .attr("y2", y(18 * 3600));
 
-    gradient
-      .append("stop")
-      .attr("offset", "0%")
-      .attr("stop-color", "#34d399");
+    gradient.append("stop").attr("offset", "0%").attr("stop-color", "#34d399");
 
-    gradient
-      .append("stop")
-      .attr("offset", "50%")
-      .attr("stop-color", "#22d3ee");
+    gradient.append("stop").attr("offset", "50%").attr("stop-color", "#22d3ee");
 
-    gradient
-      .append("stop")
-      .attr("offset", "85%")
-      .attr("stop-color", "#818cf8");
+    gradient.append("stop").attr("offset", "85%").attr("stop-color", "#818cf8");
 
     gradient
       .append("stop")
