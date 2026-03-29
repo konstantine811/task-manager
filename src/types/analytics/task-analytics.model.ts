@@ -1,5 +1,12 @@
 import { ANALYTICS_PERIODS } from "@/config/task-analytics.config";
-import { DayNumber, ItemTask, Priority } from "@/types/drag-and-drop.model";
+import {
+  DailyTaskRecord,
+  DayNumber,
+  ItemTask,
+  Priority,
+} from "@/types/drag-and-drop.model";
+import type { AreaProgress } from "@/types/progress.model";
+import type { ISODate } from "@/types/task-instance.model";
 import { UniqueIdentifier } from "@dnd-kit/core";
 
 export type WeekTaskEntity = {
@@ -104,6 +111,13 @@ export interface AnalyticsData {
   rangeTasks: RangeTaskAnalyticRecord[];
   categoryEntity: CategoryAnalyticsNameEntity;
   rangeTaskEntity: RangeTaskAnalyticsNameEntity;
+  areaProgress: AreaProgress[];
+}
+
+export interface AnalyticsWorkerPayload {
+  rangeTasks: DailyTaskRecord[];
+  from: ISODate;
+  to: ISODate;
 }
 
 export interface RangeTaskAnalyticRecord {

@@ -196,6 +196,7 @@ const DialogTask = ({
 
   return (
     <Dialog isOpen={isOpen} setOpen={setOpen} className="p-4 md:p-6">
+    
       <div className="relative w-full">
         <WrapperHoverElement>
           <SoundHoverElement

@@ -149,6 +149,7 @@ const DailyTaskWrapper = () => {
           whenDo: task.whenDo || [],
           isDetermined: task.isDetermined || false,
           categoryName: task.categoryName,
+          schedule: task.schedule,
         } as ItemTaskCategory;
       });
       addPlannedTask(plannedTasks);

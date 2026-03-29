@@ -33,6 +33,7 @@ import {
   ItemTaskCategory,
 } from "@/types/drag-and-drop.model";
 import { DailyJournal } from "@/types/daily-journal.model";
+import type { Achievement, ProgressGoal } from "@/types/progress.model";
 import { parseDates } from "@/utils/date.util";
 import { formatISO } from "date-fns";
 import { onAuthStateChanged, User } from "firebase/auth";
@@ -73,6 +74,41 @@ export const saveTemplateTasks = async (items: Items) => {
   }
 };
 
+async function saveUserScopedDocument<T>(
+  collectionName: FirebaseCollection,
+  data: T
+) {
+  const user = await waitForUserAuth();
+  if (!user) {
+    console.warn("❌ Cannot save document. User not authenticated.");
+    return;
+  }
+
+  const ref = doc(db, collectionName, user.uid);
+  const cleanData = stripUndefined(data);
+  await setDoc(ref, {
+    updatedAt: new Date().toISOString(),
+    email: user.email,
+    items: cleanData,
+  });
+}
+
+async function loadUserScopedDocument<T>(
+  collectionName: FirebaseCollection
+): Promise<T | null> {
+  const user = await waitForUserAuth();
+  if (!user) return null;
+
+  const ref = doc(db, collectionName, user.uid);
+  const snap = await getDoc(ref);
+
+  if (snap.exists()) {
+    return snap.data().items as T;
+  }
+
+  return null;
+}
+
 export const saveDailyTasks = async <T>(
   items: T,
   date: string,
@@ -111,16 +147,7 @@ export const saveDailyTasks = async <T>(
 };
 
 export const loadTemplateTasks = async (): Promise<Items | null> => {
-  const user = await waitForUserAuth();
-  if (!user) return null;
-
-  const ref = doc(db, FirebaseCollection.templateTasks, user.uid);
-  const snap = await getDoc(ref);
-
-  if (snap.exists()) {
-    return snap.data().items as Items;
-  }
-  return null;
+  return loadUserScopedDocument<Items>(FirebaseCollection.templateTasks);
 };
 
 export const loadDailyTasksByDate = async <T>(
@@ -345,6 +372,22 @@ export const loadDailyJournalByDate = async (
   date: string
 ): Promise<DailyJournal | null> => {
   return loadDailyTasksByDate<DailyJournal>(date, FirebaseCollection.dailyJournal);
+};
+
+export const saveProgressGoals = async (goals: ProgressGoal[]) => {
+  await saveUserScopedDocument(FirebaseCollection.progressGoals, goals);
+};
+
+export const loadProgressGoals = async (): Promise<ProgressGoal[] | null> => {
+  return loadUserScopedDocument<ProgressGoal[]>(FirebaseCollection.progressGoals);
+};
+
+export const saveAchievements = async (achievements: Achievement[]) => {
+  await saveUserScopedDocument(FirebaseCollection.achievements, achievements);
+};
+
+export const loadAchievements = async (): Promise<Achievement[] | null> => {
+  return loadUserScopedDocument<Achievement[]>(FirebaseCollection.achievements);
 };
 
 const waitForUserAuth = (): Promise<User | null> => {

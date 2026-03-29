@@ -13,7 +13,7 @@ import { generateInstancesForRange } from "./generate-instances";
  * Returns template IDs that have an instance on the given date.
  * Handles weekdays, interval_days, times_per_week, once.
  */
-function getTemplateIdsPlannedForDate(
+export function getTemplateIdsPlannedForDate(
   tasks: Items,
   date: ISODate
 ): Set<string> {

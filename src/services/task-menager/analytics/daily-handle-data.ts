@@ -7,11 +7,30 @@ import {
   RangeTaskAnalyticsNameEntity,
   TaskAnalyticsIdEntity,
 } from "@/types/analytics/task-analytics.model";
+import { buildAreaProgress } from "@/services/task-menager/progress/progress.service";
 import {
   DailyTaskRecord,
   ItemTask,
   Items,
 } from "@/types/drag-and-drop.model";
+import { ISODate } from "@/types/task-instance.model";
+
+export const getAreaProgress = (
+  rangeTasks: DailyTaskRecord[],
+  from?: ISODate,
+  to?: ISODate
+) => {
+  const sourcePeriod =
+    from && to
+      ? {
+          from,
+          to,
+          label: "derived" as const,
+        }
+      : undefined;
+
+  return Object.values(buildAreaProgress(rangeTasks, sourcePeriod));
+};
 
 export const getDailyTaskAnalyticsData = (tasks: Items): DailyTaskAnalytics => {
   const dailyEntity: TaskAnalyticsIdEntity = {};
@@ -88,10 +107,12 @@ export const getDailyTaskAnalyticsData = (tasks: Items): DailyTaskAnalytics => {
 };
 
 export const getRangeDailyTaskAnalytics = (
-  rangeTasks: DailyTaskRecord[]
+  rangeTasks: DailyTaskRecord[],
+  range?: { from: ISODate; to: ISODate }
 ): AnalyticsData => {
   const categoryEntity: CategoryAnalyticsNameEntity = {};
   const taskEntity: RangeTaskAnalyticsNameEntity = {};
+  const areaProgress = getAreaProgress(rangeTasks, range?.from, range?.to);
 
   const data = rangeTasks.map((item) => {
     const { date, items } = item;
@@ -102,6 +123,7 @@ export const getRangeDailyTaskAnalytics = (
     rangeTasks: data,
     categoryEntity,
     rangeTaskEntity: taskEntity,
+    areaProgress,
   };
 };
 

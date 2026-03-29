@@ -251,6 +251,22 @@
         "title": "Task Analytics",
         "description": "Here you can view statistics on assigned tasks."
       },
+      "area_progress": {
+        "title": "Progress by area",
+        "description": "A derived slice of movement by category. “Completed minutes” counts only tasks marked done; “spent” time on tasks you have not checked off is not included. “Planned” is the sum of planned durations across all days in the range.",
+        "consistency": "Consistency",
+        "active_days": "Active days",
+        "completed_tasks": "Completed tasks",
+        "completed_time": "Done-task minutes",
+        "time_completion": "Time completion",
+        "last_activity": "Last activity:",
+        "no_activity": "No activity yet",
+        "trend": {
+          "up": "Up",
+          "flat": "Flat",
+          "down": "Down"
+        }
+      },
       "daily_table": {
         "indicator": "Indicator",
         "count": "Count",

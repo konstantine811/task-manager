@@ -71,6 +71,7 @@ export function mergeItemsWithPlannedTasks(
         isPlanned: true,
         whenDo: task.whenDo || [],
         isDetermined: task.isDetermined || false,
+        schedule: task.schedule,
       });
     }
   });

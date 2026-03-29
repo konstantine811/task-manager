@@ -1,7 +1,7 @@
 import { getRangeDailyTaskAnalytics } from "@/services/task-menager/analytics/daily-handle-data";
-import { DailyTaskRecord } from "@/types/drag-and-drop.model";
+import { AnalyticsWorkerPayload } from "@/types/analytics/task-analytics.model";
 
 self.onmessage = (e) => {
-  const rangeTasks = e.data as DailyTaskRecord[];
-  postMessage(getRangeDailyTaskAnalytics(rangeTasks));
+  const { rangeTasks, from, to } = e.data as AnalyticsWorkerPayload;
+  postMessage(getRangeDailyTaskAnalytics(rangeTasks, { from, to }));
 };

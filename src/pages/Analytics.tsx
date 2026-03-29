@@ -7,6 +7,7 @@ import AnalyticsWorker from "@/workers/analyticsWorker?worker";
 import { DailyTaskRecord } from "@/types/drag-and-drop.model";
 import {
   AnalyticsData,
+  AnalyticsWorkerPayload,
   CategoryAnalyticsNameEntity,
 } from "@/types/analytics/task-analytics.model";
 import { useTranslation } from "react-i18next";
@@ -17,6 +18,8 @@ import TaskDateRangeHeader from "./analytics-comonents/task-data-range-header";
 import { AnimatedItem } from "@/components/ui/animated-item";
 import { CATEGORY_OPTIONS } from "@/components/dnd/config/category-options";
 import CompletedProgressBarChart from "./analytics-comonents/completed-progress-bar-chart";
+import AreaProgressOverview from "./analytics-comonents/area-progress-overview";
+import { formatISO } from "date-fns";
 
 const Analytics = () => {
   const hS = useHeaderSizeStore((s) => s.size);
@@ -35,14 +38,19 @@ const Analytics = () => {
 
   useEffect(() => {
     const worker = new AnalyticsWorker();
-    worker.postMessage(rangeTasks);
+    const payload: AnalyticsWorkerPayload = {
+      rangeTasks,
+      from: formatISO(range.from, { representation: "date" }),
+      to: formatISO(range.to, { representation: "date" }),
+    };
+    worker.postMessage(payload);
     worker.onmessage = (e: MessageEvent) => {
       setAnalyticsData(e.data as AnalyticsData);
     };
     return () => {
       worker.terminate();
     };
-  }, [rangeTasks]);
+  }, [range.from, range.to, rangeTasks]);
 
   const mergedCategoryEntity = useMemo(() => {
     if (!analyticsData) return undefined;
@@ -92,8 +100,13 @@ const Analytics = () => {
                   rangeTo={range.to}
                 />
               </AnimatedItem>
+              <AnimatedItem index={2}>
+                <div className="pt-10">
+                  <AreaProgressOverview data={analyticsData.areaProgress} />
+                </div>
+              </AnimatedItem>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start pt-10">
-                <AnimatedItem index={2}>
+                <AnimatedItem index={3}>
                   <ChartPieCategoryWrap
                     className="w-full"
                     data={mergedCategoryEntity ?? analyticsData.categoryEntity}
@@ -102,14 +115,14 @@ const Analytics = () => {
                     includeAllCategories
                   />
                 </AnimatedItem>
-                <AnimatedItem index={3}>
+                <AnimatedItem index={4}>
                   <ChartPieTaskPlannedWrap
                     className="w-full"
                     data={analyticsData.rangeTaskEntity}
                   />
                 </AnimatedItem>
               </div>
-              <AnimatedItem index={4}>
+              <AnimatedItem index={5}>
                 <div className="mt-10">
                   <RangeAnalyticsTable data={analyticsData.rangeTaskEntity} />
                 </div>
