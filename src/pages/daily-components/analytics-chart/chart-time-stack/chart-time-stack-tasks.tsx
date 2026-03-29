@@ -8,7 +8,11 @@ import {
   TaskAnalyticsIdEntity,
 } from "@/types/analytics/task-analytics.model";
 import { useThemeStore } from "@/storage/themeStore";
-import { ThemePalette, ThemeType } from "@/config/theme-colors.config";
+import {
+  ThemePalette,
+  ThemeStaticPalette,
+  ThemeType,
+} from "@/config/theme-colors.config";
 import { isTouchDevice } from "@/utils/touch-inspect";
 import { useTranslation } from "react-i18next";
 
@@ -167,7 +171,7 @@ const ChartTimeStackTasks = ({
 
     // 2. Зелена підкладка для виконаного часу (0 … doneTime)
     if (doneTime > 0) {
-      const doneColor = colors["chart2"];
+      const doneColor = colors.chart2 ?? ThemeStaticPalette.green;
       const segSize = Math.abs(scale(doneTime) - scale(0));
       const isHor = direction === "horizontal";
       const rect = group.append("rect").attr("fill", doneColor).attr("rx", 2);

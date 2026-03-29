@@ -35,7 +35,6 @@ import {
   ItemTaskCategory,
 } from "@/types/drag-and-drop.model";
 import { DailyJournal } from "@/types/daily-journal.model";
-import type { Achievement, ProgressGoal } from "@/types/progress.model";
 import { parseDates } from "@/utils/date.util";
 import { formatISO } from "date-fns";
 import { onAuthStateChanged, User } from "firebase/auth";
@@ -75,25 +74,6 @@ export const saveTemplateTasks = async (items: Items) => {
     console.error("🔥 Error saving tasks:", error);
   }
 };
-
-async function saveUserScopedDocument<T>(
-  collectionName: FirebaseCollection,
-  data: T,
-) {
-  const user = await waitForUserAuth();
-  if (!user) {
-    console.warn("❌ Cannot save document. User not authenticated.");
-    return;
-  }
-
-  const ref = doc(db, collectionName, user.uid);
-  const cleanData = stripUndefined(data);
-  await setDoc(ref, {
-    updatedAt: new Date().toISOString(),
-    email: user.email,
-    items: cleanData,
-  });
-}
 
 async function loadUserScopedDocument<T>(
   collectionName: FirebaseCollection,
