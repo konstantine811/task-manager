@@ -4,12 +4,14 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import i18n from "i18next";
 import { paresSecondToTime } from "@/utils/time.util";
-import { getChartColor } from "@/config/chart-colors.config";
+import {
+  getChartColorForAnalyticsCategory,
+  resolveAnalyticsCategoryId,
+} from "@/config/chart-colors.config";
 import {
   CATEGORY_STYLE,
   DEFAULT_CATEGORY_STYLE,
 } from "@/components/dnd/config/category-style.config";
-import { CATEGORY_OPTIONS } from "@/components/dnd/config/category-options";
 
 interface ChartPieCategoryProps {
   data: CategoryAnalyticsNameEntity;
@@ -243,7 +245,13 @@ const ChartPieCategory = ({
           const newEndAngle = d.startAngle + angleRange * progress;
           return arcDoneAngle({ ...d, endAngle: newEndAngle });
         })
-        .attr("fill", (_, i) => getChartColor(chartEntries[i].name, i))
+        .attr("fill", (_, i) =>
+          getChartColorForAnalyticsCategory(
+            chartEntries[i].categoryId ?? chartEntries[i].name,
+            i,
+            t,
+          ),
+        )
         .attr("stroke", "none")
         .attr("filter", "url(#chart-3d-shadow-category)")
         .attr("cursor", "pointer")
@@ -260,7 +268,13 @@ const ChartPieCategory = ({
         .enter()
         .append("path")
         .attr("d", arc)
-        .attr("fill", (_, i) => getChartColor(chartEntries[i].name, i))
+        .attr("fill", (_, i) =>
+          getChartColorForAnalyticsCategory(
+            chartEntries[i].categoryId ?? chartEntries[i].name,
+            i,
+            t,
+          ),
+        )
         .attr("stroke", "none")
         .attr("filter", "url(#chart-3d-shadow-category)")
         .attr("cursor", "pointer")
@@ -353,19 +367,17 @@ const ChartPieCategory = ({
         `task_manager.categories.${e.name}`
           ? t(`task_manager.categories.${e.name}`)
           : e.name;
-      /** Ключ для іконки: categoryId або name; якщо збережено переклад ("Кар'єра"), шукаємо ключ (career) по t() */
+      /** Канонічний id (leisure тощо) — той самий резолвер, що й заливка сегмента */
       const rawKey = e.categoryId ?? e.name;
-      const styleKey =
-        CATEGORY_STYLE[rawKey]
-          ? rawKey
-          : CATEGORY_OPTIONS.find((k) => t(`task_manager.categories.${k}`) === rawKey) ?? rawKey;
-      const style = CATEGORY_STYLE[styleKey] ?? DEFAULT_CATEGORY_STYLE;
+      const canonicalId = resolveAnalyticsCategoryId(rawKey, t);
+      const style = CATEGORY_STYLE[canonicalId] ?? DEFAULT_CATEGORY_STYLE;
+      const chartHex = getChartColorForAnalyticsCategory(rawKey, i, t);
       return {
         name: e.name,
         label,
         time: timeLabel,
         pct,
-        color: getChartColor(e.name, i),
+        color: chartHex,
         Icon: style.icon,
         colorClass: style.color,
       };

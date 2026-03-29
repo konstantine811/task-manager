@@ -56,6 +56,7 @@ export const getDailyTaskAnalyticsData = (tasks: Items): DailyTaskAnalytics => {
       countDoneTime: 0,
       taskDone: [],
       taskNoDone: [],
+      categoryId: categoryTitle,
     };
 
     taskList.forEach((raw) => {
@@ -151,6 +152,7 @@ export const getRangeAnalyticsData = (
         countDoneTime: 0,
         taskDone: [],
         taskNoDone: [],
+        categoryId: categoryTitle,
       };
     }
 

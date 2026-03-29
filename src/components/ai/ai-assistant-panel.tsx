@@ -6,7 +6,7 @@ import type { AdvisorTask } from "@/services/ai/gemini.types";
 import { createTask } from "@/components/dnd/utils/createTask";
 import { CATEGORY_OPTIONS } from "@/components/dnd/config/category-options";
 import type { TaskCategoryKey } from "@/services/ai/gemini.types";
-import { Items, TaskCategory, ItemTask } from "@/types/drag-and-drop.model";
+import { Items, ItemTask, TaskCategory } from "@/types/drag-and-drop.model";
 import {
   ChevronDown,
   ChevronUp,
@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { paresSecondToTime } from "@/utils/time.util";
+import type { TFunction } from "i18next";
 import { toast } from "sonner";
 import { SuggestedTasksPreview } from "./suggested-tasks-preview";
 import { QuickStartOnboarding } from "./quick-start-onboarding";
@@ -116,27 +116,65 @@ type AiAssistantPanelProps = {
   >;
 };
 
-function formatTasksForContext(items: Items, t: (key: string) => string): string {
-  return items
+/** Час доби з секунд від півночі (як у TimePicker для «у конкретний час»). */
+function secondsToClockLabel(seconds: number): string {
+  const abs = Math.abs(seconds);
+  const h = Math.floor(abs / 3600);
+  const m = Math.floor((abs % 3600) / 60);
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+}
+
+function secondsToDurationLabel(seconds: number, t: TFunction): string {
+  const mins = Math.max(0, Math.round(seconds / 60));
+  if (mins === 0) return t("ai_assistant.duration_zero");
+  const h = Math.floor(mins / 60);
+  const r = mins % 60;
+  if (h > 0 && r > 0) {
+    return t("ai_assistant.duration_hours_minutes", { hours: h, minutes: r });
+  }
+  if (h > 0) return t("ai_assistant.duration_hours_only", { hours: h });
+  return t("ai_assistant.duration_minutes_only", { minutes: mins });
+}
+
+function formatTaskLineForAiContext(task: ItemTask, t: TFunction): string {
+  const days =
+    task.whenDo && task.whenDo.length > 0
+      ? task.whenDo.map((d) => t(`task_manager.day_names.${d}`)).join(", ")
+      : "";
+  const daysSuffix = days
+    ? t("ai_assistant.task_context_days_suffix", { days })
+    : "";
+
+  if (task.isDetermined) {
+    const clock = secondsToClockLabel(task.time);
+    return t("ai_assistant.task_context_at_clock", {
+      title: task.title,
+      clock,
+      daysSuffix,
+    });
+  }
+
+  const duration = secondsToDurationLabel(task.time, t);
+  return t("ai_assistant.task_context_duration", {
+    title: task.title,
+    duration,
+    daysSuffix,
+  });
+}
+
+function formatTasksForContext(items: Items, t: TFunction): string {
+  const preamble = t("ai_assistant.tasks_context_preamble");
+  const body = items
     .map((cat) => {
       const catName =
         cat.title || t(`task_manager.categories.${cat.id}`) || String(cat.id);
       const tasksStr = cat.tasks
-        .map((task) => {
-          const { hours, minutes } = paresSecondToTime(task.time);
-          const duration = `${hours}:${minutes}`;
-          const days =
-            task.whenDo && task.whenDo.length > 0
-              ? task.whenDo
-                  .map((d) => t(`task_manager.day_names.${d}`))
-                  .join(", ")
-              : "";
-          return `${task.title} — ${duration}${days ? ` (${days})` : ""}`;
-        })
+        .map((task) => formatTaskLineForAiContext(task, t))
         .join("; ");
       return `${catName}: ${tasksStr}`;
     })
     .join("\n");
+  return `${preamble}\n\n${body}`;
 }
 
 function matchAdvisorTask(a: AdvisorTask, b: AdvisorTask): boolean {

@@ -27,7 +27,15 @@
     "form_tasks": "Generate tasks from advice",
     "replace_all": "Replace all",
     "tasks_replaced": "Replaced {{count}} tasks",
-    "tasks_short": "tasks"
+    "tasks_short": "tasks",
+    "tasks_context_preamble": "How to read the task list below:\n• \"Start at HH:MM (clock)\" is time of day when the task is scheduled — NOT workload duration (14:00 ≠ 14 hours).\n• \"Duration: …\" is planned length per occurrence.\nFor weekly load, use duration and schedule days only; do not treat clock times as work hours.",
+    "task_context_at_clock": "{{title}} — start at {{clock}} on the clock (not duration){{daysSuffix}}",
+    "task_context_duration": "{{title}} — duration: {{duration}}{{daysSuffix}}",
+    "task_context_days_suffix": "; days: {{days}}",
+    "duration_zero": "0 min",
+    "duration_hours_minutes": "{{hours}} h {{minutes}} min",
+    "duration_hours_only": "{{hours}} h",
+    "duration_minutes_only": "{{minutes}} min"
   },
   "goals": {
     "title": "Big Goals",
@@ -80,7 +88,7 @@
       "career": "Work/project",
       "relationships": "Family",
       "personal_growth": "Learning",
-      "leisure": "Life/rest",
+      "leisure": "Other / home",
       "finance": "Finance"
     },
     "time_budget_label": "Time per day (outside routine)",
@@ -178,7 +186,7 @@
   "task_manager": {
     "add": "Add Task",
     "add_container": "Add category",
-    "add_template_task": "Add Task Template for Today",
+    "add_template_task": "Pull from template for today (by schedule)",
     "journal": {
       "title": "Daily journal",
       "description": "A markdown note for this day in an Obsidian-like style.",
@@ -208,7 +216,7 @@
       "spirituality": "Spirituality",
       "personal_growth": "Personal Growth",
       "hobbies": "Hobbies",
-      "leisure": "Leisure"
+      "leisure": "Other"
     },
     "combobox_placeholder": "Category or task name",
     "planned_tasks": "Planned Tasks",
@@ -242,8 +250,8 @@
     },
     "add_all_tasks": {
       "header": {
-        "title": "All Tasks from Template",
-        "description": "You can add all tasks from the template to your task list."
+        "title": "From template — not on this day yet",
+        "description": "Pick a task from the list (adds one at a time). Only template items that are not already on this day’s board. The button above merges tasks scheduled for today automatically."
       }
     },
     "analytics": {

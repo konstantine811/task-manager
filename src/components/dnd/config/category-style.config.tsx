@@ -7,7 +7,7 @@ import {
   Sparkles,
   TrendingUp,
   Palette,
-  Coffee,
+  LayoutGrid,
   Sofa,
   type LucideIcon,
 } from "lucide-react";
@@ -24,7 +24,7 @@ export const CATEGORY_STYLE: Record<
   spirituality: { icon: Sparkles, color: "text-violet-400" },
   personal_growth: { icon: TrendingUp, color: "text-cyan-400" },
   hobbies: { icon: Palette, color: "text-orange-400" },
-  leisure: { icon: Coffee, color: "text-zinc-400" },
+  leisure: { icon: LayoutGrid, color: "text-zinc-400" },
 };
 
 /** Default when category not in config */
