@@ -19,13 +19,16 @@ function isoDateOnly(value: string): string {
   return value.slice(0, 10);
 }
 
+const SECONDS_PER_MINUTE = 60;
+
 /**
- * Хвилини саме виконаної роботи. У моделі задачі `timeDone` у формі — це «витрачений/марний»
- * час для невиконаних задач (див. dialog-task), тому в «completed» його не сумуємо.
+ * Хвилини саме виконаної роботи (`time` / `timeDone` у задачі зберігаються в секундах).
+ * `timeDone` для невиконаних задач не враховуємо.
  */
 function getTaskCompletedMinutes(task: ItemTask): number {
   if (!task.isDone) return 0;
-  return task.timeDone > 0 ? task.timeDone : task.time;
+  const seconds = task.timeDone > 0 ? task.timeDone : task.time;
+  return seconds / SECONDS_PER_MINUTE;
 }
 
 function taskHadMovement(task: ItemTask): boolean {
@@ -142,9 +145,10 @@ export function buildAreaProgress(
 
       category.tasks.forEach((task) => {
         const completedMinutes = getTaskCompletedMinutes(task);
-        const plannedTime = task.time > 0 ? task.time : 0;
+        const plannedMinutes =
+          task.time > 0 ? task.time / SECONDS_PER_MINUTE : 0;
 
-        area.plannedTime += plannedTime;
+        area.plannedTime += plannedMinutes;
         area.completedTime += completedMinutes;
 
         if (task.isDone) {
@@ -177,10 +181,13 @@ export function buildAreaProgress(
       : rangeTasks.length;
 
     area.activeDays = activeDates.length;
+    // Без жодної виконаної задачі за період «стабільність» = 0% (не дні з таймером без галочки).
     area.consistencyScore =
-      totalDaysInPeriod > 0
-        ? Math.round((area.activeDays / totalDaysInPeriod) * 100)
-        : 0;
+      area.completedTasks === 0
+        ? 0
+        : totalDaysInPeriod > 0
+          ? Math.round((area.activeDays / totalDaysInPeriod) * 100)
+          : 0;
     area.completionRate =
       area.plannedTime > 0
         ? Math.round((area.completedTime / area.plannedTime) * 100)

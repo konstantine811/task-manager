@@ -19,7 +19,9 @@ export interface AreaProgress {
   areaId: AreaId;
   activeDays: number;
   completedTasks: number;
+  /** Сума виконаного часу за період, хвилини (джерело: секунди в задачі / 60). */
   completedTime: number;
+  /** Сума планового часу за період, хвилини. */
   plannedTime: number;
   consistencyScore: number;
   completionRate: number;

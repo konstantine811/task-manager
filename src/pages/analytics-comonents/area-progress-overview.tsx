@@ -8,6 +8,23 @@ import { cn } from "@/lib/utils";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import type { AreaProgress, ProgressTrend } from "@/types/progress.model";
+import type { TFunction } from "i18next";
+
+function formatAreaDurationMinutes(minutes: number, t: TFunction) {
+  const m = Math.max(0, Math.round(minutes));
+  const h = Math.floor(m / 60);
+  const r = m % 60;
+  if (h > 0 && r > 0) {
+    return t("task_manager.analytics.area_progress.duration_hm", {
+      hours: h,
+      minutes: r,
+    });
+  }
+  if (h > 0) {
+    return t("task_manager.analytics.area_progress.duration_h", { hours: h });
+  }
+  return t("task_manager.analytics.area_progress.duration_m", { minutes: m });
+}
 
 const TREND_STYLES: Record<ProgressTrend, string> = {
   up: "text-emerald-400 border-emerald-500/30 bg-emerald-500/10",
@@ -102,7 +119,9 @@ const AreaProgressOverview = ({ data }: { data: AreaProgress[] }) => {
                     <p className="text-xs text-muted-foreground">
                       {t("task_manager.analytics.area_progress.completed_time")}
                     </p>
-                    <p className="mt-1 text-2xl font-semibold">{item.completedTime}</p>
+                    <p className="mt-1 text-2xl font-semibold wrap-break-word">
+                      {formatAreaDurationMinutes(item.completedTime, t)}
+                    </p>
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -110,8 +129,10 @@ const AreaProgressOverview = ({ data }: { data: AreaProgress[] }) => {
                     <span className="text-muted-foreground">
                       {t("task_manager.analytics.area_progress.time_completion")}
                     </span>
-                    <span className="font-medium">
-                      {item.completedTime} / {item.plannedTime} min
+                    <span className="font-medium text-right wrap-break-word">
+                      {formatAreaDurationMinutes(item.completedTime, t)}
+                      {" / "}
+                      {formatAreaDurationMinutes(item.plannedTime, t)}
                     </span>
                   </div>
                   <Progress value={completionRatio} />
