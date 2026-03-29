@@ -11,7 +11,9 @@ function stripUndefined<T>(val: T): T {
     return val;
   }
   if (Array.isArray(val)) {
-    return val.map((v) => stripUndefined(v)).filter((v) => v !== undefined) as T;
+    return val
+      .map((v) => stripUndefined(v))
+      .filter((v) => v !== undefined) as T;
   }
   if (val !== null && typeof val === "object" && !(val instanceof Date)) {
     const out: Record<string, unknown> = {};
@@ -76,7 +78,7 @@ export const saveTemplateTasks = async (items: Items) => {
 
 async function saveUserScopedDocument<T>(
   collectionName: FirebaseCollection,
-  data: T
+  data: T,
 ) {
   const user = await waitForUserAuth();
   if (!user) {
@@ -94,7 +96,7 @@ async function saveUserScopedDocument<T>(
 }
 
 async function loadUserScopedDocument<T>(
-  collectionName: FirebaseCollection
+  collectionName: FirebaseCollection,
 ): Promise<T | null> {
   const user = await waitForUserAuth();
   if (!user) return null;
@@ -112,7 +114,7 @@ async function loadUserScopedDocument<T>(
 export const saveDailyTasks = async <T>(
   items: T,
   date: string,
-  collectionName: FirebaseCollection
+  collectionName: FirebaseCollection,
 ) => {
   const user = await waitForUserAuth();
   if (!user) {
@@ -131,7 +133,7 @@ export const saveDailyTasks = async <T>(
       collectionName === FirebaseCollection.dailyJournal
       ? FirebaseCollectionProps[collectionName].days
       : "",
-    date
+    date,
   );
 
   try {
@@ -152,7 +154,7 @@ export const loadTemplateTasks = async (): Promise<Items | null> => {
 
 export const loadDailyTasksByDate = async <T>(
   date: string,
-  collectionName: FirebaseCollection
+  collectionName: FirebaseCollection,
 ): Promise<T | null> => {
   const user = await waitForUserAuth();
   if (!user) return null;
@@ -167,7 +169,7 @@ export const loadDailyTasksByDate = async <T>(
       collectionName === FirebaseCollection.dailyJournal
       ? FirebaseCollectionProps[collectionName].days
       : "",
-    date
+    date,
   );
 
   try {
@@ -184,7 +186,7 @@ export const loadDailyTasksByDate = async <T>(
 
 export const updatePlannedTasksOnServer = async (
   date: string,
-  tasks: ItemTaskCategory[]
+  tasks: ItemTaskCategory[],
 ) => {
   const user = await waitForUserAuth();
   if (!user) throw new Error("User not authenticated");
@@ -193,17 +195,17 @@ export const updatePlannedTasksOnServer = async (
     FirebaseCollection.plannedTasks,
     user.uid,
     FirebaseCollectionProps[FirebaseCollection.plannedTasks].days,
-    date
+    date,
   );
 
   await setDoc(ref, { items: stripUndefined(tasks) }, { merge: true });
 };
 
 export const subscribeToNonEmptyTaskDates = async <
-  T extends Items | ItemTaskCategory[]
+  T extends Items | ItemTaskCategory[],
 >(
   collectionType: FirebaseCollection,
-  onUpdate: (dates: Date[]) => void
+  onUpdate: (dates: Date[]) => void,
 ): Promise<Unsubscribe | undefined> => {
   const user = await waitForUserAuth();
   if (!user) return;
@@ -216,7 +218,7 @@ export const subscribeToNonEmptyTaskDates = async <
     collectionType === FirebaseCollection.plannedTasks ||
       collectionType === FirebaseCollection.dailyTasks
       ? FirebaseCollectionProps[collectionType].days
-      : ""
+      : "",
   );
 
   const unsubscribe = onSnapshot(daysCollectionRef, (querySnapshot) => {
@@ -235,7 +237,7 @@ export const subscribeToNonEmptyTaskDates = async <
 };
 
 export const subscribeToNonEmptyJournalDates = async (
-  onUpdate: (dates: Date[]) => void
+  onUpdate: (dates: Date[]) => void,
 ): Promise<Unsubscribe | undefined> => {
   const user = await waitForUserAuth();
   if (!user) return;
@@ -245,7 +247,7 @@ export const subscribeToNonEmptyJournalDates = async (
     db,
     FirebaseCollection.dailyJournal,
     uid,
-    FirebaseCollectionProps[FirebaseCollection.dailyJournal].days
+    FirebaseCollectionProps[FirebaseCollection.dailyJournal].days,
   );
 
   const unsubscribe = onSnapshot(daysCollectionRef, (querySnapshot) => {
@@ -266,7 +268,7 @@ export const subscribeToNonEmptyJournalDates = async (
 };
 
 export const subscribeToPlannedTasksWithCounts = async (
-  onUpdate: (taskCountPerDate: Record<string, number>) => void
+  onUpdate: (taskCountPerDate: Record<string, number>) => void,
 ): Promise<Unsubscribe | undefined> => {
   const user = await waitForUserAuth();
   if (!user) return;
@@ -276,7 +278,7 @@ export const subscribeToPlannedTasksWithCounts = async (
     db,
     FirebaseCollection.plannedTasks,
     uid,
-    FirebaseCollectionProps[FirebaseCollection.plannedTasks].days
+    FirebaseCollectionProps[FirebaseCollection.plannedTasks].days,
   );
 
   const unsubscribe = onSnapshot(daysCollectionRef, (querySnapshot) => {
@@ -294,7 +296,9 @@ export const subscribeToPlannedTasksWithCounts = async (
   return unsubscribe;
 };
 
-export const fetchAllDailyTasks = async (): Promise<Array<{ date: string; items: Items }>> => {
+export const fetchAllDailyTasks = async (): Promise<
+  Array<{ date: string; items: Items }>
+> => {
   const user = await waitForUserAuth();
   if (!user) return [];
 
@@ -303,7 +307,7 @@ export const fetchAllDailyTasks = async (): Promise<Array<{ date: string; items:
     db,
     FirebaseCollection.dailyTasks,
     uid,
-    FirebaseCollectionProps[FirebaseCollection.dailyTasks].days
+    FirebaseCollectionProps[FirebaseCollection.dailyTasks].days,
   );
 
   try {
@@ -324,7 +328,7 @@ export const fetchAllDailyTasks = async (): Promise<Array<{ date: string; items:
 
 export async function loadDailyTasksByRange(
   from: Date,
-  to: Date
+  to: Date,
 ): Promise<DailyTaskRecord[]> {
   const user = await waitForUserAuth();
   if (!user) throw new Error("User not authenticated");
@@ -336,13 +340,13 @@ export async function loadDailyTasksByRange(
     db,
     FirebaseCollection.dailyTasks,
     uid,
-    FirebaseCollectionProps[FirebaseCollection.dailyTasks].days
+    FirebaseCollectionProps[FirebaseCollection.dailyTasks].days,
   );
 
   const q = query(
     daysRef,
     where("__name__", ">=", fromId),
-    where("__name__", "<=", toId)
+    where("__name__", "<=", toId),
   );
 
   const snapshot = await getDocs(q);
@@ -351,43 +355,27 @@ export async function loadDailyTasksByRange(
     (docSnap: QueryDocumentSnapshot<DocumentData>) => ({
       date: docSnap.id,
       items: docSnap.data().items as Items,
-    })
+    }),
   );
 
   return results;
 }
 
-export const saveDailyJournal = async (
-  date: string,
-  journal: DailyJournal
-) => {
+export const saveDailyJournal = async (date: string, journal: DailyJournal) => {
   await saveDailyTasks<DailyJournal>(
     journal,
     date,
-    FirebaseCollection.dailyJournal
+    FirebaseCollection.dailyJournal,
   );
 };
 
 export const loadDailyJournalByDate = async (
-  date: string
+  date: string,
 ): Promise<DailyJournal | null> => {
-  return loadDailyTasksByDate<DailyJournal>(date, FirebaseCollection.dailyJournal);
-};
-
-export const saveProgressGoals = async (goals: ProgressGoal[]) => {
-  await saveUserScopedDocument(FirebaseCollection.progressGoals, goals);
-};
-
-export const loadProgressGoals = async (): Promise<ProgressGoal[] | null> => {
-  return loadUserScopedDocument<ProgressGoal[]>(FirebaseCollection.progressGoals);
-};
-
-export const saveAchievements = async (achievements: Achievement[]) => {
-  await saveUserScopedDocument(FirebaseCollection.achievements, achievements);
-};
-
-export const loadAchievements = async (): Promise<Achievement[] | null> => {
-  return loadUserScopedDocument<Achievement[]>(FirebaseCollection.achievements);
+  return loadDailyTasksByDate<DailyJournal>(
+    date,
+    FirebaseCollection.dailyJournal,
+  );
 };
 
 const waitForUserAuth = (): Promise<User | null> => {

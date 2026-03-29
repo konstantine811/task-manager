@@ -220,55 +220,66 @@ html:not(.dark) .chrono-task-card-done {
       transparent 32%
     );
 }
+/* Світла тема: повна opacity; medium — yellow/gold, high — темно-червоний (окремі палітри) */
 html:not(.dark) .task-neon-shell-high::before,
 html:not(.dark) .task-neon-shell-medium::before,
 html:not(.dark) .task-neon-shell-done::before {
-  filter: blur(2px);
-  opacity: 0.58;
+  filter: blur(3px);
+  opacity: 1;
 }
 html:not(.dark) .task-neon-shell-high:hover::before,
 html:not(.dark) .task-neon-shell-medium:hover::before,
 html:not(.dark) .task-neon-shell-done:hover::before {
-  opacity: 0.74;
+  opacity: 1;
 }
+/* High: холодний темно-червоний (не «помаранчево-червоний») — відрізняється від золотого medium */
 html:not(.dark) .task-neon-shell-high::before {
   background:
     radial-gradient(
-      ellipse 16% 20% at 0% 100%,
-      rgba(239, 68, 68, 0.78),
-      transparent 30%
+      ellipse 24% 28% at 0% 100%,
+      rgba(127, 29, 29, 0.96),
+      transparent 44%
     ),
     radial-gradient(
-      ellipse 16% 20% at 100% 0%,
-      rgba(248, 113, 113, 0.68),
-      transparent 30%
+      ellipse 24% 28% at 100% 0%,
+      rgba(153, 27, 27, 0.92),
+      transparent 44%
     );
 }
+/* Medium: золотисто-жовтий (yellow), без orange-600 — інакше зливається з «теплим» червоним */
 html:not(.dark) .task-neon-shell-medium::before {
   background:
     radial-gradient(
-      ellipse 16% 20% at 0% 100%,
-      rgba(250, 204, 21, 0.72),
-      transparent 30%
+      ellipse 24% 28% at 0% 100%,
+      rgba(202, 138, 4, 0.95),
+      transparent 44%
     ),
     radial-gradient(
-      ellipse 16% 20% at 100% 0%,
-      rgba(234, 179, 8, 0.62),
-      transparent 30%
+      ellipse 24% 28% at 100% 0%,
+      rgba(234, 179, 8, 0.9),
+      transparent 44%
     );
 }
 html:not(.dark) .task-neon-shell-done::before {
   background:
     radial-gradient(
-      ellipse 16% 20% at 0% 100%,
-      rgba(16, 185, 129, 0.68),
-      transparent 30%
+      ellipse 22% 26% at 0% 100%,
+      rgba(5, 150, 105, 0.88),
+      transparent 40%
     ),
     radial-gradient(
-      ellipse 16% 20% at 100% 0%,
-      rgba(5, 150, 105, 0.58),
-      transparent 30%
+      ellipse 22% 26% at 100% 0%,
+      rgba(4, 120, 87, 0.82),
+      transparent 40%
     );
+}
+
+/* Світла тема: смуга зліва — high = темно-червоний, medium = золотий жовтий (не помаранчевий) */
+html:not(.dark) .task-neon-shell-high > [data-task-card] {
+  box-shadow: inset 3px 0 0 0 rgb(127, 29, 29);
+}
+html:not(.dark) .task-neon-shell-medium > [data-task-card] {
+  box-shadow: inset 3px 0 0 0 rgb(202, 138, 4);
 }
 
 .chrono-card {
