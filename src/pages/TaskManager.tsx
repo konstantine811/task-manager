@@ -7,6 +7,7 @@ import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import { ChronoNav } from "@/components/landing";
 import { LayoutDashboard, ChartSpline } from "lucide-react";
 import { ROUTES } from "@/config/routes";
+import { markEnteredAppThisSession } from "@/config/app-session";
 import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
 
@@ -49,6 +50,10 @@ const TaskManager = () => {
     setHeaderSize(NAVBAR_HEIGHT);
     return () => setHeaderSize(0);
   }, [setHeaderSize]);
+
+  useEffect(() => {
+    markEnteredAppThisSession();
+  }, []);
 
   return (
     <div style={{ paddingTop: NAVBAR_HEIGHT }} className="min-h-screen chrono-page-bg text-foreground relative">

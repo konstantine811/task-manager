@@ -1,20 +1,15 @@
-import { lazy, Suspense } from "react";
-import { Navigate } from "react-router";
+import { lazy, Suspense, useEffect } from "react";
+import { useNavigate } from "react-router";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { getTaskManagerEntryPath } from "@/utils/task-manager-entry-path";
+
+export { ROUTES } from "@/config/route-paths";
 
 const Landing = lazy(() => import("@/pages/Landing"));
 const TemplateTask = lazy(() => import("@/pages/TemplateTask"));
 const DailyTask = lazy(() => import("@/pages/DailyTask"));
 const Analytics = lazy(() => import("@/pages/Analytics"));
 const TaskManager = lazy(() => import("@/pages/TaskManager"));
-
-export const ROUTES = {
-  HOME: "/",
-  TEMPLATE: "/app/template",
-  DAILY: "/app/daily",
-  DAILY_ID: "/app/daily/:id",
-  ANALYTICS: "/app/analytics",
-} as const;
 
 function TaskManagerLayout() {
   return (
@@ -23,6 +18,28 @@ function TaskManagerLayout() {
         <TaskManager />
       </Suspense>
     </ProtectedRoute>
+  );
+}
+
+/** Після логіну: якщо вже є шаблонні задачі — одразу на щоденні (сьогодні), інакше на шаблон. */
+function TaskManagerIndexRedirect() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const path = await getTaskManagerEntryPath();
+      if (!cancelled) navigate(path, { replace: true });
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [navigate]);
+
+  return (
+    <div className="min-h-screen chrono-page-bg flex items-center justify-center">
+      <div className="text-zinc-400 text-sm">Loading…</div>
+    </div>
   );
 }
 
@@ -39,7 +56,7 @@ export const routes = [
     path: "/app",
     element: <TaskManagerLayout />,
     children: [
-      { path: "", element: <Navigate to={ROUTES.TEMPLATE} replace /> },
+      { path: "", element: <TaskManagerIndexRedirect /> },
       { path: "template", element: <TemplateTask /> },
       { path: "daily/:id", element: <DailyTask /> },
       { path: "analytics", element: <Analytics /> },
