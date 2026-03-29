@@ -47,13 +47,19 @@ html:not(.dark) body {
 /* Landing page styles */
 .bg-grid {
   background-size: 40px 40px;
-  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
   mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
-  -webkit-mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
+  -webkit-mask-image: radial-gradient(
+    circle at center,
+    black 40%,
+    transparent 100%
+  );
 }
 html:not(.dark) .bg-grid {
-  background-image: linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+  background-image:
+    linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
 }
 .hero-perspective {
@@ -124,18 +130,17 @@ html:not(.dark) .text-glow {
 .chrono-task-card {
   background: rgba(24, 24, 27, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  transition: border-color 0.2s, background-color 0.2s;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s;
 }
 .chrono-task-card:hover {
   border-color: rgba(255, 255, 255, 0.08);
   background: rgba(39, 39, 42, 0.9);
 }
 .chrono-task-card-done {
-  background: rgba(99, 102, 241, 0.08);
-  border-color: rgba(99, 102, 241, 0.15);
-}
-.chrono-task-card-done:hover {
-  border-color: rgba(99, 102, 241, 0.25);
+  background: rgba(16, 185, 129, 0.14);
+  transition: background-color 0.25s ease;
 }
 html:not(.dark) .chrono-task-card {
   background: rgba(255, 255, 255, 0.88);
@@ -146,12 +151,126 @@ html:not(.dark) .chrono-task-card:hover {
   background: rgba(244, 244, 245, 0.98);
 }
 html:not(.dark) .chrono-task-card-done {
-  background: rgba(99, 102, 241, 0.1);
-  border-color: rgba(99, 102, 241, 0.22);
+  background: rgba(16, 185, 129, 0.12);
 }
-html:not(.dark) .chrono-task-card-done:hover {
-  border-color: rgba(99, 102, 241, 0.32);
+
+/* Task row: тонка неонова лінія в кутах — без великих box-shadow, вузькі radial + мінімальний blur */
+.task-neon-shell-high,
+.task-neon-shell-medium,
+.task-neon-shell-done {
+  isolation: isolate;
 }
+.task-neon-shell-high::before,
+.task-neon-shell-medium::before,
+.task-neon-shell-done::before {
+  content: "";
+  position: absolute;
+  inset: 0px;
+  border-radius: 8px;
+  z-index: 0;
+  pointer-events: none;
+  filter: blur(1.5px);
+  opacity: 1;
+  transition:
+    opacity 0.2s ease,
+    filter 0.2s ease;
+}
+.task-neon-shell-high:hover::before,
+.task-neon-shell-medium:hover::before,
+.task-neon-shell-done:hover::before {
+  opacity: 0.88;
+  filter: blur(3px);
+}
+.task-neon-shell-high::before {
+  background:
+    radial-gradient(
+      ellipse 20% 20% at 0% 100%,
+      rgba(108, 0, 0, 0.95),
+      transparent 82%
+    ),
+    radial-gradient(
+      ellipse 20% 20% at 100% 0%,
+      rgba(248, 32, 32, 1),
+      transparent 82%
+    );
+}
+.task-neon-shell-medium::before {
+  background:
+    radial-gradient(
+      ellipse 18% 22% at 0% 100%,
+      rgba(253, 224, 71, 0.92),
+      transparent 52%
+    ),
+    radial-gradient(
+      ellipse 18% 22% at 100% 0%,
+      rgba(250, 204, 21, 0.86),
+      transparent 52%
+    );
+}
+.task-neon-shell-done::before {
+  background:
+    radial-gradient(
+      ellipse 18% 22% at 0% 100%,
+      rgba(110, 231, 183, 0.9),
+      transparent 32%
+    ),
+    radial-gradient(
+      ellipse 18% 22% at 100% 0%,
+      rgba(52, 211, 153, 0.85),
+      transparent 32%
+    );
+}
+html:not(.dark) .task-neon-shell-high::before,
+html:not(.dark) .task-neon-shell-medium::before,
+html:not(.dark) .task-neon-shell-done::before {
+  filter: blur(2px);
+  opacity: 0.58;
+}
+html:not(.dark) .task-neon-shell-high:hover::before,
+html:not(.dark) .task-neon-shell-medium:hover::before,
+html:not(.dark) .task-neon-shell-done:hover::before {
+  opacity: 0.74;
+}
+html:not(.dark) .task-neon-shell-high::before {
+  background:
+    radial-gradient(
+      ellipse 16% 20% at 0% 100%,
+      rgba(239, 68, 68, 0.78),
+      transparent 30%
+    ),
+    radial-gradient(
+      ellipse 16% 20% at 100% 0%,
+      rgba(248, 113, 113, 0.68),
+      transparent 30%
+    );
+}
+html:not(.dark) .task-neon-shell-medium::before {
+  background:
+    radial-gradient(
+      ellipse 16% 20% at 0% 100%,
+      rgba(250, 204, 21, 0.72),
+      transparent 30%
+    ),
+    radial-gradient(
+      ellipse 16% 20% at 100% 0%,
+      rgba(234, 179, 8, 0.62),
+      transparent 30%
+    );
+}
+html:not(.dark) .task-neon-shell-done::before {
+  background:
+    radial-gradient(
+      ellipse 16% 20% at 0% 100%,
+      rgba(16, 185, 129, 0.68),
+      transparent 30%
+    ),
+    radial-gradient(
+      ellipse 16% 20% at 100% 0%,
+      rgba(5, 150, 105, 0.58),
+      transparent 30%
+    );
+}
+
 .chrono-card {
   background: rgba(24, 24, 27, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.05);
@@ -173,7 +292,9 @@ html:not(.dark) .chrono-card:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.2s, border-color 0.2s;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s;
 }
 .chrono-btn-icon:hover {
   background: rgba(39, 39, 42, 0.9);
@@ -192,7 +313,10 @@ html:not(.dark) .chrono-btn-icon:hover {
   border: 1px solid rgba(255, 255, 255, 0.05);
   color: #a1a1aa;
   font-size: 0.75rem;
-  transition: color 0.2s, background-color 0.2s, border-color 0.2s;
+  transition:
+    color 0.2s,
+    background-color 0.2s,
+    border-color 0.2s;
 }
 .chrono-btn-secondary:hover {
   color: white;
@@ -252,16 +376,26 @@ html:not(.dark) .chrono-page-bg {
   position: fixed;
   inset: 0;
   background-size: 40px 40px;
-  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-  mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, black 40%, transparent 100%);
-  -webkit-mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, black 40%, transparent 100%);
+  mask-image: radial-gradient(
+    ellipse 80% 50% at 50% 0%,
+    black 40%,
+    transparent 100%
+  );
+  -webkit-mask-image: radial-gradient(
+    ellipse 80% 50% at 50% 0%,
+    black 40%,
+    transparent 100%
+  );
   pointer-events: none;
   z-index: 0;
 }
 /* Light theme: darker grid lines on light background */
 html:not(.dark) .chrono-page-bg::before {
-  background-image: linear-gradient(to right, rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+  background-image:
+    linear-gradient(to right, rgba(0, 0, 0, 0.04) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
 }
 /* Chart plot area: light grey + grid (like bar chart) for light theme */
@@ -274,7 +408,8 @@ html:not(.dark) .chrono-chart-plot-bg::before {
   inset: 0;
   background-color: #fafafa;
   background-size: 32px 32px;
-  background-image: linear-gradient(to right, rgba(0, 0, 0, 0.06) 1px, transparent 1px),
+  background-image:
+    linear-gradient(to right, rgba(0, 0, 0, 0.06) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(0, 0, 0, 0.06) 1px, transparent 1px);
   border-radius: inherit;
   pointer-events: none;
@@ -285,8 +420,8 @@ html:not(.dark) .chrono-chart-plot-bg::before {
   border-color: rgba(255, 255, 255, 0.1);
 }
 .chrono-page-bg [data-slot="checkbox"][data-state="checked"] {
-  border-color: rgba(99, 102, 241, 0.5);
-  background: rgba(99, 102, 241, 0.3);
+  border-color: rgba(34, 197, 94, 0.65);
+  background: rgba(34, 197, 94, 0.35);
 }
 /* Custom checkbox (task list) - light theme visibility */
 html:not(.dark) .chrono-page-bg .custom-checkbox {
@@ -298,8 +433,8 @@ html:not(.dark) .chrono-page-bg .custom-checkbox:hover {
   background: rgba(255, 255, 255, 1);
 }
 html:not(.dark) .chrono-page-bg .custom-checkbox:checked {
-  border-color: #3b82f6;
-  background: #3b82f6;
+  border-color: #22c55e;
+  background: #22c55e;
 }
 
 /* Chrono table - subtle borders, soft header */
@@ -372,7 +507,9 @@ html:not(.dark) .chrono-table tbody td {
   background: rgba(24, 24, 27, 0.8) !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
   color: #d4d4d8;
-  transition: border-color 0.2s, background-color 0.2s;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s;
 }
 .chrono-select-trigger:hover {
   background: rgba(39, 39, 42, 0.9) !important;
@@ -407,14 +544,22 @@ html:not(.dark) .chrono-dropdown-content [data-slot="dropdown-menu-label"] {
 html:not(.dark) .chrono-select-content [data-slot="select-item"],
 html:not(.dark) .chrono-dropdown-content [data-slot="dropdown-menu-item"],
 html:not(.dark) .chrono-dropdown-content [data-slot="dropdown-menu-radio-item"],
-html:not(.dark) .chrono-dropdown-content [data-slot="dropdown-menu-checkbox-item"] {
+html:not(.dark)
+  .chrono-dropdown-content
+  [data-slot="dropdown-menu-checkbox-item"] {
   color: #27272a;
 }
 html:not(.dark) .chrono-select-content [data-slot="select-item"]:hover,
-html:not(.dark) .chrono-select-content [data-slot="select-item"][data-highlighted],
+html:not(.dark)
+  .chrono-select-content
+  [data-slot="select-item"][data-highlighted],
 html:not(.dark) .chrono-dropdown-content [data-slot="dropdown-menu-item"]:hover,
-html:not(.dark) .chrono-dropdown-content [data-slot="dropdown-menu-radio-item"][data-highlighted],
-html:not(.dark) .chrono-dropdown-content [data-slot="dropdown-menu-checkbox-item"][data-highlighted] {
+html:not(.dark)
+  .chrono-dropdown-content
+  [data-slot="dropdown-menu-radio-item"][data-highlighted],
+html:not(.dark)
+  .chrono-dropdown-content
+  [data-slot="dropdown-menu-checkbox-item"][data-highlighted] {
   background: rgba(0, 0, 0, 0.05) !important;
 }
 html:not(.dark) .chrono-select-content [data-slot="select-separator"],
@@ -479,8 +624,10 @@ html:not(.dark) .chart-tooltip .chart-tooltip-time {
 .chrono-select-content [data-slot="select-item"]:hover,
 .chrono-select-content [data-slot="select-item"][data-highlighted],
 .chrono-dropdown-content [data-slot="dropdown-menu-item"]:hover,
-.chrono-dropdown-content [data-slot="dropdown-menu-radio-item"][data-highlighted],
-.chrono-dropdown-content [data-slot="dropdown-menu-checkbox-item"][data-highlighted] {
+.chrono-dropdown-content
+  [data-slot="dropdown-menu-radio-item"][data-highlighted],
+.chrono-dropdown-content
+  [data-slot="dropdown-menu-checkbox-item"][data-highlighted] {
   background: rgba(255, 255, 255, 0.05) !important;
 }
 .chrono-select-content [data-slot="select-separator"],
@@ -619,7 +766,7 @@ html:not(.dark) .chrono-dialog .custom-checkbox {
   background: rgba(255, 255, 255, 0.8);
 }
 html:not(.dark) .chrono-dialog .custom-checkbox::before {
-  box-shadow: inset 1em 1em #3730a3;
+  box-shadow: inset 1em 1em white;
 }
 /* Radix checkbox in dialog - light theme */
 html:not(.dark) .chrono-dialog [data-slot="checkbox"] {
@@ -627,8 +774,8 @@ html:not(.dark) .chrono-dialog [data-slot="checkbox"] {
   background: #fafafa;
 }
 html:not(.dark) .chrono-dialog [data-slot="checkbox"][data-state="checked"] {
-  border-color: rgba(99, 102, 241, 0.5);
-  background: rgba(99, 102, 241, 0.25);
+  border-color: rgba(34, 197, 94, 0.55);
+  background: rgba(34, 197, 94, 0.22);
 }
 
 /* Destructive button in dialogs — завжди помітний (світла і темна тема) */
@@ -670,8 +817,8 @@ html:not(.dark) .chrono-dialog [data-slot="checkbox"][data-state="checked"] {
   transform: scale(1);
 }
 .custom-checkbox:checked {
-  background: #3b82f6;
-  border-color: #3b82f6;
+  background: #22c55e;
+  border-color: #22c55e;
 }
 .scrollbar-hide::-webkit-scrollbar {
   display: none;

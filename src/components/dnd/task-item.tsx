@@ -1,5 +1,4 @@
-import { ItemTask } from "@/types/drag-and-drop.model";
-import { getPriorityBorderClass } from "./utils/dnd.utils";
+import { ItemTask, Priority } from "@/types/drag-and-drop.model";
 import { DraggableSyntheticListeners, UniqueIdentifier } from "@dnd-kit/core";
 import { checkInSound, checkOutSound } from "@/config/sounds";
 import SoundHoverElement from "@/components/ui-abc/sound-hover-element";
@@ -44,7 +43,7 @@ export function TaskItem({
   handle?: boolean;
   categoryId?: UniqueIdentifier;
 }) {
-  const [isPlay, setIsPlay] = useState(false);
+  const [, setIsPlay] = useState(false);
   const [t] = useTranslation();
   const hasLongWord = task.title.split(" ").some((word) => word.length > 40);
   const timeSecs =
@@ -126,23 +125,32 @@ export function TaskItem({
       </WrapperHoverElement>
     ) : null;
 
+  const neonShellClass = task.isDone
+    ? "task-neon-shell-done"
+    : task.priority === Priority.HIGH
+      ? "task-neon-shell-high"
+      : task.priority === Priority.MEDIUM
+        ? "task-neon-shell-medium"
+        : "";
+  const inactiveShadow =
+    !neonShellClass && !task.isDone ? "shadow-sm" : "";
+  const cardBorder = "border border-zinc-200/70 dark:border-white/[0.08]";
+
   return (
     <div
       style={style}
-      className={`relative group rounded-lg border border-transparent hover:border-white/5 transition-all ${
-        isPlay ? getPriorityBorderClass(task.priority) : ""
-      }`}
+      className={`relative group rounded-lg ${neonShellClass}`.trim()}
     >
       {categoryColor && (
         <div
-          className="absolute left-0 top-1 bottom-1 w-[3px] rounded-full"
+          className="absolute left-0 top-1 bottom-1 z-[2] w-[3px] rounded-full"
           style={{ backgroundColor: categoryColor }}
         />
       )}
       <div
-        className={`grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-2 p-2 rounded-lg border border-zinc-200/80 dark:border-white/10 bg-white/80 dark:bg-white/5 hover:bg-white/90 dark:hover:bg-white/10 shadow-sm transition-all w-full md:flex md:items-center md:justify-between ${categoryColor ? "pl-3" : ""} ${
+        className={`grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-2 p-2 rounded-lg ${cardBorder} bg-white/80 dark:bg-white/5 hover:bg-white/90 dark:hover:bg-white/10 transition-colors w-full md:flex md:items-center md:justify-between ${neonShellClass ? "relative z-[1]" : ""} ${inactiveShadow} ${categoryColor ? "pl-3" : ""} ${
           task.isDone
-            ? "chrono-task-card-done text-indigo-700 dark:text-indigo-200/90 border-indigo-500/15 bg-indigo-500/10 dark:bg-indigo-500/5"
+            ? "chrono-task-card-done text-emerald-900 dark:text-emerald-200/95"
             : "text-zinc-800 dark:text-zinc-300"
         }`}
       >
@@ -187,7 +195,7 @@ export function TaskItem({
           <div className="min-w-0 flex-1">
             <p
               className={`text-left text-sm font-medium min-w-0 max-w-none wrap-break-word leading-snug md:max-w-[200px] ${
-                task.isDone ? "text-indigo-700 dark:text-indigo-200" : ""
+                task.isDone ? "text-emerald-800 dark:text-emerald-200" : ""
               }`}
               style={StyleWordBreak}
               title={hasLongWord ? task.title : undefined}

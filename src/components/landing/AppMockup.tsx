@@ -99,13 +99,13 @@ export function AppMockup() {
       <div className="space-y-4 relative animate-fade-in">
         <div className="absolute top-0 bottom-0 left-3 w-px bg-zinc-200 dark:bg-zinc-800" />
         <div className="relative pl-10 group/item cursor-pointer">
-          <div className="absolute left-[9px] top-3 h-1.5 w-1.5 rounded-full bg-indigo-500 ring-4 ring-white dark:ring-[#09090b]" />
+          <div className="absolute left-[9px] top-3 h-1.5 w-1.5 rounded-full bg-emerald-500 ring-4 ring-white dark:ring-[#09090b]" />
           <div className="p-4 rounded-lg chrono-task-card chrono-task-card-done flex justify-between items-center">
             <div>
-              <div className="text-sm font-medium text-indigo-700 dark:text-indigo-200">Deep work block</div>
-              <div className="mt-1 text-xs font-mono text-indigo-600/80 dark:text-indigo-400/60">09:00 - 11:00</div>
+              <div className="text-sm font-medium text-emerald-800 dark:text-emerald-200">Deep work block</div>
+              <div className="mt-1 text-xs font-mono text-emerald-700/80 dark:text-emerald-400/70">09:00 - 11:00</div>
             </div>
-            <div className="h-6 w-6 rounded border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+            <div className="h-6 w-6 rounded border border-emerald-500/35 flex items-center justify-center text-emerald-500">
               <Check className="w-3 h-3" />
             </div>
           </div>

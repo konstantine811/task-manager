@@ -12,8 +12,12 @@ import SoundHoverElement from "../ui-abc/sound-hover-element";
 import { HoverStyleElement, SoundTypeElement } from "@/types/sound";
 import { Button } from "../ui/button";
 import { useTranslation } from "react-i18next";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Progress } from "../ui/progress";
+import {
+  CATEGORY_CHART_COLORS,
+  getChartColorForAnalyticsCategory,
+} from "@/config/chart-colors.config";
 import { Plus, Sparkles } from "lucide-react";
 
 const animateLayoutChanges: AnimateLayoutChanges = (args) =>
@@ -63,6 +67,12 @@ function DroppableContainer({
   const [t] = useTranslation();
   const [donePercentage, setDonePercentage] = useState(0);
 
+  const categoryColor = useMemo(() => {
+    const key = String(id);
+    if (CATEGORY_CHART_COLORS[key]) return CATEGORY_CHART_COLORS[key];
+    return getChartColorForAnalyticsCategory(key, 0, t);
+  }, [id, t]);
+
   useEffect(() => {
     const totalTasks = items.length;
     const doneTasks = items.filter((task) => task.isDone).length;
@@ -89,12 +99,16 @@ function DroppableContainer({
       columns={columns}
       {...props}
     >
-      {items.length > 0 && !templated && (
-        <div className="px-4">
+      {items.length > 0 && (
+        <div className="px-4 mb-1">
           <div className="text-xs text-muted-foreground text-center mt-1">
             {donePercentage}%
           </div>
-          <Progress value={donePercentage} />
+          <Progress
+            value={donePercentage}
+            className="mt-1.5 h-1.5 bg-zinc-300/35 dark:bg-white/10"
+            indicatorStyle={{ backgroundColor: categoryColor }}
+          />
         </div>
       )}
       <ul className="flex flex-col gap-1">{children}</ul>

@@ -39,8 +39,8 @@ const CompletedProgressBarChart = ({
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [chartWidth, setChartWidth] = useState(400);
   const [blendValue, setBlendValue] = useState([50]);
-  const gradientId = useId().replace(/:/g, "-");
   const shadowId = useId().replace(/:/g, "-");
+  const undoneLineGradId = useId().replace(/:/g, "-");
   const selectedTheme = useThemeStore((s) => s.selectedTheme);
   const themeColors =
     ThemePalette[selectedTheme ?? ThemeType.DARK] ??
@@ -146,6 +146,7 @@ const CompletedProgressBarChart = ({
     const blend = blendValue[0] ?? 50;
     const barOpacity = blend <= 50 ? 1 : Math.max(0, 1 - (blend - 50) / 50);
     const lineOpacity = blend >= 50 ? 1 : Math.max(0, blend / 50);
+    const doneGreen = themeColors.chart2 ?? "#65e396";
 
     const x = d3
       .scaleBand()
@@ -178,22 +179,39 @@ const CompletedProgressBarChart = ({
       .attr("preserveAspectRatio", "xMidYMid meet");
 
     const defs = root.append("defs");
-    const gradient = defs
-      .append("linearGradient")
-      .attr("id", gradientId)
-      .attr("gradientUnits", "userSpaceOnUse")
-      .attr("x1", "0")
-      .attr("y1", y(0))
-      .attr("x2", "0")
-      .attr("y2", y(maxHours * 3600));
 
-    gradient.append("stop").attr("offset", "0%").attr("stop-color", "#34d399");
-    gradient.append("stop").attr("offset", "50%").attr("stop-color", "#22d3ee");
-    gradient.append("stop").attr("offset", "85%").attr("stop-color", "#818cf8");
-    gradient
+    const undoneLineGrad = defs
+      .append("linearGradient")
+      .attr("id", undoneLineGradId)
+      .attr("gradientUnits", "userSpaceOnUse")
+      .attr("x1", 0)
+      .attr("y1", 0)
+      .attr("x2", innerWidth)
+      .attr("y2", 0);
+    undoneLineGrad
+      .append("stop")
+      .attr("offset", "0%")
+      .attr("stop-color", themeColors.primary);
+    undoneLineGrad
       .append("stop")
       .attr("offset", "100%")
-      .attr("stop-color", "#fb7185");
+      .attr("stop-color", themeColors.destructive);
+
+    const legendUndoneGrad = defs
+      .append("linearGradient")
+      .attr("id", `${shadowId}-legend-undone`)
+      .attr("x1", "0%")
+      .attr("x2", "100%")
+      .attr("y1", "0%")
+      .attr("y2", "0%");
+    legendUndoneGrad
+      .append("stop")
+      .attr("offset", "0%")
+      .attr("stop-color", themeColors.primary);
+    legendUndoneGrad
+      .append("stop")
+      .attr("offset", "100%")
+      .attr("stop-color", themeColors.destructive);
 
     defs
       .append("filter")
@@ -325,7 +343,7 @@ const CompletedProgressBarChart = ({
       .attr("y", (d) => y(d.doneTime))
       .attr("width", x.bandwidth())
       .attr("height", (d) => Math.max(0, y(0) - y(d.doneTime)))
-      .attr("fill", `url(#${gradientId})`)
+      .attr("fill", doneGreen)
       .attr("filter", `url(#${shadowId})`)
       .attr("opacity", barOpacity)
       .attr("cursor", "pointer")
@@ -347,7 +365,7 @@ const CompletedProgressBarChart = ({
       .append("path")
       .datum(chartData)
       .attr("fill", "none")
-      .attr("stroke", themeColors.accent)
+      .attr("stroke", doneGreen)
       .attr("stroke-dasharray", "10,5")
       .attr("stroke-width", 2)
       .attr("d", lineDone);
@@ -356,7 +374,7 @@ const CompletedProgressBarChart = ({
       .append("path")
       .datum(chartData)
       .attr("fill", "none")
-      .attr("stroke", themeColors["muted-foreground"])
+      .attr("stroke", `url(#${undoneLineGradId})`)
       .attr("stroke-dasharray", "5,5")
       .attr("stroke-width", 1.5)
       .attr("opacity", 0.8)
@@ -373,7 +391,7 @@ const CompletedProgressBarChart = ({
       )
       .attr("cy", (d) => y(d.doneTime))
       .attr("r", 2)
-      .attr("fill", themeColors.accent)
+      .attr("fill", doneGreen)
       .attr("stroke", "white")
       .attr("stroke-width", 1);
 
@@ -388,10 +406,10 @@ const CompletedProgressBarChart = ({
       )
       .attr("cy", (d) => y(d.notTimeDone))
       .attr("r", 2)
-      .attr("fill", themeColors["muted-foreground"])
+      .attr("fill", themeColors.primary)
       .attr("stroke", themeColors.background)
       .attr("stroke-width", 1)
-      .attr("opacity", 0.8);
+      .attr("opacity", 0.85);
 
     const focus = group.append("g").style("display", "none");
     focus
@@ -413,7 +431,7 @@ const CompletedProgressBarChart = ({
       .attr("width", 14)
       .attr("height", 14)
       .attr("rx", 4)
-      .attr("fill", `url(#${gradientId})`)
+      .attr("fill", doneGreen)
       .attr("opacity", barOpacity);
     legend
       .append("text")
@@ -429,7 +447,7 @@ const CompletedProgressBarChart = ({
       .attr("y1", 22)
       .attr("x2", 14)
       .attr("y2", 22)
-      .attr("stroke", themeColors.accent)
+      .attr("stroke", doneGreen)
       .attr("stroke-width", 2)
       .attr("stroke-dasharray", "10,5")
       .attr("opacity", lineOpacity);
@@ -447,7 +465,7 @@ const CompletedProgressBarChart = ({
       .attr("y1", 42)
       .attr("x2", 14)
       .attr("y2", 42)
-      .attr("stroke", themeColors["muted-foreground"])
+      .attr("stroke", `url(#${shadowId}-legend-undone)`)
       .attr("stroke-width", 1.5)
       .attr("stroke-dasharray", "5,5")
       .attr("opacity", lineOpacity * 0.8);
@@ -498,7 +516,7 @@ const CompletedProgressBarChart = ({
     parsedData,
     trimmedData,
     t,
-    gradientId,
+    undoneLineGradId,
     shadowId,
     themeColors,
     blendValue,

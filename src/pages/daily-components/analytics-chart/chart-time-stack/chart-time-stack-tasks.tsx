@@ -8,7 +8,7 @@ import {
   TaskAnalyticsIdEntity,
 } from "@/types/analytics/task-analytics.model";
 import { useThemeStore } from "@/storage/themeStore";
-import { ThemePalette, ThemeStaticPalette, ThemeType } from "@/config/theme-colors.config";
+import { ThemePalette, ThemeType } from "@/config/theme-colors.config";
 import { isTouchDevice } from "@/utils/touch-inspect";
 import { useTranslation } from "react-i18next";
 
@@ -120,11 +120,12 @@ const ChartTimeStackTasks = ({
       .domain([0, totalTime])
       .range(direction === "horizontal" ? [0, innerW] : [innerH, 0]);
 
-    // create gradient for full bar (base layer)
-    const redOffset =
-      totalTime > 0 ? `${(16 * 3600 * 100) / totalTime}%` : "0%";
-    const yellowOffset =
-      totalTime > 0 ? `${(10 * 3600 * 100) / totalTime}%` : "0%";
+    // Base layer: синій до ~13 год за шкалою totalTime, далі перехід у червоний
+    const THIRTEEN_HOURS_SEC = 13 * 3600;
+    const blueUntilPct =
+      totalTime > 0
+        ? Math.min(100, (THIRTEEN_HOURS_SEC / totalTime) * 100)
+        : 100;
 
     const defs = svg.append("defs");
     const gradient = defs
@@ -137,16 +138,19 @@ const ChartTimeStackTasks = ({
 
     gradient
       .append("stop")
-      .attr("offset", yellowOffset)
-      .attr("stop-color", ThemeStaticPalette.green);
+      .attr("offset", "0%")
+      .attr("stop-color", colors["primary"]);
     gradient
       .append("stop")
-      .attr("offset", redOffset)
-      .attr("stop-color", ThemeStaticPalette.yellow);
+      .attr("offset", `${blueUntilPct}%`)
+      .attr("stop-color", colors["primary"]);
     gradient
       .append("stop")
       .attr("offset", "100%")
-      .attr("stop-color", colors["destructive"]);
+      .attr(
+        "stop-color",
+        blueUntilPct >= 100 ? colors["primary"] : colors["destructive"]
+      );
 
     // 1. Base: full gradient bar
     group
@@ -161,12 +165,12 @@ const ChartTimeStackTasks = ({
       .attr("fill", "url(#stackGradient)")
       .attr("rx", 2);
 
-    // 2. Blue overlay at the start for all completed tasks (0 to doneTime)
+    // 2. Зелена підкладка для виконаного часу (0 … doneTime)
     if (doneTime > 0) {
-      const blueColor = colors["primary"];
+      const doneColor = colors["chart2"];
       const segSize = Math.abs(scale(doneTime) - scale(0));
       const isHor = direction === "horizontal";
-      const rect = group.append("rect").attr("fill", blueColor).attr("rx", 2);
+      const rect = group.append("rect").attr("fill", doneColor).attr("rx", 2);
       if (isHor) {
         rect.attr("x", 0).attr("y", 0).attr("width", segSize).attr("height", barSize);
       } else {
