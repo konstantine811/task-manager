@@ -58,6 +58,9 @@ export function useMultipleContainersBoard({
 
   const playingTask = useTaskManager((s) => s.playingTask);
   const taskTimeDone = useTaskManager((s) => s.updatedTask);
+  const setPlayingTimeDoneResolver = useTaskManager(
+    (s) => s.setPlayingTimeDoneResolver,
+  );
 
   const [addTaskContainerId, setAddTaskContainerId] =
     useState<UniqueIdentifier | null>(null);
@@ -76,7 +79,7 @@ export function useMultipleContainersBoard({
     useState<UniqueIdentifier | null>(null);
   const [activeSuggestedTask, setActiveSuggestedTask] =
     useState<ItemTask | null>(null);
-  const lastUpdatedTaskRef = useRef<UniqueIdentifier | null>(null);
+  const lastAppliedUpdatedSigRef = useRef<string | null>(null);
 
   const sensors = useSensors(
     useSensor(MouseSensor),
@@ -131,10 +134,22 @@ export function useMultipleContainersBoard({
   );
 
   useEffect(() => {
-    if (taskTimeDone && taskTimeDone.id !== lastUpdatedTaskRef.current) {
-      updateTaskTime(taskTimeDone.id, taskTimeDone.timeDone);
-      lastUpdatedTaskRef.current = taskTimeDone.id;
-    }
+    setPlayingTimeDoneResolver((id) => {
+      for (const c of items) {
+        const t = c.tasks.find((x) => x.id === id);
+        if (t) return t.timeDone;
+      }
+      return undefined;
+    });
+    return () => setPlayingTimeDoneResolver(null);
+  }, [items, setPlayingTimeDoneResolver]);
+
+  useEffect(() => {
+    if (!taskTimeDone) return;
+    const sig = `${String(taskTimeDone.id)}:${taskTimeDone.timeDone}`;
+    if (sig === lastAppliedUpdatedSigRef.current) return;
+    lastAppliedUpdatedSigRef.current = sig;
+    updateTaskTime(taskTimeDone.id, taskTimeDone.timeDone);
   }, [taskTimeDone, updateTaskTime]);
 
   const handleToggleTask = useCallback(

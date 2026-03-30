@@ -103,7 +103,14 @@ const ChartTimeStackTasks = ({
         return 0;
       });
 
-    const totalTime = d3.sum(tasks, (d) => d.time);
+    let stackAcc = 0;
+    const segments = tasks.map((d) => {
+      const t0 = stackAcc;
+      stackAcc += d.time;
+      return { ...d, t0, t1: stackAcc };
+    });
+
+    const totalTime = stackAcc;
     const doneTime = d3.sum(tasks, (d) =>
       d.isDone ? (d.timeDone || d.time) : 0
     );
@@ -186,11 +193,9 @@ const ChartTimeStackTasks = ({
       }
     }
 
-    let offset = 0;
-
     const taskGroups = group
       .selectAll("g.task")
-      .data(tasks)
+      .data(segments)
       .join("g")
       .attr("class", "task");
 
@@ -214,30 +219,18 @@ const ChartTimeStackTasks = ({
 
     taskGroups
       .append("rect")
-      .attr("x", (d) =>
-        direction === "horizontal"
-          ? (() => {
-              const current = offset;
-              offset += d.time;
-              return scale(current);
-            })()
-          : 0
-      )
+      .attr("x", (d) => (direction === "horizontal" ? scale(d.t0) : 0))
       .attr("y", (d) =>
         direction === "vertical"
-          ? (() => {
-              const current = offset;
-              offset += d.time;
-              return scale(current + d.time);
-            })()
+          ? Math.min(scale(d.t0), scale(d.t1))
           : 0
       )
       .attr("width", (d) =>
-        direction === "horizontal" ? scale(d.time) - scale(0) : barSize
+        direction === "horizontal" ? scale(d.t1) - scale(d.t0) : barSize
       )
       .attr("height", (d) =>
         direction === "vertical"
-          ? scale(offset - d.time) - scale(offset)
+          ? Math.abs(scale(d.t1) - scale(d.t0))
           : barSize
       )
       .attr("fill", "transparent")

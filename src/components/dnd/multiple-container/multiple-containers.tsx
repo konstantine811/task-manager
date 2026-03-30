@@ -169,20 +169,29 @@ export function MultipleContainers({
           setIsDialogOpen(status);
         }}
       />
-      <AnimatePresence>
-        {!templated && playingTask && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "60px" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            style={{ top: sH }}
-            className="sticky flex h-[60px] justify-center items-center z-30 bg-background/50 backdrop-blur-xs"
-          >
-            <TaskTimer />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {!templated && playingTask && (
+        <div className="h-[60px] shrink-0" aria-hidden />
+      )}
+      {createPortal(
+        <AnimatePresence>
+          {!templated && playingTask ? (
+            <motion.div
+              key="task-timer-fixed"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 60 }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3 }}
+              style={{ top: `${sH}px` }}
+              className="pointer-events-auto fixed left-0 right-0 z-40 flex justify-center overflow-hidden border-b border-border/40 bg-background/90 backdrop-blur-md"
+            >
+              <div className="flex h-[60px] items-center justify-center">
+                <TaskTimer />
+              </div>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>,
+        document.body,
+      )}
       <DndContext
         sensors={sensors}
         collisionDetection={collisionDetectionStrategy}

@@ -15,6 +15,24 @@ import {
 } from "@/types/drag-and-drop.model";
 import { ISODate } from "@/types/task-instance.model";
 
+/**
+ * Секунди тривалості для стек-діаграми «день».
+ * У planned з діалогу: `time` = час доби (TimePicker), `timeDone` = тривалість (TimePickerInputs).
+ * Якщо брати `time` для ширини сегмента — 14:00 перетворюється на ~14 «годин» бару.
+ */
+function taskBarDurationSeconds(task: ItemTask): number {
+  if (task.isDone) {
+    return task.timeDone > 0 ? task.timeDone : task.time;
+  }
+  if (task.isPlanned) {
+    return task.timeDone > 0 ? task.timeDone : task.time;
+  }
+  if (task.isDetermined) {
+    return task.time;
+  }
+  return task.time;
+}
+
 export const getAreaProgress = (
   rangeTasks: DailyTaskRecord[],
   from?: ISODate,
@@ -93,7 +111,7 @@ export const getDailyTaskAnalyticsData = (tasks: Items): DailyTaskAnalytics => {
 
       dailyEntity[id] = {
         title,
-        time: time,
+        time: taskBarDurationSeconds(task),
         timeDone,
         category: categoryTitle,
         isDone,
