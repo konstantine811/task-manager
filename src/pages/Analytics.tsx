@@ -69,7 +69,10 @@ const Analytics = () => {
   }, [analyticsData]);
 
   return (
-    <div className="w-full" style={{ minHeight: `calc(100vh - ${hS}px)` }}>
+    <div
+      className="h-full min-h-0 w-full overflow-y-auto overscroll-y-contain"
+      style={{ minHeight: `calc(100vh - ${hS}px)` }}
+    >
       <header className="border-b border-white/10 py-2">
         <AnimatedItem index={0}>
           <div className="container mx-auto flex items-center justify-end">

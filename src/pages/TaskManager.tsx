@@ -56,15 +56,18 @@ const TaskManager = () => {
   }, []);
 
   return (
-    <div style={{ paddingTop: NAVBAR_HEIGHT }} className="min-h-screen chrono-page-bg text-foreground relative">
+    <div
+      style={{ paddingTop: NAVBAR_HEIGHT }}
+      className="box-border flex h-dvh max-h-dvh flex-col overflow-hidden chrono-page-bg text-foreground relative"
+    >
       <ChronoNav variant="app" />
-      <div className="relative z-10">
+      <div className="relative z-10 flex min-h-0 flex-1 flex-col overflow-hidden">
         <motion.div
           key={pathname}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, ease: [0.22, 0.61, 0.36, 1] }}
-          className="w-full"
+          className="flex h-full min-h-0 w-full flex-1 flex-col overflow-x-hidden overflow-y-hidden"
         >
           <Outlet context={outletConext} />
         </motion.div>

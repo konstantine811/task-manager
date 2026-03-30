@@ -25,7 +25,8 @@ const TemplateTask = () => {
   const { isAdoptiveSize: mdSize } = useIsAdoptive("md");
   const [dailyTasks, setDailyTasks] = useState<Items>([]);
   const [templatedTask, setTemplatedTask] = useState<Items>([]); // 🔄 Додано для зберігання шаблонних завдань
-  const [isLoaded, setIsLoaded] = useState(false);
+  /** true поки йде перший запит шаблону — щоб не миготів контент і сітка */
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const hS = useHeaderSizeStore((s) => s.size);
   const [t] = useTranslation();
   const removeSuggestedTaskRef = useRef<
@@ -36,7 +37,6 @@ const TemplateTask = () => {
     null,
   );
   useEffect(() => {
-    setIsLoaded(true);
     loadTemplateTasks()
       .then((tasks) => {
         if (tasks) {
@@ -46,20 +46,30 @@ const TemplateTask = () => {
           setDailyTasks([]); // 🔄 Явно вказати порожній масив
           setTemplatedTask([]); // 🔄 Явно вказати порожній масив для шаблонних завдань
         }
-        setIsLoaded(false);
       })
       .catch((error) => {
         console.error("Error loading tasks:", error);
-        setIsLoaded(false);
-      });
+      })
+      .finally(() => setIsInitialLoad(false));
   }, []);
+
+  const viewportH = `calc(100vh - ${hS}px)`;
+  /** На lg фіксуємо висоту під viewport + overflow:hidden, щоб скрол був лише всередині колонок, а не на body (миготіння скролбара). */
+  const rootStyle = !mdSize
+    ? ({
+        minHeight: viewportH,
+        maxHeight: viewportH,
+        overflow: "hidden",
+      } as const)
+    : { minHeight: viewportH };
+
   return (
     <div
-      className={`w-full ${!mdSize ? "grid lg:grid-cols-3 lg:grid-rows-[auto_1fr]" : "flex flex-col"}`}
-      style={{ minHeight: `calc(100vh - ${hS}px)` }}
+      className={`w-full ${!mdSize ? "grid h-full min-h-0 lg:grid-cols-3 lg:grid-rows-[auto_minmax(0,1fr)]" : "flex min-h-0 flex-1 flex-col"}`}
+      style={rootStyle}
     >
       {/* Заголовок — по центру з glass effect */}
-      <AnimatedItem index={0} className={!mdSize ? "col-span-3" : ""}>
+      <AnimatedItem index={0} className={!mdSize ? "col-span-3 shrink-0" : ""}>
         <h2 className="flex justify-center mb-4 mt-2">
           <span className="inline-block text-center text-sm font-medium py-3 px-6 rounded-xl bg-zinc-200/80 dark:bg-white/5 backdrop-blur-md text-zinc-800 dark:text-zinc-200 shadow-[0_0_20px_rgba(0,0,0,0.04)] dark:shadow-[0_0_20px_rgba(255,255,255,0.06)]">
             {t("task_manager.template_daily_task_title")}
@@ -67,22 +77,30 @@ const TemplateTask = () => {
         </h2>
       </AnimatedItem>
 
-      {/* Колонка 1 — графіки */}
-      <AnimatedItem index={1} className="min-w-0 hidden lg:block overflow-auto">
-        <TemplateChartsPanel templateTasks={templatedTask} />
-      </AnimatedItem>
-
-      {/* Колонки 2+3 — Quick Start/задачі та AI (рівно по 1/3) */}
-      <AnimatedItem
-        index={2}
-        className="flex min-w-0 flex-1 lg:col-span-2 overflow-auto"
+      {/* Один вертикальний скрол на весь рядок (аналітика + дошка + AI), без вкладених overflow-y-auto */}
+      <div
+        className={
+          mdSize
+            ? "flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto overflow-x-hidden"
+            : "col-span-3 grid min-h-0 min-w-0 grid-cols-1 overflow-y-auto overflow-x-hidden lg:grid-cols-3 lg:gap-4 [scrollbar-gutter:stable]"
+        }
       >
-        <main
-          className={`flex min-w-0 flex-1 lg:col-span-2 overflow-auto ${outletContext.className}`}
-          style={{ minHeight: 0 }}
+        <AnimatedItem
+          index={1}
+          className="min-w-0 min-h-0 hidden lg:block lg:min-h-0"
         >
-          {!isLoaded ? (
-            <div className="flex-1 flex flex-col items-stretch justify-start min-w-0 min-h-0 w-full px-4 overflow-auto">
+          <TemplateChartsPanel templateTasks={templatedTask} />
+        </AnimatedItem>
+
+        <AnimatedItem
+          index={2}
+          className="flex min-h-0 min-w-0 flex-1 flex-col lg:col-span-2"
+        >
+          <main
+            className={`flex min-h-0 min-w-0 flex-1 flex-col ${outletContext.className}`}
+          >
+          {!isInitialLoad ? (
+            <div className="flex w-full min-w-0 flex-1 flex-col items-stretch justify-start px-4">
               <TaskManagerProvider>
                 <MultipleContainers
                   strategy={rectSortingStrategy}
@@ -135,10 +153,13 @@ const TemplateTask = () => {
               </TaskManagerProvider>
             </div>
           ) : (
-            <Preloader />
+            <div className="flex min-h-[40vh] w-full flex-1 items-center justify-center">
+              <Preloader />
+            </div>
           )}
-        </main>
-      </AnimatedItem>
+          </main>
+        </AnimatedItem>
+      </div>
 
       {/* Права колонка — AI у drawer на мобільному */}
       {mdSize && (

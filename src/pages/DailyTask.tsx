@@ -169,7 +169,7 @@ const DailyTask = () => {
       }}
     >
       <div
-        className="flex w-full justify-center"
+        className="flex h-full min-h-0 w-full justify-center overflow-y-auto overscroll-y-contain"
         style={{ minHeight: `calc(100vh - ${hS}px)` }}
       >
         {/* Ліва колонка */}
