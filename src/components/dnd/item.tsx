@@ -72,7 +72,7 @@ export const Item = React.memo(
         onToggle,
         templated,
       },
-      ref
+      ref,
     ) => {
       useEffect(() => {
         if (!dragOverlay) {
@@ -123,6 +123,6 @@ export const Item = React.memo(
           ></TaskItem>
         </li>
       );
-    }
-  )
+    },
+  ),
 );

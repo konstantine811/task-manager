@@ -1,16 +1,18 @@
 import type { UniqueIdentifier } from "@dnd-kit/core";
-import type { ItemTask, Items, DayNumber } from "@/types/drag-and-drop.model";
+import type { ItemTask, Items } from "@/types/drag-and-drop.model";
 import type {
   TaskTemplate,
   TemplateItems,
   ScheduleRule,
+  DayNumber,
 } from "@/types/task-template.model";
+import { WEEK_DAYS } from "@/config/data-config";
 
 function getScheduleFromItemTask(task: ItemTask): ScheduleRule {
   if (task.schedule) return task.schedule;
   return task.whenDo && task.whenDo.length > 0
     ? { type: "weekdays", days: task.whenDo }
-    : { type: "weekdays", days: [1, 2, 3, 4, 5, 6, 7] };
+    : { type: "weekdays", days: WEEK_DAYS };
 }
 
 /**
@@ -35,12 +37,12 @@ export function itemTaskToTaskTemplate(task: ItemTask): TaskTemplate {
  */
 export function taskTemplateToItemTask(
   template: TaskTemplate,
-  isDone = false
+  isDone = false,
 ): ItemTask {
   const days: DayNumber[] =
     template.schedule.type === "weekdays"
       ? [...template.schedule.days]
-      : [1, 2, 3, 4, 5, 6, 7];
+      : WEEK_DAYS;
   return {
     id: template.id,
     title: template.title,
@@ -71,13 +73,13 @@ export function itemsToTemplateItems(items: Items): TemplateItems {
  */
 export function templateItemsToItems(
   templateItems: TemplateItems,
-  getIsDone?: (templateId: UniqueIdentifier) => boolean
+  getIsDone?: (templateId: UniqueIdentifier) => boolean,
 ): Items {
   return templateItems.map((cat) => ({
     id: cat.id,
     title: cat.title,
     tasks: cat.templates.map((t) =>
-      taskTemplateToItemTask(t, getIsDone?.(t.id) ?? false)
+      taskTemplateToItemTask(t, getIsDone?.(t.id) ?? false),
     ),
   }));
 }

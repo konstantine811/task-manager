@@ -47,13 +47,11 @@ export function TaskItem({
   const [t] = useTranslation();
   const hasLongWord = task.title.split(" ").some((word) => word.length > 40);
   const timeSecs =
-    task.isPlanned && task.isDone && task.timeDone
-      ? task.timeDone
-      : task.time;
+    task.isPlanned && task.isDone && task.timeDone ? task.timeDone : task.time;
   const timeFormatted = paresSecondToTime(timeSecs);
   const categoryColor =
     categoryId && templated
-      ? CATEGORY_CHART_COLORS[String(categoryId)] ?? null
+      ? (CATEGORY_CHART_COLORS[String(categoryId)] ?? null)
       : null;
   const scheduleDays =
     templated && task.whenDo && task.whenDo.length > 0 ? (
@@ -83,10 +81,10 @@ export function TaskItem({
         <TaskDeterminedTime
           task={task}
           titleDeterminedTime={t(
-            "task_manager.dialog_create_task.task.time.total_time"
+            "task_manager.dialog_create_task.task.time.total_time",
           )}
           titleSpendingTime={t(
-            "task_manager.dialog_create_task.task.time.wasted_time"
+            "task_manager.dialog_create_task.task.time.wasted_time",
           )}
         />
       ) : templated ? (
@@ -98,32 +96,31 @@ export function TaskItem({
       )}
     </>
   ) : null;
-  const editButton =
-    onEditTask ? (
-      <WrapperHoverElement>
-        <SoundHoverElement
-          animValue={0.99}
-          hoverTypeElement={
-            task.isDone ? SoundTypeElement.NONE : SoundTypeElement.SELECT
-          }
-          hoverStyleElement={
-            task.isDone ? HoverStyleElement.none : HoverStyleElement.quad
-          }
+  const editButton = onEditTask ? (
+    <WrapperHoverElement>
+      <SoundHoverElement
+        animValue={0.99}
+        hoverTypeElement={
+          task.isDone ? SoundTypeElement.NONE : SoundTypeElement.SELECT
+        }
+        hoverStyleElement={
+          task.isDone ? HoverStyleElement.none : HoverStyleElement.quad
+        }
+      >
+        <Button
+          variant="ghost"
+          size="icon"
+          disabled={task.isDone}
+          onClick={() => onEditTask(task)}
+          className={`h-6 w-6 text-zinc-700 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-white/5 ${
+            task.isDone && "text-zinc-500 dark:text-zinc-600"
+          }`}
         >
-          <Button
-            variant="ghost"
-            size="icon"
-            disabled={task.isDone}
-            onClick={() => onEditTask(task)}
-            className={`h-6 w-6 text-zinc-700 dark:text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-white/5 ${
-              task.isDone && "text-zinc-500 dark:text-zinc-600"
-            }`}
-          >
-            <SlidersHorizontal className="w-3 h-3" />
-          </Button>
-        </SoundHoverElement>
-      </WrapperHoverElement>
-    ) : null;
+          <SlidersHorizontal className="w-3 h-3" />
+        </Button>
+      </SoundHoverElement>
+    </WrapperHoverElement>
+  ) : null;
 
   const neonShellClass = task.isDone
     ? "task-neon-shell-done"
@@ -132,8 +129,7 @@ export function TaskItem({
       : task.priority === Priority.MEDIUM
         ? "task-neon-shell-medium"
         : "";
-  const inactiveShadow =
-    !neonShellClass && !task.isDone ? "shadow-sm" : "";
+  const inactiveShadow = !neonShellClass && !task.isDone ? "shadow-sm" : "";
   const cardBorder = "border border-zinc-200/70 dark:border-white/[0.08]";
 
   return (
@@ -183,15 +179,15 @@ export function TaskItem({
             </SoundHoverElement>
           )}
           {!readOnly && (
-          <Button
-            data-cypress="draggable-item"
-            {...(!handle ? listeners : undefined)}
-            variant="ghost"
-            size="icon"
-                className="cursor-move hover:bg-zinc-200 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white text-zinc-700 dark:text-zinc-500 shrink-0 h-6 w-6 md:hidden mt-0.5"
-          >
-            <GripVertical className="w-3 h-3" />
-          </Button>
+            <Button
+              data-cypress="draggable-item"
+              {...(!handle ? listeners : undefined)}
+              variant="ghost"
+              size="icon"
+              className="cursor-move hover:bg-zinc-200 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white text-zinc-700 dark:text-zinc-500 shrink-0 h-6 w-6 md:hidden mt-0.5"
+            >
+              <GripVertical className="w-3 h-3" />
+            </Button>
           )}
           <div className="min-w-0 flex-1">
             <p
@@ -219,24 +215,24 @@ export function TaskItem({
           {scheduleDays}
           {timeBlock}
           {!readOnly && (
-          <div className="w-12 flex justify-end gap-1">
-            {editButton}
-            <SoundHoverElement
-              animValue={0.9}
-              hoverTypeElement={SoundTypeElement.SHIFT}
-              className="hidden md:block"
-            >
-              <Button
-                data-cypress="draggable-item"
-                {...(!handle ? listeners : undefined)}
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6 cursor-move hover:bg-zinc-200 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white text-zinc-700 dark:text-zinc-500"
+            <div className="w-12 flex justify-end gap-1">
+              {editButton}
+              <SoundHoverElement
+                animValue={0.9}
+                hoverTypeElement={SoundTypeElement.SHIFT}
+                className="hidden md:block"
               >
-                <GripVertical className="w-3 h-3" />
-              </Button>
-            </SoundHoverElement>
-          </div>
+                <Button
+                  data-cypress="draggable-item"
+                  {...(!handle ? listeners : undefined)}
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 cursor-move hover:bg-zinc-200 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white text-zinc-700 dark:text-zinc-500"
+                >
+                  <GripVertical className="w-3 h-3" />
+                </Button>
+              </SoundHoverElement>
+            </div>
           )}
           {children}
         </div>

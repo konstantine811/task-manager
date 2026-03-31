@@ -1,5 +1,5 @@
 import { UniqueIdentifier } from "@dnd-kit/core";
-import type { ScheduleRule } from "./task-template.model";
+import type { DayNumber, ScheduleRule } from "./task-template.model";
 
 export interface TaskCategory {
   id: UniqueIdentifier;
@@ -40,8 +40,6 @@ export enum Priority {
   MEDIUM = "medium",
   HIGH = "high",
 }
-
-export type DayNumber = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
 export interface GetItemStylesArgs {
   value: UniqueIdentifier;

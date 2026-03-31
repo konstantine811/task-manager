@@ -1,9 +1,5 @@
 import { createPortal } from "react-dom";
-import {
-  DndContext,
-  DragOverlay,
-  MeasuringStrategy,
-} from "@dnd-kit/core";
+import { DndContext, DragOverlay, MeasuringStrategy } from "@dnd-kit/core";
 import {
   SortableContext,
   verticalListSortingStrategy,
@@ -20,7 +16,7 @@ import Trash from "../trash";
 import ContainerDragOverlay from "../container-drag-overlay";
 import SortableItemDragOverlay from "../sortable-item-drag-overlay";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import DialogTask from "../dialog-task";
+import DialogTask from "../dialog-task/dialog-task";
 import SoundHoverElement from "../../ui-abc/sound-hover-element";
 import { Button } from "../../ui/button";
 import { HoverStyleElement, SoundTypeElement } from "@/types/sound";

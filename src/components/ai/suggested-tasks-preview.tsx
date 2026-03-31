@@ -35,14 +35,9 @@ export function SuggestedTasksPreview({
               />
             ) : (
               <li key={task.id}>
-                <TaskItem
-                  index={idx}
-                  task={task}
-                  templated
-                  readOnly
-                />
+                <TaskItem index={idx} task={task} templated readOnly />
               </li>
-            )
+            ),
           )}
         </Container>
       ))}
