@@ -8,11 +8,7 @@ import {
   TaskAnalyticsIdEntity,
 } from "@/types/analytics/task-analytics.model";
 import { buildAreaProgress } from "@/services/task-menager/progress/progress.service";
-import {
-  DailyTaskRecord,
-  ItemTask,
-  Items,
-} from "@/types/drag-and-drop.model";
+import { DailyTaskRecord, ItemTask, Items } from "@/types/drag-and-drop.model";
 import { ISODate } from "@/types/task-instance.model";
 
 /**
@@ -24,11 +20,8 @@ function taskBarDurationSeconds(task: ItemTask): number {
   if (task.isDone) {
     return task.timeDone > 0 ? task.timeDone : task.time;
   }
-  if (task.isPlanned) {
+  if (task.isPlanned || task.isDetermined) {
     return task.timeDone > 0 ? task.timeDone : task.time;
-  }
-  if (task.isDetermined) {
-    return task.time;
   }
   return task.time;
 }
@@ -36,7 +29,7 @@ function taskBarDurationSeconds(task: ItemTask): number {
 export const getAreaProgress = (
   rangeTasks: DailyTaskRecord[],
   from?: ISODate,
-  to?: ISODate
+  to?: ISODate,
 ) => {
   const sourcePeriod =
     from && to
@@ -59,7 +52,6 @@ export const getDailyTaskAnalyticsData = (tasks: Items): DailyTaskAnalytics => {
     countDoneTask: 0,
     countAllTask: 0,
   };
-
   tasks.forEach((cat) => {
     const categoryTitle =
       (cat as { title?: string }).title ??
@@ -127,7 +119,7 @@ export const getDailyTaskAnalyticsData = (tasks: Items): DailyTaskAnalytics => {
 
 export const getRangeDailyTaskAnalytics = (
   rangeTasks: DailyTaskRecord[],
-  range?: { from: ISODate; to: ISODate }
+  range?: { from: ISODate; to: ISODate },
 ): AnalyticsData => {
   const categoryEntity: CategoryAnalyticsNameEntity = {};
   const taskEntity: RangeTaskAnalyticsNameEntity = {};
@@ -149,7 +141,7 @@ export const getRangeDailyTaskAnalytics = (
 export const getRangeAnalyticsData = (
   tasks: Items,
   categoryEntity: CategoryAnalyticsNameEntity,
-  taskEntity: RangeTaskAnalyticsNameEntity
+  taskEntity: RangeTaskAnalyticsNameEntity,
 ): RangeTaskAnalytics => {
   let countTimeDone = 0;
   let countNotTimeDone = 0;
