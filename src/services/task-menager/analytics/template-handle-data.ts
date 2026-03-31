@@ -6,7 +6,8 @@ import {
   WeekTaskEntity,
   ItemTimeMapKeys,
 } from "@/types/analytics/task-analytics.model";
-import { DayNumber, Items, ItemTask } from "@/types/drag-and-drop.model";
+import type { Items, ItemTask } from "@/types/drag-and-drop.model";
+import type { DayNumber } from "@/types/task-template.model";
 
 export const getTaskAnalyticsData = (tasks: Items): TaskAnalytics => {
   const weekTaskEntity: WeekTaskEntity = {};
@@ -43,7 +44,7 @@ export const getTaskAnalyticsData = (tasks: Items): TaskAnalytics => {
 export const getItemTimeMapByPeriod = (
   tasks: Items,
   analyticsPerid: TypeAnalyticsPeriod = "by_all_week",
-  type: ItemTimeMapKeys = ItemTimeMapKeys.category
+  type: ItemTimeMapKeys = ItemTimeMapKeys.category,
 ): ItemTimeMap => {
   const itemTimeMap: ItemTimeMap = {};
 
@@ -57,7 +58,7 @@ export const getItemTimeMapByPeriod = (
         itemKey,
         analyticsPerid,
         task,
-        timeToAdd
+        timeToAdd,
       );
     });
   });
@@ -69,7 +70,7 @@ function switchItemTimeMapByPeriod(
   name: string,
   period: TypeAnalyticsPeriod,
   task: ItemTask,
-  timeToAdd: number
+  timeToAdd: number,
 ) {
   const shouldAdd =
     period === "all" ||

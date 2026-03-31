@@ -1,10 +1,9 @@
 import type {
-  DayNumber,
   Items,
   ItemTaskCategory,
   NormalizedTask,
 } from "@/types/drag-and-drop.model";
-import type { ISODate } from "@/types/task-template.model";
+import type { ISODate, DayNumber } from "@/types/task-template.model";
 import { normalizeItems } from "./normalize";
 import { itemsToTemplateItems } from "./task-adapter";
 import { generateInstancesForRange } from "./generate-instances";
@@ -15,7 +14,7 @@ import { generateInstancesForRange } from "./generate-instances";
  */
 export function getTemplateIdsPlannedForDate(
   tasks: Items,
-  date: ISODate
+  date: ISODate,
 ): Set<string> {
   const templateItems = itemsToTemplateItems(tasks);
   const templates = templateItems.flatMap((cat) => cat.templates);
@@ -25,7 +24,7 @@ export function getTemplateIdsPlannedForDate(
 
 export const filterTaskByDayOfWeedk = (
   tasks: Items | null | undefined,
-  dateOrDayOfWeek: ISODate | DayNumber
+  dateOrDayOfWeek: ISODate | DayNumber,
 ): {
   filteredTasks: Items;
   plannedTasks: ItemTaskCategory[];
@@ -35,14 +34,19 @@ export const filterTaskByDayOfWeedk = (
     return { filteredTasks: [], plannedTasks: [], filteredNormalizedTasks: [] };
   }
 
-  const isISODate = typeof dateOrDayOfWeek === "string" && dateOrDayOfWeek.includes("-");
-  const date: ISODate = isISODate ? (dateOrDayOfWeek as ISODate) : ("" as ISODate);
+  const isISODate =
+    typeof dateOrDayOfWeek === "string" && dateOrDayOfWeek.includes("-");
+  const date: ISODate = isISODate
+    ? (dateOrDayOfWeek as ISODate)
+    : ("" as ISODate);
   const jsDay = isISODate ? new Date(date + "T12:00:00").getDay() : null;
   const dayOfWeek: DayNumber = isISODate
     ? ((jsDay === 0 ? 7 : jsDay) as DayNumber)
     : (dateOrDayOfWeek as DayNumber);
 
-  const templateIdsOnDate = isISODate ? getTemplateIdsPlannedForDate(tasks, date) : null;
+  const templateIdsOnDate = isISODate
+    ? getTemplateIdsPlannedForDate(tasks, date)
+    : null;
 
   const taskItemsCategories: ItemTaskCategory[] = [];
   const filteredNormalizedTasks: NormalizedTask[] = [];
@@ -87,7 +91,7 @@ export const filterTaskByDayOfWeedk = (
 
 export const filterTasksByAnotherTasks = (
   base: Items,
-  incoming: Items
+  incoming: Items,
 ): NormalizedTask[] => {
   const baseN = normalizeItems(base);
   const incomingN = normalizeItems(incoming).map((task) => task.id);

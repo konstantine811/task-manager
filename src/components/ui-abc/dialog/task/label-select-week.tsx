@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { DayNumber } from "@/types/drag-and-drop.model";
+import type { DayNumber } from "@/types/task-template.model";
 import { ButtonHTMLAttributes } from "react";
 import { useTranslation } from "react-i18next";
 

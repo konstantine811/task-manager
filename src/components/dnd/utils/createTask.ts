@@ -1,4 +1,5 @@
-import { DayNumber, ItemTask, Priority } from "@/types/drag-and-drop.model";
+import type { ItemTask, Priority } from "@/types/drag-and-drop.model";
+import type { DayNumber } from "@/types/task-template.model";
 
 export const createTask = (
   title: string,
@@ -7,7 +8,7 @@ export const createTask = (
   isPlanned = false,
   wastedTime = 0,
   whenDo: DayNumber[] = [],
-  isDetermined = false
+  isDetermined = false,
 ) => {
   const newTask: ItemTask = {
     id: `${title}-${Date.now()}`,

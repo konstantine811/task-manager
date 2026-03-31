@@ -23,7 +23,7 @@ import { starterPacks } from "./starter-packs.config";
 import type { Items } from "@/types/drag-and-drop.model";
 import { Priority } from "@/types/drag-and-drop.model";
 import { createTask } from "@/components/dnd/utils/createTask";
-import type { DayNumber } from "@/types/drag-and-drop.model";
+import type { DayNumber } from "@/types/task-template.model";
 
 const MAX_FOCUSES = 3;
 
@@ -45,27 +45,32 @@ function saveQuickStart(data: Partial<QuickStartData>) {
   }
 }
 
-function buildPromptFromQuickStart(data: QuickStartData, t: (k: string) => string): string {
+function buildPromptFromQuickStart(
+  data: QuickStartData,
+  t: (k: string) => string,
+): string {
   const parts: string[] = [];
   if (data.weeklyFocuses.length > 0) {
     parts.push(
-      `Мій фокус: ${data.weeklyFocuses.map((f) => t(`quick_start.focus.${f}`)).join(", ")}.`
+      `Мій фокус: ${data.weeklyFocuses.map((f) => t(`quick_start.focus.${f}`)).join(", ")}.`,
     );
   }
   parts.push(
     `Час на день: ${data.dailyTimeBudget} хв.`,
     `Кращий час: ${t(`quick_start.time_of_day.${data.preferredTimeOfDay}`)}.`,
-    `Енергія: ${data.energyLevel}/5.`
+    `Енергія: ${data.energyLevel}/5.`,
   );
   if (data.fixedCommitments.length > 0) {
     parts.push(
-      `Обмеження: ${data.fixedCommitments.map((c) => t(`quick_start.commitments.${c}`)).join(", ")}.`
+      `Обмеження: ${data.fixedCommitments.map((c) => t(`quick_start.commitments.${c}`)).join(", ")}.`,
     );
   }
   if (data.barrier) {
     parts.push(`Бар'єр: ${t(`quick_start.barrier.${data.barrier}`)}.`);
   }
-  parts.push("Склади шаблон задач на 7 днів з конкретними задачами, тривалістю та днями.");
+  parts.push(
+    "Склади шаблон задач на 7 днів з конкретними задачами, тривалістю та днями.",
+  );
   return parts.join("\n");
 }
 
@@ -82,7 +87,9 @@ export function QuickStartOnboarding({
 }: QuickStartOnboardingProps) {
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(true);
-  const [data, setData] = useState<Partial<QuickStartData>>(() => loadQuickStart());
+  const [data, setData] = useState<Partial<QuickStartData>>(() =>
+    loadQuickStart(),
+  );
 
   const updateData = (updates: Partial<QuickStartData>) => {
     const next = { ...data, ...updates };
@@ -133,16 +140,19 @@ export function QuickStartOnboarding({
         false,
         0,
         taskDef.days as DayNumber[],
-        false
+        false,
       );
-      if (!byCategory.has(taskDef.category)) byCategory.set(taskDef.category, []);
+      if (!byCategory.has(taskDef.category))
+        byCategory.set(taskDef.category, []);
       byCategory.get(taskDef.category)!.push(task);
     }
-    const items: Items = Array.from(byCategory.entries()).map(([catId, tasks]) => ({
-      id: catId,
-      title: t(`task_manager.categories.${catId}`),
-      tasks,
-    }));
+    const items: Items = Array.from(byCategory.entries()).map(
+      ([catId, tasks]) => ({
+        id: catId,
+        title: t(`task_manager.categories.${catId}`),
+        tasks,
+      }),
+    );
     onReplaceTasks(items);
   };
 
@@ -172,7 +182,9 @@ export function QuickStartOnboarding({
             <div>
               <div className="flex items-center gap-2 mb-2 text-zinc-600 dark:text-zinc-400">
                 <Zap className="h-4 w-4 text-zinc-600 dark:text-zinc-500" />
-                <span className="text-xs font-medium">{t("quick_start.focus_label")}</span>
+                <span className="text-xs font-medium">
+                  {t("quick_start.focus_label")}
+                </span>
               </div>
               <div className="flex flex-wrap gap-2">
                 {FOCUS_OPTIONS.map((key) => (
@@ -185,170 +197,184 @@ export function QuickStartOnboarding({
                         ? "border-indigo-400 dark:border-indigo-400/50 bg-indigo-200 dark:bg-indigo-500/30 text-indigo-800 dark:text-indigo-50"
                         : "border-zinc-200 dark:border-white/10 bg-zinc-200 dark:bg-black/20 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-white/5"
                     }`}
-                >
-                  {t(`quick_start.focus.${key}`)}
-                </button>
-              ))}
+                  >
+                    {t(`quick_start.focus.${key}`)}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
 
-          {/* 2. Час на день */}
-          <div>
-            <div className="flex items-center gap-2 mb-2 text-zinc-600 dark:text-zinc-400">
-              <Clock className="h-4 w-4 text-zinc-600 dark:text-zinc-500" />
-              <span className="text-xs font-medium">{t("quick_start.time_budget_label")}</span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {TIME_BUDGET_OPTIONS.map((min) => (
-                <button
-                  key={min}
-                  type="button"
-                  onClick={() => updateData({ dailyTimeBudget: min })}
+            {/* 2. Час на день */}
+            <div>
+              <div className="flex items-center gap-2 mb-2 text-zinc-600 dark:text-zinc-400">
+                <Clock className="h-4 w-4 text-zinc-600 dark:text-zinc-500" />
+                <span className="text-xs font-medium">
+                  {t("quick_start.time_budget_label")}
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {TIME_BUDGET_OPTIONS.map((min) => (
+                  <button
+                    key={min}
+                    type="button"
+                    onClick={() => updateData({ dailyTimeBudget: min })}
                     className={`rounded-full border px-2.5 py-1.5 text-xs font-medium transition-colors ${
                       data.dailyTimeBudget === min
                         ? "border-indigo-400 dark:border-indigo-400/50 bg-indigo-200 dark:bg-indigo-500/30 text-indigo-800 dark:text-indigo-50"
                         : "border-zinc-200 dark:border-white/10 bg-zinc-200 dark:bg-black/20 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-white/5"
                     }`}
-                >
-                  {min} хв
-                </button>
-              ))}
+                  >
+                    {min} хв
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
 
-          {/* 3. Найкращий час */}
-          <div>
-            <div className="flex items-center gap-2 mb-2 text-zinc-600 dark:text-zinc-400">
-              <Sun className="h-4 w-4 text-zinc-600 dark:text-zinc-500" />
-              <span className="text-xs font-medium">{t("quick_start.preferred_time_label")}</span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {TIME_OF_DAY_OPTIONS.map((key) => (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => updateData({ preferredTimeOfDay: key })}
+            {/* 3. Найкращий час */}
+            <div>
+              <div className="flex items-center gap-2 mb-2 text-zinc-600 dark:text-zinc-400">
+                <Sun className="h-4 w-4 text-zinc-600 dark:text-zinc-500" />
+                <span className="text-xs font-medium">
+                  {t("quick_start.preferred_time_label")}
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {TIME_OF_DAY_OPTIONS.map((key) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => updateData({ preferredTimeOfDay: key })}
                     className={`rounded-full border px-2.5 py-1.5 text-xs font-medium transition-colors ${
                       data.preferredTimeOfDay === key
                         ? "border-indigo-400 dark:border-indigo-400/50 bg-indigo-200 dark:bg-indigo-500/30 text-indigo-800 dark:text-indigo-50"
                         : "border-zinc-200 dark:border-white/10 bg-zinc-200 dark:bg-black/20 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-white/5"
                     }`}
-                >
-                  {t(`quick_start.time_of_day.${key}`)}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* 4. Енергія */}
-          <div>
-            <div className="flex flex-col gap-0.5 mb-2">
-              <div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400">
-                <Battery className="h-4 w-4 text-zinc-600 dark:text-zinc-500" />
-                <span className="text-xs font-medium">{t("quick_start.energy_label")}</span>
+                  >
+                    {t(`quick_start.time_of_day.${key}`)}
+                  </button>
+                ))}
               </div>
-              <p className="text-[10px] text-zinc-600 dark:text-zinc-500 pl-6">{t("quick_start.energy_label_hint")}</p>
             </div>
-            <div className="flex gap-2">
-              {[1, 2, 3, 4, 5].map((n) => (
-                <button
-                  key={n}
-                  type="button"
-                  onClick={() => updateData({ energyLevel: n })}
+
+            {/* 4. Енергія */}
+            <div>
+              <div className="flex flex-col gap-0.5 mb-2">
+                <div className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400">
+                  <Battery className="h-4 w-4 text-zinc-600 dark:text-zinc-500" />
+                  <span className="text-xs font-medium">
+                    {t("quick_start.energy_label")}
+                  </span>
+                </div>
+                <p className="text-[10px] text-zinc-600 dark:text-zinc-500 pl-6">
+                  {t("quick_start.energy_label_hint")}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => updateData({ energyLevel: n })}
                     className={`w-9 h-9 rounded-lg border text-xs font-medium transition-colors ${
                       (data.energyLevel ?? 0) === n
                         ? "border-indigo-400 dark:border-indigo-400/50 bg-indigo-200 dark:bg-indigo-500/30 text-indigo-800 dark:text-indigo-50"
                         : "border-zinc-200 dark:border-white/10 bg-zinc-200 dark:bg-black/20 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-white/5"
                     }`}
-                >
-                  {n}
-                </button>
-              ))}
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
 
-          {/* 5. Зайнято */}
-          <div>
-            <div className="flex items-center gap-2 mb-2 text-zinc-600 dark:text-zinc-400">
-              <Calendar className="h-4 w-4 text-zinc-600 dark:text-zinc-500" />
-              <span className="text-xs font-medium">{t("quick_start.commitments_label")}</span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {FIXED_COMMITMENTS_OPTIONS.map((key) => (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => toggleCommitment(key)}
+            {/* 5. Зайнято */}
+            <div>
+              <div className="flex items-center gap-2 mb-2 text-zinc-600 dark:text-zinc-400">
+                <Calendar className="h-4 w-4 text-zinc-600 dark:text-zinc-500" />
+                <span className="text-xs font-medium">
+                  {t("quick_start.commitments_label")}
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {FIXED_COMMITMENTS_OPTIONS.map((key) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => toggleCommitment(key)}
                     className={`rounded-full border px-2.5 py-1.5 text-xs font-medium transition-colors ${
                       (data.fixedCommitments ?? []).includes(key)
                         ? "border-indigo-400 dark:border-indigo-400/50 bg-indigo-200 dark:bg-indigo-500/30 text-indigo-800 dark:text-indigo-50"
                         : "border-zinc-200 dark:border-white/10 bg-zinc-200 dark:bg-black/20 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-white/5"
                     }`}
-                >
-                  {t(`quick_start.commitments.${key}`)}
-                </button>
-              ))}
+                  >
+                    {t(`quick_start.commitments.${key}`)}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
 
-          {/* 6. Бар'єр */}
-          <div>
-            <div className="flex items-center gap-2 mb-2 text-zinc-600 dark:text-zinc-400">
-              <AlertCircle className="h-4 w-4 text-zinc-600 dark:text-zinc-500" />
-              <span className="text-xs font-medium">{t("quick_start.barrier_label")}</span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {BARRIER_OPTIONS.map((key) => (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() =>
-                    updateData({ barrier: data.barrier === key ? "" : key })
-                  }
+            {/* 6. Бар'єр */}
+            <div>
+              <div className="flex items-center gap-2 mb-2 text-zinc-600 dark:text-zinc-400">
+                <AlertCircle className="h-4 w-4 text-zinc-600 dark:text-zinc-500" />
+                <span className="text-xs font-medium">
+                  {t("quick_start.barrier_label")}
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {BARRIER_OPTIONS.map((key) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() =>
+                      updateData({ barrier: data.barrier === key ? "" : key })
+                    }
                     className={`rounded-full border px-2.5 py-1.5 text-xs font-medium transition-colors ${
                       data.barrier === key
                         ? "border-indigo-400 dark:border-indigo-400/50 bg-indigo-200 dark:bg-indigo-500/30 text-indigo-800 dark:text-indigo-50"
                         : "border-zinc-200 dark:border-white/10 bg-zinc-200 dark:bg-black/20 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-white/5"
                     }`}
-                >
-                  {t(`quick_start.barrier.${key}`)}
-                </button>
-              ))}
+                  >
+                    {t(`quick_start.barrier.${key}`)}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Кнопка генерації */}
+            <button
+              type="button"
+              onClick={handleGenerateFromQuickStart}
+              className="w-full rounded-md border border-zinc-200 dark:border-white/10 bg-zinc-200 dark:bg-white/5 px-4 py-3 text-sm font-medium text-zinc-800 dark:text-zinc-200 transition-colors hover:bg-zinc-300 dark:hover:bg-white/10"
+            >
+              {t("quick_start.generate")}
+            </button>
+
+            {/* Стартові пакети */}
+            <div>
+              <div className="text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-2">
+                {t("quick_start.starter_packs_label")}
+              </div>
+              <div className="flex flex-col gap-2">
+                {starterPacks.map((pack) => (
+                  <button
+                    key={pack.id}
+                    type="button"
+                    onClick={() => handleAddPack(pack.id)}
+                    className="rounded-lg border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-black/20 px-3 py-2 text-left text-xs transition-colors hover:bg-zinc-200 dark:hover:bg-white/5"
+                  >
+                    <span className="font-medium text-zinc-800 dark:text-zinc-200">
+                      {t(pack.nameKey)}
+                    </span>
+                    <p className="mt-0.5 text-zinc-600 dark:text-zinc-500">
+                      {t(pack.descriptionKey)}
+                    </p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-
-          {/* Кнопка генерації */}
-          <button
-            type="button"
-            onClick={handleGenerateFromQuickStart}
-            className="w-full rounded-md border border-zinc-200 dark:border-white/10 bg-zinc-200 dark:bg-white/5 px-4 py-3 text-sm font-medium text-zinc-800 dark:text-zinc-200 transition-colors hover:bg-zinc-300 dark:hover:bg-white/10"
-          >
-            {t("quick_start.generate")}
-          </button>
-
-          {/* Стартові пакети */}
-          <div>
-            <div className="text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-2">
-              {t("quick_start.starter_packs_label")}
-            </div>
-            <div className="flex flex-col gap-2">
-              {starterPacks.map((pack) => (
-                <button
-                  key={pack.id}
-                  type="button"
-                  onClick={() => handleAddPack(pack.id)}
-                  className="rounded-lg border border-zinc-200 dark:border-white/10 bg-zinc-100 dark:bg-black/20 px-3 py-2 text-left text-xs transition-colors hover:bg-zinc-200 dark:hover:bg-white/5"
-                >
-                  <span className="font-medium text-zinc-800 dark:text-zinc-200">
-                    {t(pack.nameKey)}
-                  </span>
-                  <p className="mt-0.5 text-zinc-600 dark:text-zinc-500">{t(pack.descriptionKey)}</p>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+        )}
       </div>
     </div>
   );

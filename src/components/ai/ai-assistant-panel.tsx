@@ -25,6 +25,7 @@ import type { TFunction } from "i18next";
 import { toast } from "sonner";
 import { SuggestedTasksPreview } from "./suggested-tasks-preview";
 import { QuickStartOnboarding } from "./quick-start-onboarding";
+import { DayNumber } from "@/types/task-template.model";
 
 const AI_HISTORY_KEY = "chrono-ai-assistant-history";
 const MAX_HISTORY_ITEMS = 50;
@@ -53,7 +54,7 @@ function saveHistory(items: AiHistoryItem[]) {
   try {
     localStorage.setItem(
       AI_HISTORY_KEY,
-      JSON.stringify(items.slice(-MAX_HISTORY_ITEMS))
+      JSON.stringify(items.slice(-MAX_HISTORY_ITEMS)),
     );
   } catch {
     // ignore
@@ -62,9 +63,12 @@ function saveHistory(items: AiHistoryItem[]) {
 
 function advisorTasksToItems(
   tasks: AdvisorTask[],
-  t: (key: string) => string
+  t: (key: string) => string,
 ): Items {
-  const byCategory = new Map<string, (ItemTask & { __advisorTask?: AdvisorTask })[]>();
+  const byCategory = new Map<
+    string,
+    (ItemTask & { __advisorTask?: AdvisorTask })[]
+  >();
 
   for (const tsk of tasks) {
     const cat =
@@ -77,8 +81,8 @@ function advisorTasksToItems(
       tsk.time * 60, // minutes -> seconds
       false,
       0,
-      (tsk.whenDo ?? []) as import("@/types/drag-and-drop.model").DayNumber[],
-      false
+      (tsk.whenDo ?? []) as DayNumber[],
+      false,
     ) as ItemTask & { __advisorTask?: AdvisorTask };
     itemTask.__advisorTask = tsk;
     if (!byCategory.has(cat)) byCategory.set(cat, []);
@@ -87,7 +91,7 @@ function advisorTasksToItems(
 
   const order = CATEGORY_OPTIONS.filter((c) => byCategory.has(c));
   const rest = [...byCategory.keys()].filter(
-    (c) => !CATEGORY_OPTIONS.includes(c)
+    (c) => !CATEGORY_OPTIONS.includes(c),
   );
 
   return [...order, ...rest].map((catId) => {
@@ -198,7 +202,9 @@ export function AiAssistantPanel({
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState<AiHistoryItem[]>(() => loadHistory());
   const [historyOpen, setHistoryOpen] = useState(false);
-  const [selectedHistoryId, setSelectedHistoryId] = useState<string | null>(null);
+  const [selectedHistoryId, setSelectedHistoryId] = useState<string | null>(
+    null,
+  );
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -209,7 +215,7 @@ export function AiAssistantPanel({
     if (!onRemoveSuggestedTaskRef) return;
     onRemoveSuggestedTaskRef.current = (advisorTask: AdvisorTask) => {
       setSuggestedTasks((prev) =>
-        prev.filter((task) => !matchAdvisorTask(task, advisorTask))
+        prev.filter((task) => !matchAdvisorTask(task, advisorTask)),
       );
       if (selectedHistoryId) {
         setHistory((prev) =>
@@ -218,21 +224,18 @@ export function AiAssistantPanel({
               ? {
                   ...h,
                   suggestedTasks: h.suggestedTasks.filter(
-                    (task) => !matchAdvisorTask(task, advisorTask)
+                    (task) => !matchAdvisorTask(task, advisorTask),
                   ),
                 }
-              : h
-          )
+              : h,
+          ),
         );
       }
     };
     return () => {
       onRemoveSuggestedTaskRef.current = null;
     };
-  }, [
-    onRemoveSuggestedTaskRef,
-    selectedHistoryId,
-  ]);
+  }, [onRemoveSuggestedTaskRef, selectedHistoryId]);
 
   const isEmpty = templateTasks.length === 0;
   const presetPrompts = isEmpty
@@ -266,18 +269,18 @@ export function AiAssistantPanel({
       setHistory((prev) => [...prev, item]);
       return item.id;
     },
-    []
+    [],
   );
 
   const updateHistoryWithTasks = useCallback(
     (itemId: string, tasks: AdvisorTask[]) => {
       setHistory((prev) =>
         prev.map((h) =>
-          h.id === itemId ? { ...h, suggestedTasks: tasks } : h
-        )
+          h.id === itemId ? { ...h, suggestedTasks: tasks } : h,
+        ),
       );
     },
-    []
+    [],
   );
 
   const handleAsk = async (overridePrompt?: string) => {
@@ -364,7 +367,9 @@ export function AiAssistantPanel({
     if (tasksToUse.length === 0 || !onReplaceTasks) return;
     const items = advisorTasksToItems(tasksToUse, t);
     onReplaceTasks(items);
-    toast.success(t("ai_assistant.tasks_replaced", { count: tasksToUse.length }));
+    toast.success(
+      t("ai_assistant.tasks_replaced", { count: tasksToUse.length }),
+    );
   };
 
   const displayedAnswer = answer ?? null;
@@ -389,7 +394,9 @@ export function AiAssistantPanel({
   }, [onPromptFromQuickStartRef, handlePromptFromQuickStart]);
 
   return (
-    <div className={`flex w-full flex-col gap-4 ${isEmpty && !hideQuickStart ? "max-w-2xl" : ""}`}>
+    <div
+      className={`flex w-full flex-col gap-4 ${isEmpty && !hideQuickStart ? "max-w-2xl" : ""}`}
+    >
       {!hideQuickStart && (
         <QuickStartOnboarding
           isEmpty={isEmpty}
@@ -589,7 +596,8 @@ export function AiAssistantPanel({
         <div className="rounded-xl border border-indigo-300 dark:border-indigo-500/30 bg-indigo-50 dark:bg-indigo-950/20 p-4">
           <div className="flex items-center justify-between gap-3 mb-4">
             <span className="text-sm font-medium text-indigo-800 dark:text-indigo-200">
-              {t("ai_assistant.suggested_tasks")} ({currentSuggestedTasks.length})
+              {t("ai_assistant.suggested_tasks")} (
+              {currentSuggestedTasks.length})
             </span>
             {onReplaceTasks && (
               <button

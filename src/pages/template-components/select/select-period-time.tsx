@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ANALYTICS_PERIODS } from "@/config/task-analytics.config";
 import { TypeAnalyticsPeriod } from "@/types/analytics/task-analytics.model";
-import { DayNumber } from "@/types/drag-and-drop.model";
+import type { DayNumber } from "@/types/task-template.model";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -24,11 +24,10 @@ const SelectPeriodTime = ({
 }) => {
   const initialPeriod = ANALYTICS_PERIODS[0];
   const [internalPeriod, setInternalPeriod] = useState<string | undefined>(
-    (controlledValue ?? initialPeriod).toString()
+    (controlledValue ?? initialPeriod).toString(),
   );
-  const period = controlledValue !== undefined
-    ? controlledValue.toString()
-    : internalPeriod;
+  const period =
+    controlledValue !== undefined ? controlledValue.toString() : internalPeriod;
 
   function parsePeriod(p: string | undefined): TypeAnalyticsPeriod {
     return isNaN(Number(p))

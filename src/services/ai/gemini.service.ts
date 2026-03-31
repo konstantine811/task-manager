@@ -8,6 +8,7 @@ import {
 } from "./gemini.types";
 import { Priority } from "@/types/drag-and-drop.model";
 import { CATEGORY_OPTIONS } from "@/components/dnd/config/category-options";
+import type { DayNumber } from "@/types/task-template.model";
 
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 const MODEL = "gemini-2.5-flash";
@@ -37,7 +38,7 @@ Handle Ukrainian and English. Examples:
 Return ONLY valid JSON, no markdown or extra text.`;
 
 export async function parseTasksFromText(
-  text: string
+  text: string,
 ): Promise<AIParsedTask[]> {
   if (!text.trim()) return [];
 
@@ -119,7 +120,7 @@ const ADVISOR_TASKS_ONLY_SYSTEM = `Ти формуєш список задач �
 /** Крок 1: тільки порада */
 export async function askAiAdvisorAdviceOnly(
   prompt: string,
-  tasksContext?: string
+  tasksContext?: string,
 ): Promise<{ advice: string }> {
   if (!prompt.trim()) return { advice: "" };
   const ai = getClient();
@@ -139,7 +140,9 @@ export async function askAiAdvisorAdviceOnly(
   if (!text) return { advice: "" };
   try {
     const parsed = JSON.parse(text) as { advice?: string };
-    return { advice: typeof parsed.advice === "string" ? parsed.advice.trim() : "" };
+    return {
+      advice: typeof parsed.advice === "string" ? parsed.advice.trim() : "",
+    };
   } catch {
     const advice = extractAdviceFromPartialJson(text);
     return { advice: advice || "" };
@@ -149,7 +152,7 @@ export async function askAiAdvisorAdviceOnly(
 /** Крок 2: тільки задачі на основі поради */
 export async function askAiAdvisorTasksOnly(
   previousAdvice: string,
-  templateTasksContext?: string
+  templateTasksContext?: string,
 ): Promise<{ tasks: AdvisorTask[] }> {
   const ai = getClient();
   const contextPart = templateTasksContext
@@ -170,7 +173,10 @@ export async function askAiAdvisorTasksOnly(
     const parsed = JSON.parse(text) as { tasks?: unknown[] };
     if (!Array.isArray(parsed.tasks)) return { tasks: [] };
     const tasks = parsed.tasks
-      .filter((t): t is AdvisorTask => !!t && typeof (t as AdvisorTask).title === "string")
+      .filter(
+        (t): t is AdvisorTask =>
+          !!t && typeof (t as AdvisorTask).title === "string",
+      )
       .map((t) => ({
         title: String((t as AdvisorTask).title).trim(),
         priority: validatePriority((t as AdvisorTask).priority),
@@ -187,7 +193,7 @@ export async function askAiAdvisorTasksOnly(
 
 export async function askAiAdvisor(
   prompt: string,
-  tasksContext?: string
+  tasksContext?: string,
 ): Promise<AdvisorResponse> {
   if (!prompt.trim()) return { advice: "" };
 
@@ -215,7 +221,8 @@ export async function askAiAdvisor(
 /** Парсить відповідь Gemini. Ніколи не повертає raw JSON — лише advice та tasks. */
 function parseAdvisorResponse(text: string): AdvisorResponse {
   const normalizeParsed = (parsed: AdvisorResponse): AdvisorResponse => {
-    const advice = typeof parsed.advice === "string" ? parsed.advice.trim() : "";
+    const advice =
+      typeof parsed.advice === "string" ? parsed.advice.trim() : "";
     const tasks = Array.isArray(parsed.tasks)
       ? parsed.tasks
           .filter((t): t is AdvisorTask => t && typeof t.title === "string")
@@ -273,11 +280,9 @@ function extractAdviceFromPartialJson(text: string): string {
   return result.replace(/\\n/g, "\n").trim();
 }
 
-function normalizeWhenDo(
-  val: unknown
-): import("@/types/drag-and-drop.model").DayNumber[] {
+function normalizeWhenDo(val: unknown): DayNumber[] {
   if (!Array.isArray(val)) return [];
   return val
     .map((n) => Number(n))
-    .filter((n) => n >= 1 && n <= 7) as import("@/types/drag-and-drop.model").DayNumber[];
+    .filter((n) => n >= 1 && n <= 7) as DayNumber[];
 }
