@@ -158,7 +158,7 @@ const DialogFeatureTask = ({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder={t(
-                "task_manager.dialog_create_task.task.title.description"
+                "task_manager.dialog_create_task.task.title.description",
               )}
               className="col-span-3"
             />
@@ -177,15 +177,15 @@ const DialogFeatureTask = ({
               <SelectTrigger name="prioriy" className="w-full col-span-3">
                 <SelectValue
                   placeholder={t(
-                    "task_manager.dialog_create_task.task.priority.description"
+                    "task_manager.dialog_create_task.task.priority.description",
                   )}
                 />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="chrono-select-content">
                 <SelectGroup>
                   <SelectLabel>
                     {t(
-                      "task_manager.dialog_create_task.task.priority.description"
+                      "task_manager.dialog_create_task.task.priority.description",
                     )}
                   </SelectLabel>
                   {Object.values(Priority).map((p) => (
@@ -199,7 +199,7 @@ const DialogFeatureTask = ({
                         className={`${getPriorityClassByPrefix(p)}`}
                       >
                         {t(
-                          `task_manager.dialog_create_task.task.priority.options.${p.toLowerCase()}`
+                          `task_manager.dialog_create_task.task.priority.options.${p.toLowerCase()}`,
                         )}
                       </SelectItem>
                     </SoundHoverElement>
@@ -211,10 +211,10 @@ const DialogFeatureTask = ({
           <div className="grid grid-cols-1 xs:grid-cols-4 items-start xs:items-center gap-4 xs:gap-4">
             <LabelTooltip
               label={t(
-                "task_manager.dialog_create_task.task.time.determined.label"
+                "task_manager.dialog_create_task.task.time.determined.label",
               )}
               tooltip={t(
-                "task_manager.dialog_create_task.task.time.determined.description"
+                "task_manager.dialog_create_task.task.time.determined.description",
               )}
             >
               <TimePicker
@@ -229,10 +229,10 @@ const DialogFeatureTask = ({
           <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-4 sm:gap-4">
             <LabelTooltip
               label={t(
-                "task_manager.dialog_create_task.task.time.wasted.label"
+                "task_manager.dialog_create_task.task.time.wasted.label",
               )}
               tooltip={t(
-                "task_manager.dialog_create_task.task.time.wasted.description"
+                "task_manager.dialog_create_task.task.time.wasted.description",
               )}
             >
               <TimePickerInputs

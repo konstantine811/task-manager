@@ -40,11 +40,14 @@ const LabelSelectOption = <T extends string>({
     <>
       <Label htmlFor={id}>{t(label)}</Label>
       <Select name={id} value={value} onValueChange={onChange}>
-        <SelectTrigger name="prioriy" className="w-full col-span-3 chrono-select-trigger">
+        <SelectTrigger
+          name="prioriy"
+          className="w-full col-span-3 chrono-select-trigger"
+        >
           <SelectValue placeholder={t(placeholder)} />
         </SelectTrigger>
-        <SelectContent className="chrono-select-content">
-          <SelectGroup>
+        <SelectContent className="chrono-select-content bg-background">
+          <SelectGroup className="bg-background">
             <SelectLabel>{t(selectLabel)}</SelectLabel>
             {Object.values(options).map((p) => (
               <SoundHoverElement

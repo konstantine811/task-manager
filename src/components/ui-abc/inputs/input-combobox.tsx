@@ -50,8 +50,7 @@ function InputCombobox({
     }
   }, [editingValue, onValueChange]);
 
-  const getCategoryLabel = (key: string) =>
-    t(`task_manager.categories.${key}`);
+  const getCategoryLabel = (key: string) => t(`task_manager.categories.${key}`);
 
   return (
     <div className={`flex gap-1 items-center w-full ${className}`}>
@@ -73,7 +72,7 @@ function InputCombobox({
         }}
         onKeyDown={handleKeyDown}
         placeholder={t("task_manager.combobox_placeholder")}
-        className="text-xl"
+        className="text-base"
       />
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
@@ -86,8 +85,8 @@ function InputCombobox({
           </div>
         </PopoverTrigger>
         {open && (
-          <PopoverContent className="chrono-popover-content w-64 p-2">
-            <Command className="bg-transparent">
+          <PopoverContent className="chrono-popover-content w-64 p-2 z-9999999 mr-4">
+            <Command className="bg-background">
               <CommandGroup>
                 {options.map((option, i) => (
                   <SoundHoverElement animValue={0.99} key={`option-${i}`}>
