@@ -30,6 +30,20 @@ const TASK_MANAGER_ROUTERS = [
 function TaskNavMenu() {
   const [t] = useTranslation();
   const { pathname } = useLocation();
+
+  const releaseFocusBeforeNavigate = () => {
+    const active = document.activeElement as HTMLElement | null;
+    if (!active) return;
+    const tag = active.tagName;
+    if (
+      tag === "INPUT" ||
+      tag === "TEXTAREA" ||
+      active.getAttribute("contenteditable") === "true"
+    ) {
+      active.blur();
+    }
+  };
+
   return (
     <div className="fixed left-1/2 -translate-x-1/2 z-20 bottom-[calc(0.75rem+env(safe-area-inset-bottom))]">
       <div className="flex items-center gap-1 p-1.5 rounded-full border border-zinc-300/80 dark:border-white/10 bg-white/80 dark:bg-[rgba(10,10,12,0.6)] backdrop-blur-xl shadow-lg">
@@ -52,6 +66,7 @@ function TaskNavMenu() {
               to={path}
               key={item.id}
               title={t(`pages.task.${title}`)}
+              onPointerDown={releaseFocusBeforeNavigate}
               className={cn(
                 "min-w-18 px-2 py-1.5 rounded-2xl flex flex-col items-center justify-center gap-1 transition-colors text-[10px] font-medium leading-none",
                 isActive

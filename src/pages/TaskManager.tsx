@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Outlet } from "react-router";
+import { Outlet, useLocation } from "react-router";
 import { ChronoNav } from "@/components/landing";
 import { markEnteredAppThisSession } from "@/config/app-session";
 import TaskNavMenu from "./TaskNavMenu";
@@ -9,6 +9,7 @@ export interface TaskManagerOutletContext {
 }
 
 const TaskManager = () => {
+  const { pathname } = useLocation();
   const outletConext: TaskManagerOutletContext = {
     className: "",
   };
@@ -16,6 +17,14 @@ const TaskManager = () => {
   useEffect(() => {
     markEnteredAppThisSession();
   }, []);
+
+  useEffect(() => {
+    // iOS Safari can keep horizontal viewport offset after route change
+    // if previous screen had focused input/textarea and auto-zoom.
+    document.documentElement.scrollLeft = 0;
+    document.body.scrollLeft = 0;
+    window.scrollTo({ left: 0, top: window.scrollY, behavior: "auto" });
+  }, [pathname]);
 
   return (
     <div className="box-border min-h-dvh flex flex-col chrono-page-bg text-foreground relative h-full">
