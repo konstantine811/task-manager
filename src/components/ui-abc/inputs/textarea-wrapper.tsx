@@ -16,7 +16,7 @@ const TextareaWrapper: FC<{
         {label}
       </Label>
       <Textarea
-        className="w-full bg-card border border-border text-foreground text-sm rounded-sm p-3 focus:border-border focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:ring-1 focus:ring-foreground/30 transition-all placeholder:text-muted-foreground/80"
+        className="w-full bg-card border border-border text-foreground text-base md:text-sm rounded-sm p-3 focus:border-border focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:ring-1 focus:ring-foreground/30 transition-all placeholder:text-muted-foreground/80"
         id={`${id}-textarea`}
         name={id}
         placeholder={placeholder}

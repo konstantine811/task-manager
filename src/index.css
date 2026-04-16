@@ -909,3 +909,25 @@ html:not(.dark) .chrono-dialog .chrono-time-drum-colon {
 .ai-answer-scroll::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.35);
 }
+
+/* Prevent mobile Safari auto-zoom on focus for text inputs. */
+@media (hover: none) and (pointer: coarse) {
+  input[type="text"],
+  input[type="search"],
+  input[type="email"],
+  input[type="url"],
+  input[type="tel"],
+  input[type="password"],
+  input[type="number"],
+  input[type="date"],
+  input[type="time"],
+  input[type="datetime-local"],
+  input[type="month"],
+  input[type="week"],
+  textarea,
+  select,
+  [data-slot="select-trigger"],
+  [data-slot="command-input"] {
+    font-size: 16px !important;
+  }
+}

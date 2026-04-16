@@ -93,7 +93,7 @@ export function AddTasksWithAIDialog({
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder={t("ai.placeholder")}
-          className="min-h-[120px] w-full rounded-lg bg-zinc-900/50 border border-zinc-800 px-4 py-3 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-none"
+          className="min-h-[120px] w-full rounded-lg bg-zinc-900/50 border border-zinc-800 px-4 py-3 text-base md:text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-none"
           disabled={loading}
         />
 

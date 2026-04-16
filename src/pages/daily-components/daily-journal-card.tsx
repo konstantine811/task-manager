@@ -254,7 +254,7 @@ const DailyJournalCard = ({
                       onBlur={handleLineBlur}
                       rows={1}
                       spellCheck={false}
-                      className="w-full resize-none overflow-hidden border-none bg-transparent p-0 font-mono text-[14px] leading-7 text-zinc-800 outline-none ring-0 ring-offset-0 focus:ring-0 focus-visible:ring-0 focus-visible:outline-none placeholder:text-zinc-400 selection:bg-indigo-500/25 dark:text-zinc-200 dark:placeholder:text-zinc-500 dark:selection:bg-indigo-400/30 select-text"
+                      className="w-full resize-none overflow-hidden border-none bg-transparent p-0 font-mono text-base leading-7 text-zinc-800 outline-none ring-0 ring-offset-0 focus:ring-0 focus-visible:ring-0 focus-visible:outline-none placeholder:text-zinc-400 selection:bg-indigo-500/25 dark:text-zinc-200 dark:placeholder:text-zinc-500 dark:selection:bg-indigo-400/30 select-text md:text-[14px]"
                       placeholder={
                         index === 0 ? t("task_manager.journal.placeholder") : ""
                       }

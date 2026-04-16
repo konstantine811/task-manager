@@ -27,7 +27,7 @@ const InputTextWrapper: FC<{
           id={`${id}-input`}
           name={id}
           className={cn(
-            "w-full bg-card border border-border text-foreground text-sm rounded-sm p-3 focus:border-border focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:ring-1 focus:ring-ring/30 transition-all placeholder:text-muted-foreground/80",
+            "w-full bg-card border border-border text-foreground text-base md:text-sm rounded-sm p-3 focus:border-border focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus:ring-1 focus:ring-ring/30 transition-all placeholder:text-muted-foreground/80",
             icon && "pl-10"
           )}
           placeholder={placeholder}

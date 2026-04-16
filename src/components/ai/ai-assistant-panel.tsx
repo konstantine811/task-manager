@@ -456,7 +456,7 @@ export function AiAssistantPanel({
                     }
                   }}
                   placeholder={t("ai_assistant.prompt_placeholder")}
-                  className="mt-2 w-full resize-none bg-transparent text-sm text-zinc-800 dark:text-zinc-200 outline-none placeholder:text-zinc-500 dark:placeholder:text-zinc-600"
+                  className="mt-2 w-full resize-none bg-transparent text-base md:text-sm text-zinc-800 dark:text-zinc-200 outline-none placeholder:text-zinc-500 dark:placeholder:text-zinc-600"
                   disabled={loading}
                 />
 
