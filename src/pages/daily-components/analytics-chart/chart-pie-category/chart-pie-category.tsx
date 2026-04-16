@@ -70,8 +70,8 @@ const ChartPieCategory = ({
       countTotal,
       taskPct,
       timePct,
-      /** Segment size: planned time for showCompletedOnly; else same. Min 1 for pie. */
-      segmentValue: Math.max(value.time, 1),
+      /** Segment size: completed time in completed-only mode, else planned total. Min 1 for pie. */
+      segmentValue: Math.max(showCompletedOnly ? value.countDoneTime : value.time, 1),
       categoryId: value.categoryId,
     };
   });
@@ -80,13 +80,11 @@ const ChartPieCategory = ({
   const { hours: totalH, minutes: totalM } = paresSecondToTime(totalSec);
   const totalLabel = `${totalH}:${totalM}`;
 
-  /** When showCompletedOnly: categories with tasks or with time data; segment = planned time, fill by %.
+  /** When showCompletedOnly: use ONLY completed time (doneTime) for segment size and share.
    * When includeAllCategories: show all entries (including 0). */
   const chartEntries =
     showCompletedOnly && !includeAllCategories
-      ? entries.filter(
-          (e) => e.countTotal > 0 || e.time > 0 || e.doneTime > 0
-        )
+      ? entries.filter((e) => e.doneTime > 0)
       : entries;
 
   useEffect(() => {
@@ -177,14 +175,18 @@ const ChartPieCategory = ({
           : entry.name;
       const pct =
         showCompletedOnly
-          ? useTimeCompletion ? entry.timePct : entry.taskPct
+          ? (totalSec > 0 ? Math.round((entry.doneTime / totalSec) * 100) : 0)
           : entry.time > 0
             ? Math.round((entry.doneTime / entry.time) * 100)
             : 0;
       const { hours: doneH, minutes: doneM } = paresSecondToTime(entry.doneTime);
       const { hours: plannedH, minutes: plannedM } = paresSecondToTime(entry.time);
       const timeStr =
-        entry.time > 0 ? `${doneH}:${doneM} / ${plannedH}:${plannedM}` : `0:00 / 0:00`;
+        showCompletedOnly
+          ? `${doneH}:${doneM}`
+          : entry.time > 0
+            ? `${doneH}:${doneM} / ${plannedH}:${plannedM}`
+            : `0:00 / 0:00`;
       tooltip.innerHTML = `
         <div class="chart-tooltip-title font-semibold">${label}</div>
         <div class="chart-tooltip-time mt-1">${timeStr} · ${pct}%</div>
@@ -214,37 +216,12 @@ const ChartPieCategory = ({
     };
 
     if (showCompletedOnly) {
-      /** Base: empty/grey outline per segment (100%) */
-      g.selectAll("path.base")
+      /** Completed-only mode: draw full colored segments by doneTime share (no planned/remaining ring). */
+      g.selectAll("path.done-only")
         .data(timeArcs)
         .enter()
         .append("path")
-        .attr("d", arc)
-        .attr("fill", "rgba(161,161,170,0.15)")
-        .attr("stroke", "rgba(161,161,170,0.35)")
-        .attr("stroke-width", 1)
-        .attr("cursor", "pointer")
-        .on("mouseenter", function (event, d) {
-          showPieTooltip(event, d.data);
-        })
-        .on("mousemove", function (event, d) {
-          showPieTooltip(event, d.data);
-        })
-        .on("mouseleave", hidePieTooltip);
-      /** Fill: category color to taskPct or timePct within each segment */
-      g.selectAll("path.done")
-        .data(timeArcs)
-        .enter()
-        .append("path")
-        .attr("d", (d, i) => {
-          const entry = chartEntries[i];
-          const progress = useTimeCompletion
-            ? Math.min(entry.timePct / 100, 1)
-            : Math.min(entry.taskPct / 100, 1);
-          const angleRange = d.endAngle - d.startAngle;
-          const newEndAngle = d.startAngle + angleRange * progress;
-          return arcDoneAngle({ ...d, endAngle: newEndAngle });
-        })
+        .attr("d", arcDoneAngle)
         .attr("fill", (_, i) =>
           getChartColorForAnalyticsCategory(
             chartEntries[i].categoryId ?? chartEntries[i].name,
@@ -348,20 +325,23 @@ const ChartPieCategory = ({
   ).filter((e) =>
     includeAllCategories ||
     !showCompletedOnly ||
-    e.countTotal > 0 ||
-    (useTimeCompletion && (e.time > 0 || e.doneTime > 0))
+    e.doneTime > 0
   )
     .map((e, i) => {
-      /** Task completion %: useTimeCompletion ? timePct : count-based when showCompletedOnly else time-based */
+      /** In completed-only mode, % is share of completed time in total completed time. */
       const pct = showCompletedOnly
-        ? (useTimeCompletion ? e.timePct : e.taskPct)
+        ? (totalSec > 0 ? Math.round((e.doneTime / totalSec) * 100) : 0)
         : e.time > 0
           ? Math.round(Math.min(100, (e.doneTime / e.time) * 100))
           : 0;
       const { hours: doneH, minutes: doneM } = paresSecondToTime(e.doneTime);
       const { hours: plannedH, minutes: plannedM } = paresSecondToTime(e.time);
       const timeLabel =
-        e.time > 0 ? `${doneH}:${doneM} / ${plannedH}:${plannedM}` : `0:00 / 0:00`;
+        showCompletedOnly
+          ? `${doneH}:${doneM}`
+          : e.time > 0
+            ? `${doneH}:${doneM} / ${plannedH}:${plannedM}`
+            : `0:00 / 0:00`;
       const label =
         t(`task_manager.categories.${e.name}`) !==
         `task_manager.categories.${e.name}`

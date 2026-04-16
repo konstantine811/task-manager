@@ -14,6 +14,12 @@ import { paresSecondToTime } from "@/utils/time.util";
 import TaskDeterminedTime from "./task-components/task-determined-time";
 import { StyleWordBreak } from "@/config/styles.config";
 import { CATEGORY_CHART_COLORS } from "@/config/chart-colors.config";
+import {
+  differenceInCalendarDays,
+  isValid,
+  parseISO,
+  startOfDay,
+} from "date-fns";
 
 export function TaskItem({
   index: _index = "",
@@ -53,10 +59,78 @@ export function TaskItem({
     categoryId && templated
       ? (CATEGORY_CHART_COLORS[String(categoryId)] ?? null)
       : null;
-  const scheduleDays =
-    templated && task.whenDo && task.whenDo.length > 0 ? (
+
+  const intervalMeta = (() => {
+    if (task.schedule?.type !== "interval_days") return null;
+    const every = Math.max(1, task.schedule.every || 1);
+    const anchor = parseISO(task.schedule.anchorDate);
+    const today = startOfDay(new Date());
+    if (!isValid(anchor)) {
+      return { every, nextLabel: "сьогодні" };
+    }
+    const anchorDay = startOfDay(anchor);
+    const diff = differenceInCalendarDays(today, anchorDay);
+    let daysUntil = 0;
+    if (diff < 0) {
+      daysUntil = -diff;
+    } else {
+      const mod = diff % every;
+      daysUntil = mod === 0 ? 0 : every - mod;
+    }
+    const nextLabel =
+      daysUntil === 0
+        ? "сьогодні"
+        : daysUntil === 1
+          ? "завтра"
+          : daysUntil === 2
+            ? "післязавтра"
+            : `через ${daysUntil} днів`;
+    return { every, nextLabel };
+  })();
+
+  const formatDaysWord = (value: number) => {
+    const mod10 = value % 10;
+    const mod100 = value % 100;
+    if (mod10 === 1 && mod100 !== 11) return "день";
+    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14))
+      return "дні";
+    return "днів";
+  };
+
+  const scheduleDays = (() => {
+    if (!templated) return null;
+
+    if (intervalMeta) {
+      return (
+        <div className="flex flex-wrap gap-1">
+          <span className="text-[10px] text-indigo-600 dark:text-indigo-400/80">
+            {`кожні ${intervalMeta.every} ${formatDaysWord(intervalMeta.every)}`}
+          </span>
+          <span className="text-[10px] text-indigo-600/70 dark:text-indigo-400/60">
+            /
+          </span>
+          <span className="text-[10px] text-indigo-600 dark:text-indigo-400/80">
+            {intervalMeta.nextLabel}
+          </span>
+        </div>
+      );
+    }
+
+    if (task.schedule?.type === "times_per_week") {
+      return (
+        <span className="text-[10px] text-indigo-600 dark:text-indigo-400/80">
+          {`${task.schedule.times}/тиж`}
+        </span>
+      );
+    }
+
+    const days =
+      task.schedule?.type === "weekdays" ? task.schedule.days : task.whenDo;
+    if (!days || days.length === 0) return null;
+
+    return (
       <div className="flex flex-wrap gap-1">
-        {[...task.whenDo]
+        {[...days]
           .sort((a, b) => a - b)
           .map((d) => (
             <span
@@ -67,7 +141,8 @@ export function TaskItem({
             </span>
           ))}
       </div>
-    ) : null;
+    );
+  })();
   const timeBlock = !dragging ? (
     <>
       {task.isPlanned ? (

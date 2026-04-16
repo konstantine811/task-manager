@@ -29,9 +29,7 @@ const ChartPieCateogoryWrap = ({
             title="chart.pie_category_daily_time"
             subtitle={
               showCompletedOnly
-                ? useTimeCompletion
-                  ? "chart.pie_category_planned_completed_subtitle"
-                  : "chart.pie_category_completed_subtitle"
+                ? "chart.pie_category_completed_subtitle"
                 : undefined
             }
           />

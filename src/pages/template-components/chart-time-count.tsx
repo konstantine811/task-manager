@@ -265,7 +265,9 @@ const ChartTimeCount = ({ templateTasks }: { templateTasks: Items }) => {
       .data(stack)
       .join("g")
       .attr("class", "stroke fill-transparent")
-      .attr("stroke", "rgba(255,255,255,0.08)")
+      .attr("stroke", "rgba(255,255,255,0.22)")
+      .attr("stroke-width", 1.1)
+      .attr("vector-effect", "non-scaling-stroke")
       .selectAll("rect")
       .data((d) => d)
 
