@@ -36,7 +36,7 @@ const CustomDrawer = ({
         <div>
           <Button
             className={cn(
-              "fixed right-3 z-30 h-14 w-14 rounded-full border border-zinc-300/80 bg-white/80 p-0 text-zinc-800 shadow-lg backdrop-blur-xl hover:bg-white/90 dark:border-white/10 dark:bg-[rgba(10,10,12,0.72)] dark:text-zinc-100 dark:hover:bg-[rgba(10,10,12,0.84)]"
+              "fixed right-3 z-50 h-14 w-14 rounded-full border border-zinc-300/80 bg-white/80 p-0 text-zinc-800 shadow-lg backdrop-blur-xl hover:bg-white/90 dark:border-white/10 dark:bg-[rgba(10,10,12,0.72)] dark:text-zinc-100 dark:hover:bg-[rgba(10,10,12,0.84)]",
             )}
             style={{ top: `${hs + 10}px` }}
           >

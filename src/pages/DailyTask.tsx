@@ -1,8 +1,7 @@
 import { useIsAdoptive } from "@/hooks/useIsAdoptive";
 
 import DailyTaskWrapper from "./daily-components/daily-task-wrapper";
-import { useOutletContext, useParams } from "react-router";
-import { TaskManagerOutletContext } from "./TaskManager";
+import { useParams } from "react-router";
 import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import DailySidePanelWrapper from "./daily-components/daily-side-panel-wrapper";
 import { useCallback, useEffect, useState } from "react";
@@ -29,7 +28,6 @@ const DailyTask = () => {
   const { isAdoptiveSize: mdSize, screenWidth } = useIsAdoptive("lg");
   const hS = useHeaderSizeStore((s) => s.size);
   const [dailyTask, setDailyTask] = useState<Items>();
-  const outletContext = useOutletContext<TaskManagerOutletContext>();
   const [dateVal, setDateVal] = useState<string | undefined>();
   const { id: date } = useParams(); // ← id це твоя дата у форматі "dd.MM.yyyy"
   const [plannedTasks, setPlannedTasks] = useState<ItemTaskCategory[] | null>(
@@ -168,10 +166,7 @@ const DailyTask = () => {
         dailyTasks: dailyTask || [],
       }}
     >
-      <div
-        className="flex h-full min-h-0 w-full justify-center overflow-y-auto overscroll-y-contain"
-        style={{ minHeight: `calc(100vh - ${hS}px)` }}
-      >
+      <div className="flex h-full min-h-0 w-full justify-center overflow-y-auto">
         {/* Ліва колонка */}
 
         {screenWidth >= BreakPoints["2xl"] && (
@@ -183,10 +178,7 @@ const DailyTask = () => {
         )}
 
         {/* Центральна колонка */}
-        <main
-          className={`w-full flex-1 px-4 flex flex-col justify-start ${outletContext.className}`}
-          style={{ minHeight: `calc(100vh - ${hS}px)` }}
-        >
+        <main className="w-full flex-1 px-4 flex flex-col justify-start">
           <h2 className="text-center text-foreground/50 text-sm mb-4 mt-2">
             {`${t("task_manager.daily_task_title")} : ${dateVal || ""}`}
           </h2>

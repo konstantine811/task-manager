@@ -81,13 +81,24 @@ export function useMultipleContainersBoard({
     useState<ItemTask | null>(null);
   const lastAppliedUpdatedSigRef = useRef<string | null>(null);
 
-  const sensors = useSensors(
-    useSensor(MouseSensor),
-    useSensor(TouchSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter,
-    }),
+  const mouseSensor = useSensor(MouseSensor);
+  const touchSensor = useSensor(TouchSensor, {
+    activationConstraint: {
+      delay: 180,
+      tolerance: 8,
+    },
+  });
+  const keyboardSensor = useSensor(KeyboardSensor, {
+    coordinateGetter,
+  });
+
+  const sensorsWithTouch = useSensors(
+    mouseSensor,
+    touchSensor,
+    keyboardSensor,
   );
+  const sensorsDisabled = useSensors();
+  const sensors = isDialogOpen ? sensorsDisabled : sensorsWithTouch;
 
   const collisionDetectionStrategy: CollisionDetection =
     useCollisionDectionStrategy({

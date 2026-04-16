@@ -15,7 +15,7 @@ function DialogTaskHeader({
 }) {
   return (
     <Dialog isOpen={isOpen} setOpen={setOpen} className="p-4 md:p-6">
-      <div className="relative w-full">
+      <div className="relative w-full min-h-0">
         <div className="absolute top-[-19px] right-[-19px] z-20 rounded-full">
           <Button
             size="icon"

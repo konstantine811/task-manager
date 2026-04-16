@@ -1,4 +1,3 @@
-import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import { useEffect, useMemo, useState } from "react";
 import { loadDailyTasksByRange } from "@/services/firebase/taskManagerData";
 import { CalendarDatePicker } from "./analytics-comonents/calendar-date-picker";
@@ -22,7 +21,6 @@ import AreaProgressOverview from "./analytics-comonents/area-progress-overview";
 import { formatISO } from "date-fns";
 
 const Analytics = () => {
-  const hS = useHeaderSizeStore((s) => s.size);
   const [t] = useTranslation();
   const [range, setRange] = useState<{ from: Date; to: Date }>({
     from: new Date(new Date().getFullYear(), 0, 1),
@@ -69,10 +67,7 @@ const Analytics = () => {
   }, [analyticsData]);
 
   return (
-    <div
-      className="h-full min-h-0 w-full overflow-y-auto overscroll-y-contain"
-      style={{ minHeight: `calc(100vh - ${hS}px)` }}
-    >
+    <div className="h-full min-h-0 w-full">
       <header className="border-b border-white/10 py-2">
         <AnimatedItem index={0}>
           <div className="container mx-auto flex items-center justify-end">
@@ -90,7 +85,7 @@ const Analytics = () => {
         {/* <h2 className="text-center text-foreground/50 text-sm mb-4 mt-2">
             {`${t("task_manager.daily_task_title")} : ${dateVal || ""}`}
           </h2> */}
-        <div className="container mx-auto pt-10 pb-20">
+        <div className="container mx-auto pt-10">
           {analyticsData ? (
             <>
               <AnimatedItem index={0}>

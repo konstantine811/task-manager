@@ -1,11 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router";
-import {
-  Infinity,
-  ArrowRight,
-  LogOut,
-  Moon,
-  Sun,
-} from "lucide-react";
+import { Infinity, ArrowRight, LogOut, Moon, Sun } from "lucide-react";
 import { useThemeStore } from "@/storage/themeStore";
 import { ThemeType } from "@/config/theme-colors.config";
 import { ROUTES } from "@/config/routes";
@@ -52,7 +46,7 @@ export function ChronoNav({ variant = "landing" }: ChronoNavProps) {
   };
 
   return (
-    <nav className="fixed top-0 w-full z-50 border-b border-zinc-200 dark:border-white/5 bg-white/90 dark:bg-black/50 backdrop-blur-xl">
+    <nav className="top-0 w-full z-10 border-b border-zinc-200 dark:border-white/5 bg-white/90 dark:bg-black/50 backdrop-blur-xl pr-15 lg:pr-0">
       <div className="max-w-[1400px] mx-auto px-6 h-14 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2 group cursor-pointer">
           <div className="w-7 h-7 rounded-md bg-white text-black flex items-center justify-center shadow-[0_0_15px_rgba(255,255,255,0.3)] transition-shadow duration-300">
@@ -70,12 +64,14 @@ export function ChronoNav({ variant = "landing" }: ChronoNavProps) {
               return (
                 <Link
                   key={item.key}
-                  to={item.key === "daily" ? `${ROUTES.DAILY}/${today}` : item.to}
+                  to={
+                    item.key === "daily" ? `${ROUTES.DAILY}/${today}` : item.to
+                  }
                   className={cn(
                     "rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
                     isActive
                       ? "bg-indigo-500/15 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-200"
-                      : "text-zinc-600 hover:bg-zinc-200/80 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-white/5 dark:hover:text-white"
+                      : "text-zinc-600 hover:bg-zinc-200/80 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-white/5 dark:hover:text-white",
                   )}
                 >
                   {t(`pages.task.${item.key}`)}

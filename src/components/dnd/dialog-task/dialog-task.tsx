@@ -177,7 +177,7 @@ const DialogTask = ({
 
   return (
     <DialogTaskHeader isOpen={isOpen} setOpen={setOpen}>
-      <div className="w-full max-h-[calc(100dvh-10rem)] md:max-h-[72dvh] overflow-y-auto touch-auto overscroll-contain pr-1 pb-2">
+      <div className="w-full min-h-0 touch-auto touch-pan-y pr-1 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
         <div className="flex flex-col gap-2 md:gap-4">
           <DialogTaskIntro />
           <div className="grid gap-6 md:py-4">

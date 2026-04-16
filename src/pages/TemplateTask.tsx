@@ -4,12 +4,9 @@ import {
   loadTemplateTasks,
   saveTemplateTasks,
 } from "@/services/firebase/taskManagerData";
-import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import { Items } from "@/types/drag-and-drop.model";
 import { rectSortingStrategy } from "@dnd-kit/sortable";
 import { useEffect, useRef, useState } from "react";
-import { useOutletContext } from "react-router";
-import { TaskManagerOutletContext } from "./TaskManager";
 import { TaskManagerProvider } from "@/components/dnd/context/task-manager-context";
 import { useTranslation } from "react-i18next";
 import TemplateRightPanel from "./template-components/template-right-panel";
@@ -21,13 +18,11 @@ import CustomDrawer from "@/components/ui-abc/drawer/custom-drawer";
 import { AnimatedItem } from "@/components/ui/animated-item";
 
 const TemplateTask = () => {
-  const outletContext = useOutletContext<TaskManagerOutletContext>();
   const { isAdoptiveSize: mdSize } = useIsAdoptive("md");
   const [dailyTasks, setDailyTasks] = useState<Items>([]);
   const [templatedTask, setTemplatedTask] = useState<Items>([]); // 🔄 Додано для зберігання шаблонних завдань
   /** true поки йде перший запит шаблону — щоб не миготів контент і сітка */
   const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const hS = useHeaderSizeStore((s) => s.size);
   const [t] = useTranslation();
   const removeSuggestedTaskRef = useRef<
     | ((advisorTask: import("@/services/ai/gemini.types").AdvisorTask) => void)
@@ -53,15 +48,14 @@ const TemplateTask = () => {
       .finally(() => setIsInitialLoad(false));
   }, []);
 
-  const viewportH = `calc(100vh - ${hS}px)`;
   /** На lg фіксуємо висоту під viewport + overflow:hidden, щоб скрол був лише всередині колонок, а не на body (миготіння скролбара). */
   const rootStyle = !mdSize
     ? ({
-        minHeight: viewportH,
-        maxHeight: viewportH,
+        minHeight: "100%",
+        maxHeight: "100%",
         overflow: "hidden",
       } as const)
-    : { minHeight: viewportH };
+    : { minHeight: "100%" };
 
   return (
     <div
@@ -79,11 +73,11 @@ const TemplateTask = () => {
 
       {/* Один вертикальний скрол на весь рядок (аналітика + дошка + AI), без вкладених overflow-y-auto */}
       <div
-        className={
+        className={`${
           mdSize
             ? "flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto overflow-x-hidden"
             : "col-span-3 grid min-h-0 min-w-0 grid-cols-1 overflow-y-auto overflow-x-hidden lg:grid-cols-3 lg:gap-4 [scrollbar-gutter:stable]"
-        }
+        }`}
       >
         <AnimatedItem
           index={1}
@@ -97,7 +91,7 @@ const TemplateTask = () => {
           className="flex min-h-0 min-w-0 flex-1 flex-col lg:col-span-2"
         >
           <main
-            className={`flex min-h-0 min-w-0 flex-1 flex-col ${outletContext.className}`}
+            className="flex min-h-0 min-w-0 flex-1 flex-col"
           >
           {!isInitialLoad ? (
             <div className="flex w-full min-w-0 flex-1 flex-col items-stretch justify-start px-4">
