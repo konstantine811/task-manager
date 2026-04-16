@@ -27,6 +27,8 @@ const DailyAnalyticsTable = ({ data }: { data: DailyAnalyticsData }) => {
     },
     [t]
   );
+  if (data.countDoneTask <= 0) return null;
+
   return (
     <div className="flex flex-col gap-4">
       <div className="chrono-table">
@@ -40,26 +42,10 @@ const DailyAnalyticsTable = ({ data }: { data: DailyAnalyticsData }) => {
           </TableHeader>
           <TableBody>
             <TableRow>
-              <TableCell className="text-zinc-800 dark:text-zinc-200">Загально</TableCell>
-              <TableCell className="font-mono text-zinc-700 dark:text-zinc-400">{data.countAllTask}</TableCell>
-              <TableCell className="font-mono text-zinc-700 dark:text-zinc-400">
-                {parseTime(data.countTime)}
-              </TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell className="text-zinc-800 dark:text-zinc-200">Затрекані</TableCell>
+              <TableCell className="text-zinc-800 dark:text-zinc-200">Виконано</TableCell>
               <TableCell className="font-mono text-zinc-700 dark:text-zinc-400">{data.countDoneTask}</TableCell>
               <TableCell className="font-mono text-zinc-700 dark:text-zinc-400">
                 {parseTime(data.countDoneTime)}
-              </TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell className="text-zinc-800 dark:text-zinc-200">Залишкові</TableCell>
-              <TableCell className="font-mono text-zinc-700 dark:text-zinc-400">
-                {data.countAllTask - data.countDoneTask}
-              </TableCell>
-              <TableCell className="font-mono text-zinc-700 dark:text-zinc-400">
-                {parseTime(data.countTime - data.countDoneTime)}
               </TableCell>
             </TableRow>
           </TableBody>

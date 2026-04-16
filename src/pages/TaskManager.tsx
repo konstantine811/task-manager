@@ -1,9 +1,7 @@
 import { useEffect } from "react";
-import { Outlet, useLocation } from "react-router";
-import { useHeaderSizeStore } from "@/storage/headerSizeStore";
+import { Outlet } from "react-router";
 import { ChronoNav } from "@/components/landing";
 import { markEnteredAppThisSession } from "@/config/app-session";
-import { motion } from "motion/react";
 import TaskNavMenu from "./TaskNavMenu";
 
 export interface TaskManagerOutletContext {
@@ -11,8 +9,6 @@ export interface TaskManagerOutletContext {
 }
 
 const TaskManager = () => {
-  const { pathname } = useLocation();
-  const headerSize = useHeaderSizeStore((s) => s.size);
   const outletConext: TaskManagerOutletContext = {
     className: "",
   };

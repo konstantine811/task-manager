@@ -174,7 +174,12 @@ export function useMultipleContainersBoard({
             if (t.id === taskId) {
               let updatedTask: ItemTask = { ...t, isDone: newIsDone };
               if (newIsDone && !(t.timeDone && t.timeDone > 0)) {
-                updatedTask = { ...updatedTask, timeDone: t.time };
+                // For determined/planned tasks `time` can mean clock time (e.g. 23:00),
+                // not duration. Never copy it into spent time automatically.
+                updatedTask = {
+                  ...updatedTask,
+                  timeDone: t.isDetermined || t.isPlanned ? t.timeDone : t.time,
+                };
               }
               if (newIsDone) doneTask = updatedTask;
               else if (t.isDone) undoneTask = t;

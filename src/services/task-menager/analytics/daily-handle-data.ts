@@ -17,10 +17,10 @@ import { ISODate } from "@/types/task-instance.model";
  * Якщо брати `time` для ширини сегмента — 14:00 перетворюється на ~14 «годин» бару.
  */
 function taskBarDurationSeconds(task: ItemTask): number {
-  if (task.isDone) {
-    return task.timeDone > 0 ? task.timeDone : task.time;
-  }
   if (task.isPlanned || task.isDetermined) {
+    return task.timeDone > 0 ? task.timeDone : 0;
+  }
+  if (task.isDone) {
     return task.timeDone > 0 ? task.timeDone : task.time;
   }
   return task.time;
@@ -85,7 +85,11 @@ export const getDailyTaskAnalyticsData = (tasks: Items): DailyTaskAnalytics => {
       const timeDo = isDetermined || isPlanned || isDone ? timeDone : time;
       // "Completed" analytics should only include tasks that are currently marked done.
       // Otherwise an undone task with a preserved timeDone would still appear as completed.
-      const timeDoneCategory = isDone ? timeDone || time : 0;
+      const timeDoneCategory = isDone
+        ? isDetermined || isPlanned
+          ? timeDone
+          : timeDone || time
+        : 0;
       dailyAnalytics.countTime += timeDo;
       dailyAnalytics.countAllTask += 1;
       dailyAnalytics.countDoneTime += timeDoneCategory;

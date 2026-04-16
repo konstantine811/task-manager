@@ -123,7 +123,7 @@ const DialogTask = ({
         title,
         priority,
         time,
-        false,
+        !templated && isDetermined,
         wastedTime,
         whenDo,
         isDetermined,
@@ -287,25 +287,27 @@ const DialogTask = ({
                         ></TimePicker>
                       </LabelTooltip>
                     </div>
-                    {templated && (
-                      <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 md:gap-4">
-                        <LabelTooltip
-                          label={t(
-                            "task_manager.dialog_create_task.task.time.wasted.label",
-                          )}
-                          tooltip={t(
-                            "task_manager.dialog_create_task.task.time.wasted.description",
-                          )}
-                        >
-                          <TimePickerInputs
-                            time={wastedTime}
-                            onChange={(value) => {
-                              setWastedTime(value);
-                            }}
-                          />
-                        </LabelTooltip>
-                      </div>
-                    )}
+                    <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 md:gap-4">
+                      <LabelTooltip
+                        label={t(
+                          task
+                            ? "task_manager.dialog_create_task.task.time.wasted.label"
+                            : "task_manager.dialog_create_task.task.time.duration.label",
+                        )}
+                        tooltip={t(
+                          task
+                            ? "task_manager.dialog_create_task.task.time.wasted.description"
+                            : "task_manager.dialog_create_task.task.time.duration.description",
+                        )}
+                      >
+                        <TimePickerInputs
+                          time={wastedTime}
+                          onChange={(value) => {
+                            setWastedTime(value);
+                          }}
+                        />
+                      </LabelTooltip>
+                    </div>
                   </>
                 )}
                 {!isDetermined && (
@@ -322,25 +324,6 @@ const DialogTask = ({
                         time={time}
                         onChange={(value) => {
                           setTime(value);
-                        }}
-                      />
-                    </LabelTooltip>
-                  </div>
-                )}
-                {task && !templated && (
-                  <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 md:gap-4">
-                    <LabelTooltip
-                      label={t(
-                        "task_manager.dialog_create_task.task.time.wasted.label",
-                      )}
-                      tooltip={t(
-                        "task_manager.dialog_create_task.task.time.wasted.description",
-                      )}
-                    >
-                      <TimePickerInputs
-                        time={wastedTime}
-                        onChange={(value) => {
-                          setWastedTime(value);
                         }}
                       />
                     </LabelTooltip>
