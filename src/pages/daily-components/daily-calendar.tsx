@@ -168,8 +168,20 @@ const DailyCalendar = () => {
   const { i18n } = useTranslation();
   const lang = i18n.language;
   return (
-    <div className="flex justify-center w-full">
+    <div className="w-full flex justify-center">
       <Calendar
+        className="w-full max-w-none mx-auto px-1 sm:px-2 [--cell-size:clamp(2.3rem,12vw,3.6rem)] sm:[--cell-size:clamp(2.5rem,7vw,3.8rem)] [&_.rdp-months]:w-full [&_.rdp-month]:w-full [&_.rdp-month_grid]:w-full [&_.rdp-month_grid]:max-w-[44rem] [&_.rdp-month_grid]:mx-auto [&_.rdp-nav]:w-full [&_.rdp-nav]:max-w-[44rem] [&_.rdp-nav]:mx-auto [&_.rdp-month_caption]:w-full [&_.rdp-month_caption]:max-w-[44rem] [&_.rdp-month_caption]:mx-auto"
+        classNames={{
+          root: "w-full mx-auto",
+          months: "w-full",
+          month: "w-full flex flex-col items-center",
+          table: "w-full max-w-[44rem] mx-auto border-collapse table-fixed",
+          weekday:
+            "flex-1 min-w-0 text-center text-[clamp(0.85rem,2.4vw,1.1rem)] font-medium text-muted-foreground",
+          caption_label:
+            "select-none font-semibold text-[clamp(1.15rem,3.3vw,1.9rem)]",
+          day: "relative aspect-square p-0 select-none",
+        }}
         mode="single"
         selected={date}
         onSelect={(date) => handleDate(date)}
