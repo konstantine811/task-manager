@@ -5,6 +5,30 @@ import {
 } from "@/types/drag-and-drop.model";
 import { UniqueIdentifier } from "@dnd-kit/core";
 import { denormalizeItems, normalizeItems } from "./normalize";
+import { CATEGORY_OPTIONS } from "@/components/dnd/config/category-options";
+import i18n from "i18next";
+
+const normalizeCategoryLabel = (value: string) =>
+  value.trim().toLowerCase().replace(/\s+/g, " ");
+
+const resolveCategoryKey = (raw: string) => {
+  const value = raw.trim();
+  if (!value) return value;
+
+  if (CATEGORY_OPTIONS.includes(value)) return value;
+
+  const normalized = normalizeCategoryLabel(value);
+
+  for (const key of CATEGORY_OPTIONS) {
+    if (normalizeCategoryLabel(key) === normalized) return key;
+    const uaLabel = i18n.t(`task_manager.categories.${key}`, { lng: "ua" });
+    if (normalizeCategoryLabel(uaLabel) === normalized) return key;
+    const enLabel = i18n.t(`task_manager.categories.${key}`, { lng: "en" });
+    if (normalizeCategoryLabel(enLabel) === normalized) return key;
+  }
+
+  return normalized;
+};
 
 export function mergeItemsDeep(base: Items, incoming: Items): Items {
   const baseN = normalizeItems(base);
@@ -13,7 +37,19 @@ export function mergeItemsDeep(base: Items, incoming: Items): Items {
 
   incomingN.forEach((incomingTask) => {
     if (!baseNIds.has(incomingTask.id)) {
-      baseN.push(incomingTask);
+      const incomingCategoryKey = resolveCategoryKey(incomingTask.categoryName);
+      const existingCategoryTask = baseN.find(
+        (task) => resolveCategoryKey(task.categoryName) === incomingCategoryKey,
+      );
+      if (existingCategoryTask) {
+        baseN.push({
+          ...incomingTask,
+          categoryId: existingCategoryTask.categoryId,
+          categoryName: existingCategoryTask.categoryName,
+        });
+      } else {
+        baseN.push(incomingTask);
+      }
     }
   });
 
@@ -24,7 +60,19 @@ export function addNewTask(base: Items, incoming: NormalizedTask): Items {
   const baseN = normalizeItems(base);
   const finded = baseN.find((task) => task.id === incoming.id);
   if (!finded) {
-    baseN.push(incoming);
+    const incomingCategoryKey = resolveCategoryKey(incoming.categoryName);
+    const existingCategoryTask = baseN.find(
+      (task) => resolveCategoryKey(task.categoryName) === incomingCategoryKey,
+    );
+    if (existingCategoryTask) {
+      baseN.push({
+        ...incoming,
+        categoryId: existingCategoryTask.categoryId,
+        categoryName: existingCategoryTask.categoryName,
+      });
+    } else {
+      baseN.push(incoming);
+    }
   }
   return denormalizeItems(baseN);
 }
@@ -46,14 +94,20 @@ export function mergeItemsWithPlannedTasks(
     : [];
 
   plannedTasks.forEach((task) => {
-    const categoryName = task.categoryName;
+    const categoryName = task.categoryName?.trim() || "";
+    const plannedCategoryKey = resolveCategoryKey(categoryName);
 
-    let existingCategory = result.find((c) => c.title === categoryName);
+    let existingCategory = result.find(
+      (c) => resolveCategoryKey(c.title) === plannedCategoryKey
+    );
 
     if (!existingCategory) {
+      const canonicalTitle = CATEGORY_OPTIONS.includes(plannedCategoryKey)
+        ? plannedCategoryKey
+        : categoryName;
       existingCategory = {
         id: `cat-${Date.now()}-${Math.random()}`,
-        title: categoryName,
+        title: canonicalTitle,
         tasks: [],
       };
       result.push(existingCategory);
