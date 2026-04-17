@@ -1,15 +1,20 @@
-import { useEffect } from "react";
-import { Outlet, useLocation } from "react-router";
+import { useEffect, useRef } from "react";
+import { Outlet, useLocation, useNavigate } from "react-router";
 import { ChronoNav } from "@/components/landing";
 import { markEnteredAppThisSession } from "@/config/app-session";
 import TaskNavMenu from "./TaskNavMenu";
+import { ROUTES } from "@/config/route-paths";
+import { DateTemplate } from "@/config/data-config";
+import { format } from "date-fns";
 
 export interface TaskManagerOutletContext {
   className: string;
 }
 
 const TaskManager = () => {
+  const navigate = useNavigate();
   const { pathname } = useLocation();
+  const didForceDailyOnEntryRef = useRef(false);
   const outletConext: TaskManagerOutletContext = {
     className: "",
   };
@@ -17,6 +22,16 @@ const TaskManager = () => {
   useEffect(() => {
     markEnteredAppThisSession();
   }, []);
+
+  useEffect(() => {
+    if (didForceDailyOnEntryRef.current) return;
+    didForceDailyOnEntryRef.current = true;
+
+    if (pathname === ROUTES.APP || pathname.startsWith(ROUTES.TEMPLATE)) {
+      const today = format(new Date(), DateTemplate.dayMonthYear);
+      navigate(`${ROUTES.DAILY}/${today}`, { replace: true });
+    }
+  }, [pathname, navigate]);
 
   useEffect(() => {
     // iOS Safari can keep horizontal viewport offset after route change
