@@ -220,7 +220,7 @@ export function TaskItem({
       )}
       <div
         data-task-card
-        className={`grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-2 p-2 rounded-lg ${cardBorder} bg-white/80 dark:bg-white/5 hover:bg-white/90 dark:hover:bg-white/10 transition-colors w-full md:flex md:items-center md:justify-between ${neonShellClass ? "relative z-[1]" : ""} ${inactiveShadow} ${categoryColor ? "pl-3" : ""} ${
+        className={`grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 gap-y-2 p-2 rounded-lg ${cardBorder} bg-white/80 dark:bg-white/5 hover:bg-white/90 dark:hover:bg-white/10 transition-colors w-full md:flex md:items-center md:justify-between select-none [-webkit-touch-callout:none] ${neonShellClass ? "relative z-[1]" : ""} ${inactiveShadow} ${categoryColor ? "pl-3" : ""} ${
           task.isDone
             ? "chrono-task-card-done text-emerald-900 dark:text-emerald-200/95"
             : "text-zinc-800 dark:text-zinc-300"

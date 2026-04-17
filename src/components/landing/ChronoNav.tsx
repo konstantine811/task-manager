@@ -27,6 +27,8 @@ export function ChronoNav({ variant = "landing" }: ChronoNavProps) {
     { to: ROUTES.DAILY, key: "daily" },
     { to: ROUTES.ANALYTICS, key: "analytics" },
   ];
+  const isDailyOrTemplatePage =
+    pathname.startsWith(ROUTES.DAILY) || pathname.startsWith(ROUTES.TEMPLATE);
   const today = format(new Date(), DateTemplate.dayMonthYear);
 
   const toggleTheme = () => {
@@ -41,12 +43,17 @@ export function ChronoNav({ variant = "landing" }: ChronoNavProps) {
 
   const handleGoogleLogin = () => {
     loginWithGoogle()
-      .then(() => navigate(ROUTES.TEMPLATE, { replace: true }))
+      .then(() => navigate(ROUTES.APP, { replace: true }))
       .catch((err) => console.error("Google sign-in error:", err));
   };
 
   return (
-    <nav className="top-0 w-full z-10 border-b border-zinc-200 dark:border-white/5 bg-white/90 dark:bg-black/50 backdrop-blur-xl pr-15 lg:pr-0">
+    <nav
+      className={cn(
+        "top-0 w-full z-10 border-b border-zinc-200 dark:border-white/5 bg-white/90 dark:bg-black/50 backdrop-blur-xl",
+        isDailyOrTemplatePage ? "pr-15 lg:pr-0" : "pr-0",
+      )}
+    >
       <div className="max-w-[1400px] mx-auto px-6 h-14 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2 group cursor-pointer">
           <div className="w-7 h-7 rounded-md bg-white text-black flex items-center justify-center shadow-[0_0_15px_rgba(255,255,255,0.3)] transition-shadow duration-300">
@@ -107,7 +114,7 @@ export function ChronoNav({ variant = "landing" }: ChronoNavProps) {
           )}
           {variant === "landing" && isAuthenticated && (
             <Link
-              to={ROUTES.TEMPLATE}
+              to={ROUTES.APP}
               className="h-7 px-3 bg-white text-black text-xs font-medium rounded-full flex items-center hover:bg-zinc-200 transition-colors shadow-[0_0_20px_rgba(255,255,255,0.1)]"
             >
               {t("nav.to_tasks")} <ArrowRight className="ml-1 w-3 h-3" />

@@ -9,12 +9,12 @@ export function CTAFooter() {
 
   const handleStart = () => {
     if (isAuthenticated) {
-      navigate(ROUTES.TEMPLATE);
+      navigate(ROUTES.APP);
       return;
     }
 
     loginWithGoogle()
-      .then(() => navigate(ROUTES.TEMPLATE, { replace: true }))
+      .then(() => navigate(ROUTES.APP, { replace: true }))
       .catch((err) => console.error("Google sign-in error:", err));
   };
 

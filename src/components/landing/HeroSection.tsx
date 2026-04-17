@@ -10,10 +10,10 @@ export function HeroSection() {
 
   const handleStart = () => {
     if (isAuthenticated) {
-      navigate(ROUTES.TEMPLATE);
+      navigate(ROUTES.APP);
     } else {
       loginWithGoogle()
-        .then(() => navigate(ROUTES.TEMPLATE, { replace: true }))
+        .then(() => navigate(ROUTES.APP, { replace: true }))
         .catch((err) => console.error("Google sign-in error:", err));
     }
   };
