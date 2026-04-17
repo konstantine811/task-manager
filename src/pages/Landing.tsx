@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router";
+import { format } from "date-fns";
 import {
   LandingBackground,
   ChronoNav,
@@ -10,29 +11,20 @@ import {
   LandingFooter,
 } from "@/components/landing";
 import { useAuth } from "@/hooks/useAuth";
-import { getTaskManagerEntryPath } from "@/utils/task-manager-entry-path";
-import { hasEnteredAppThisSession } from "@/config/app-session";
+import { ROUTES } from "@/config/route-paths";
+import { DateTemplate } from "@/config/data-config";
 
 export default function Landing() {
   const { isAuthenticated, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  const skipAutoredirect =
-    typeof window !== "undefined" && hasEnteredAppThisSession();
-
   useEffect(() => {
-    if (authLoading || !isAuthenticated || skipAutoredirect) return;
-    let cancelled = false;
-    void (async () => {
-      const path = await getTaskManagerEntryPath();
-      if (!cancelled) navigate(path, { replace: true });
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [authLoading, isAuthenticated, navigate, skipAutoredirect]);
+    if (authLoading || !isAuthenticated) return;
+    const today = format(new Date(), DateTemplate.dayMonthYear);
+    navigate(`${ROUTES.DAILY}/${today}`, { replace: true });
+  }, [authLoading, isAuthenticated, navigate]);
 
-  if (!authLoading && isAuthenticated && !skipAutoredirect) {
+  if (!authLoading && isAuthenticated) {
     return (
       <div className="min-h-screen chrono-page-bg flex items-center justify-center">
         <div className="text-zinc-400 text-sm">Loading…</div>

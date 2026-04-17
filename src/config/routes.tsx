@@ -1,7 +1,9 @@
 import { lazy, Suspense, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import { getTaskManagerEntryPath } from "@/utils/task-manager-entry-path";
+import { format } from "date-fns";
+import { DateTemplate } from "@/config/data-config";
+import { ROUTES } from "@/config/route-paths";
 
 export { ROUTES } from "@/config/route-paths";
 
@@ -21,19 +23,13 @@ function TaskManagerLayout() {
   );
 }
 
-/** Після логіну: якщо вже є шаблонні задачі — одразу на щоденні (сьогодні), інакше на шаблон. */
+/** Після логіну: завжди одразу на щоденні (сьогодні). */
 function TaskManagerIndexRedirect() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      const path = await getTaskManagerEntryPath();
-      if (!cancelled) navigate(path, { replace: true });
-    })();
-    return () => {
-      cancelled = true;
-    };
+    const today = format(new Date(), DateTemplate.dayMonthYear);
+    navigate(`${ROUTES.DAILY}/${today}`, { replace: true });
   }, [navigate]);
 
   return (
