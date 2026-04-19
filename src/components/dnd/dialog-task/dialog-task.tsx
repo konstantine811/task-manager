@@ -73,6 +73,9 @@ const DialogTask = ({
   const [time, setTime] = useState<number>(0);
   const [wastedTime, setWastedTime] = useState<number>(0);
   const [isDetermined, setIsDetermined] = useState<boolean>(false);
+  const isPlannedTask = Boolean(task?.isPlanned);
+  const showActualSpentTimeField =
+    Boolean(task) && !templated && !isPlannedTask && !isDetermined;
 
   function toggleDay(day: DayNumber) {
     setSelectedDays((prev) =>
@@ -211,7 +214,7 @@ const DialogTask = ({
                 }
               />
             </div>
-            {task?.isPlanned ? (
+            {isPlannedTask ? (
               <>
                 <div className="grid grid-cols-1 xs:grid-cols-4 items-start xs:items-center gap-2 md:gap-4 ">
                   <LabelTooltip
@@ -227,7 +230,7 @@ const DialogTask = ({
                       onChange={(time) => {
                         setTime(time);
                       }}
-                      time={task ? task.time : 0}
+                      time={time}
                     />
                   </LabelTooltip>
                 </div>
@@ -282,7 +285,7 @@ const DialogTask = ({
                           onChange={(time) => {
                             setTime(time);
                           }}
-                          time={task ? task.time : 0}
+                          time={time}
                           className="col-span-3"
                         ></TimePicker>
                       </LabelTooltip>
@@ -324,6 +327,25 @@ const DialogTask = ({
                         time={time}
                         onChange={(value) => {
                           setTime(value);
+                        }}
+                      />
+                    </LabelTooltip>
+                  </div>
+                )}
+                {showActualSpentTimeField && (
+                  <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 md:gap-4">
+                    <LabelTooltip
+                      label={t(
+                        "task_manager.dialog_create_task.task.time.wasted.label",
+                      )}
+                      tooltip={t(
+                        "task_manager.dialog_create_task.task.time.wasted.description",
+                      )}
+                    >
+                      <TimePickerInputs
+                        time={wastedTime}
+                        onChange={(value) => {
+                          setWastedTime(value);
                         }}
                       />
                     </LabelTooltip>

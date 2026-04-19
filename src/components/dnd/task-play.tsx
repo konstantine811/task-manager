@@ -24,6 +24,10 @@ const TaskPlay = ({
   const [t] = useTranslation();
 
   const isPlaying = playingTask?.id === task.id;
+  const displayTimeTooltip =
+    task.timeDone > 0 || isPlaying
+      ? t("task_manager.dialog_create_task.task.time.wasted_time")
+      : t("task_manager.dialog_create_task.task.time.duration.label");
 
   const handleClick = () => {
     if (isPlaying) {
@@ -59,16 +63,26 @@ const TaskPlay = ({
         </SoundHoverElement>
       )}
       <div className="flex items-center gap-2">
-        {isPlaying ? (
+        {task.isDetermined ? (
           <>
-            <TaskLocalTime
-              outerTime={task.timeDone}
-              isPlay={isPlaying}
-              tooltipText={t(
-                "task_manager.dialog_create_task.task.time.wasted_time"
-              )}
-              className="!text-zinc-700 dark:!text-zinc-400 bg-zinc-200 dark:bg-zinc-900/50 px-2 py-0.5 rounded border border-zinc-300/80 dark:border-white/5"
-            />
+            {isPlaying ? (
+              <TaskLocalTime
+                outerTime={task.timeDone}
+                isPlay={isPlaying}
+                tooltipText={t(
+                  "task_manager.dialog_create_task.task.time.wasted_time"
+                )}
+                className="!text-zinc-700 dark:!text-zinc-400 bg-zinc-200 dark:bg-zinc-900/50 px-2 py-0.5 rounded border border-zinc-300/80 dark:border-white/5"
+              />
+            ) : (
+              <TaskLocalTimeStatic
+                timeInSeconds={task.timeDone}
+                tooltipText={t(
+                  "task_manager.dialog_create_task.task.time.wasted_time"
+                )}
+                className="!text-zinc-700 dark:!text-zinc-400 bg-zinc-200 dark:bg-zinc-900/50 px-2 py-0.5 rounded border border-zinc-300/80 dark:border-white/5"
+              />
+            )}
             <span className="text-zinc-600 dark:text-zinc-500 text-[10px]">/</span>
             <TaskLocalTimeStatic
               timeInSeconds={task.time}
@@ -78,24 +92,19 @@ const TaskPlay = ({
               className="!text-zinc-700 dark:!text-zinc-400 bg-zinc-200 dark:bg-zinc-900/50 px-2 py-0.5 rounded border border-zinc-300/80 dark:border-white/5"
             />
           </>
+        ) : isPlaying ? (
+          <TaskLocalTime
+            outerTime={task.timeDone}
+            isPlay={isPlaying}
+            tooltipText={displayTimeTooltip}
+            className="!text-zinc-700 dark:!text-zinc-400 bg-zinc-200 dark:bg-zinc-900/50 px-2 py-0.5 rounded border border-zinc-300/80 dark:border-white/5"
+          />
         ) : (
-          <>
-            <TaskLocalTimeStatic
-              timeInSeconds={task.timeDone}
-              tooltipText={t(
-                "task_manager.dialog_create_task.task.time.wasted_time"
-              )}
-              className="!text-zinc-700 dark:!text-zinc-400 bg-zinc-200 dark:bg-zinc-900/50 px-2 py-0.5 rounded border border-zinc-300/80 dark:border-white/5"
-            />
-            <span className="text-zinc-600 dark:text-zinc-500 text-[10px]">/</span>
-            <TaskLocalTimeStatic
-              timeInSeconds={task.time}
-              tooltipText={t(
-                "task_manager.dialog_create_task.task.time.total_time"
-              )}
-              className="!text-zinc-700 dark:!text-zinc-400 bg-zinc-200 dark:bg-zinc-900/50 px-2 py-0.5 rounded border border-zinc-300/80 dark:border-white/5"
-            />
-          </>
+          <TaskLocalTimeStatic
+            timeInSeconds={task.timeDone > 0 ? task.timeDone : task.time}
+            tooltipText={displayTimeTooltip}
+            className="!text-zinc-700 dark:!text-zinc-400 bg-zinc-200 dark:bg-zinc-900/50 px-2 py-0.5 rounded border border-zinc-300/80 dark:border-white/5"
+          />
         )}
       </div>
     </div>
