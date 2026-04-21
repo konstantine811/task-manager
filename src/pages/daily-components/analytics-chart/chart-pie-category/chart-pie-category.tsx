@@ -143,13 +143,44 @@ const ChartPieCategory = ({
 
   useEffect(() => {
     if (!ref.current) return;
+    const svgNode = ref.current;
+
+    const hidePieTooltip = () => {
+      if (tooltipRef.current) {
+        tooltipRef.current.style.display = "none";
+      }
+    };
+
+    const handleGlobalHideTooltip = () => {
+      hidePieTooltip();
+    };
+
+    const handleSvgPointerMove = (event: PointerEvent) => {
+      const target = event.target as Element | null;
+      if (!target?.closest?.('[data-pie-interactive="true"]')) {
+        hidePieTooltip();
+      }
+    };
+
+    const handleSvgPointerLeave = () => {
+      hidePieTooltip();
+    };
+
+    window.addEventListener("scroll", handleGlobalHideTooltip, true);
+    window.addEventListener("wheel", handleGlobalHideTooltip, { passive: true });
+    window.addEventListener("touchmove", handleGlobalHideTooltip, {
+      passive: true,
+    });
+    svgNode.addEventListener("pointermove", handleSvgPointerMove);
+    svgNode.addEventListener("pointerleave", handleSvgPointerLeave);
 
     const radius = Math.min(width, height) / 2 - 4;
     const innerRadius = radius * 0.5;
     const outerRadius = radius - 4;
 
     if (chartEntries.length === 0) {
-      const svg = d3.select(ref.current);
+      hidePieTooltip();
+      const svg = d3.select(svgNode);
       svg.selectAll("*").remove();
       const g = svg
         .attr("viewBox", `${-width / 2} ${-height / 2} ${width} ${height}`)
@@ -176,7 +207,14 @@ const ChartPieCategory = ({
         .attr("fill", "rgba(161,161,170,0.2)")
         .attr("stroke", "rgba(161,161,170,0.3)")
         .attr("stroke-width", 1);
-      return;
+
+      return () => {
+        window.removeEventListener("scroll", handleGlobalHideTooltip, true);
+        window.removeEventListener("wheel", handleGlobalHideTooltip);
+        window.removeEventListener("touchmove", handleGlobalHideTooltip);
+        svgNode.removeEventListener("pointermove", handleSvgPointerMove);
+        svgNode.removeEventListener("pointerleave", handleSvgPointerLeave);
+      };
     }
 
     const pie = d3.pie<PieEntity>().value((d) => d.segmentValue);
@@ -196,7 +234,7 @@ const ChartPieCategory = ({
       .padAngle(0.028)
       .cornerRadius(4);
 
-    const svg = d3.select(ref.current);
+    const svg = d3.select(svgNode);
     svg.selectAll("*").remove();
 
     const g = svg
@@ -269,19 +307,14 @@ const ChartPieCategory = ({
         tooltip.style.top = `${top}px`;
       });
     };
-    const hidePieTooltip = () => {
-      if (tooltipRef.current) {
-        tooltipRef.current.style.display = "none";
-      }
-    };
 
     if (showCompletedOnly) {
-      /** Completed-only mode: draw full colored segments by doneTime share (no planned/remaining ring). */
       g.selectAll("path.done-only")
         .data(timeArcs)
         .enter()
         .append("path")
         .attr("d", arcDoneAngle)
+        .attr("data-pie-interactive", "true")
         .attr("fill", (_, i) =>
           getChartColorForAnalyticsCategory(
             chartEntries[i].categoryId ?? chartEntries[i].name,
@@ -305,6 +338,7 @@ const ChartPieCategory = ({
         .enter()
         .append("path")
         .attr("d", arc)
+        .attr("data-pie-interactive", "true")
         .attr("fill", (_, i) =>
           getChartColorForAnalyticsCategory(
             chartEntries[i].categoryId ?? chartEntries[i].name,
@@ -336,6 +370,7 @@ const ChartPieCategory = ({
           const newEndAngle = d.startAngle + angleRange * Math.min(progress, 1);
           return arcDoneAngle({ ...d, endAngle: newEndAngle });
         })
+        .attr("data-pie-interactive", "true")
         .attr("fill", "rgba(59,130,246,0.6)")
         .attr("stroke", "none")
         .attr("cursor", "pointer")
@@ -367,6 +402,7 @@ const ChartPieCategory = ({
             .cornerRadius(4);
           return dynamicArc(d);
         })
+        .attr("data-pie-interactive", "true")
         .attr("fill", "rgba(59,130,246,0.7)")
         .attr("stroke", "none")
         .attr("cursor", "pointer")
@@ -378,6 +414,15 @@ const ChartPieCategory = ({
         })
         .on("mouseleave", hidePieTooltip);
     }
+
+    return () => {
+      hidePieTooltip();
+      window.removeEventListener("scroll", handleGlobalHideTooltip, true);
+      window.removeEventListener("wheel", handleGlobalHideTooltip);
+      window.removeEventListener("touchmove", handleGlobalHideTooltip);
+      svgNode.removeEventListener("pointermove", handleSvgPointerMove);
+      svgNode.removeEventListener("pointerleave", handleSvgPointerLeave);
+    };
   }, [
     chartEntries,
     width,
