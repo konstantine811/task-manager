@@ -89,7 +89,17 @@ const getCoinSoundVolume = (coinColor: CoinColor): number => {
   return 0.5;
 };
 
-const COIN_SOUND_START_OFFSET_SECONDS = 0;
+const COIN_SOUND_BY_COLOR: Record<CoinColor, string> = {
+  bronze: "/sfx/bronze-coin.wav",
+  silver: "/sfx/silver-coin.wav",
+  gold: "/sfx/gold-coin.wav",
+};
+
+const COIN_SOUND_START_OFFSET_SECONDS_BY_COLOR: Record<CoinColor, number> = {
+  bronze: 0.0,
+  silver: 0.12,
+  gold: 0.7,
+};
 
 const ChartPieCategory = ({
   data,
@@ -107,7 +117,11 @@ const ChartPieCategory = ({
   const prevCoinStateRef = useRef<Record<string, CoinColor>>({});
   const flightRafRef = useRef<number | null>(null);
   const soundTimersRef = useRef<number[]>([]);
-  const coinSpawnAudioRef = useRef<HTMLAudioElement | null>(null);
+  const coinSpawnAudioRef = useRef<Record<CoinColor, HTMLAudioElement | null>>({
+    bronze: null,
+    silver: null,
+    gold: null,
+  });
   const [flyingCoins, setFlyingCoins] = useState<FlyingCoin[]>([]);
   const [activeFlyingKeys, setActiveFlyingKeys] = useState<Set<string>>(
     new Set(),
@@ -176,7 +190,9 @@ const ChartPieCategory = ({
     };
 
     window.addEventListener("scroll", handleGlobalHideTooltip, true);
-    window.addEventListener("wheel", handleGlobalHideTooltip, { passive: true });
+    window.addEventListener("wheel", handleGlobalHideTooltip, {
+      passive: true,
+    });
     window.addEventListener("touchmove", handleGlobalHideTooltip, {
       passive: true,
     });
@@ -511,13 +527,19 @@ const ChartPieCategory = ({
     .join("|");
 
   useEffect(() => {
-    coinSpawnAudioRef.current = new Audio("/sfx/coins.wav");
-    coinSpawnAudioRef.current.preload = "auto";
+    (Object.keys(COIN_SOUND_BY_COLOR) as CoinColor[]).forEach((coinColor) => {
+      const audio = new Audio(COIN_SOUND_BY_COLOR[coinColor]);
+      audio.preload = "auto";
+      coinSpawnAudioRef.current[coinColor] = audio;
+    });
     return () => {
-      if (coinSpawnAudioRef.current) {
-        coinSpawnAudioRef.current.pause();
-      }
-      coinSpawnAudioRef.current = null;
+      (Object.keys(COIN_SOUND_BY_COLOR) as CoinColor[]).forEach((coinColor) => {
+        const audio = coinSpawnAudioRef.current[coinColor];
+        if (audio) {
+          audio.pause();
+        }
+        coinSpawnAudioRef.current[coinColor] = null;
+      });
     };
   }, []);
 
@@ -535,7 +557,9 @@ const ChartPieCategory = ({
     });
     prevCoinStateRef.current = currentCoinState;
     setActiveFlyingKeys((prev) => {
-      const next = new Set(Array.from(prev).filter((key) => currentKeys.has(key)));
+      const next = new Set(
+        Array.from(prev).filter((key) => currentKeys.has(key)),
+      );
       return areSetsEqual(prev, next) ? prev : next;
     });
 
@@ -546,17 +570,23 @@ const ChartPieCategory = ({
     if (triggeredItems.length === 0) return;
 
     if (isSoundEnabled) {
+      const usedBaseColors = new Set<CoinColor>();
       triggeredItems.forEach((item, index) => {
         const timerId = window.setTimeout(() => {
-          const baseAudio = coinSpawnAudioRef.current;
-          const audio =
-            baseAudio && index === 0
-              ? baseAudio
-              : baseAudio
-                ? (baseAudio.cloneNode(true) as HTMLAudioElement)
-                : new Audio("/sfx/coins.wav");
+          const baseAudio = coinSpawnAudioRef.current[item.coinColor];
+          const canUseBaseAudio =
+            !!baseAudio && !usedBaseColors.has(item.coinColor);
+          if (canUseBaseAudio) {
+            usedBaseColors.add(item.coinColor);
+          }
+          const audio = canUseBaseAudio
+            ? baseAudio
+            : baseAudio
+              ? (baseAudio.cloneNode(true) as HTMLAudioElement)
+              : new Audio(COIN_SOUND_BY_COLOR[item.coinColor]);
           audio.volume = getCoinSoundVolume(item.coinColor);
-          audio.currentTime = COIN_SOUND_START_OFFSET_SECONDS;
+          audio.currentTime =
+            COIN_SOUND_START_OFFSET_SECONDS_BY_COLOR[item.coinColor] ?? 0;
           void audio.play().catch(() => undefined);
         }, index * 120);
         soundTimersRef.current.push(timerId);
@@ -706,7 +736,9 @@ const ChartPieCategory = ({
                           "--coin-confetti-angle": `${(360 / confettiCount) * confettiIndex}deg`,
                           "--coin-confetti-delay": `${0.06 + confettiIndex * 0.02}s`,
                           "--coin-confetti-color":
-                            confettiColors[confettiIndex % confettiColors.length],
+                            confettiColors[
+                              confettiIndex % confettiColors.length
+                            ],
                           "--coin-confetti-size": `${pieceSize}px`,
                           "--coin-confetti-distance": `${pieceDistance}px`,
                           "--coin-confetti-duration": `${pieceDuration}s`,

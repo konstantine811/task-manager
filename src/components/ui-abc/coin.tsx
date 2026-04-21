@@ -57,12 +57,15 @@ const Coin = ({
   title,
 }: CoinProps) => {
   const palette = COIN_PALETTE[color];
+  const coinShadow =
+    color === "gold"
+      ? "inset 0 1px 2px rgba(255,255,255,0.5), inset 0 -3px 6px rgba(0,0,0,0.28), 0 4px 10px rgba(0,0,0,0.25), 0 0 18px rgba(250, 204, 21, 0.75), 0 0 34px rgba(245, 158, 11, 0.45)"
+      : "inset 0 1px 2px rgba(255,255,255,0.45), inset 0 -3px 6px rgba(0,0,0,0.28), 0 4px 10px rgba(0,0,0,0.25)";
 
   return (
     <div
       className={cn(
         "relative inline-flex shrink-0 items-center justify-center rounded-full",
-        "shadow-[inset_0_1px_2px_rgba(255,255,255,0.45),inset_0_-3px_6px_rgba(0,0,0,0.28),0_4px_10px_rgba(0,0,0,0.25)]",
         className,
       )}
       style={{
@@ -70,6 +73,7 @@ const Coin = ({
         height: size,
         border: `1px solid ${palette.base}`,
         background: `radial-gradient(circle at 30% 20%, ${palette.shine} 0%, ${palette.edge} 42%, ${palette.base} 100%)`,
+        boxShadow: coinShadow,
       }}
       title={title}
       aria-label={title}
