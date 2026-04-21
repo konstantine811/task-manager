@@ -112,6 +112,7 @@ export interface AnalyticsData {
   categoryEntity: CategoryAnalyticsNameEntity;
   rangeTaskEntity: RangeTaskAnalyticsNameEntity;
   areaProgress: AreaProgress[];
+  taskStreaks: TaskStreakInsight[];
 }
 
 export interface AnalyticsWorkerPayload {
@@ -128,6 +129,13 @@ export interface RangeTaskAnalyticRecord {
 export interface RangeTaskAnalytics {
   countTimeDone: number;
   countNotTimeDone: number;
+}
+
+export interface TaskStreakInsight {
+  key: string;
+  title: string;
+  days: number;
+  categoryId: string;
 }
 
 export interface CurveOptions {

@@ -18,7 +18,6 @@ import {
   findPlannedOrDeterminedTask,
   mergeItemsDeep,
   mergeItemsWithPlannedTasks,
-  resolveCategoryKey,
 } from "@/services/task-menager/merge-tasks";
 import Preloader from "@/components/page-partials/preloader/preloader";
 import { TaskManagerProvider } from "@/components/dnd/context/task-manager-context";
@@ -34,6 +33,7 @@ import {
   filterTasksByAnotherTasks,
 } from "@/services/task-menager/filter-tasks";
 import { normalizeItems } from "@/services/task-menager/normalize";
+import { resolveCategoryKey } from "@/utils/category.util";
 
 const DailyTaskWrapper = () => {
   const [dailyTasks, setDailyTasks] = useState<Items>([]);

@@ -5,11 +5,14 @@ import {
   DailyTaskAnalytics,
   RangeTaskAnalytics,
   RangeTaskAnalyticsNameEntity,
+  TaskStreakInsight,
   TaskAnalyticsIdEntity,
 } from "@/types/analytics/task-analytics.model";
 import { buildAreaProgress } from "@/services/task-menager/progress/progress.service";
 import { DailyTaskRecord, ItemTask, Items } from "@/types/drag-and-drop.model";
 import { ISODate } from "@/types/task-instance.model";
+import { resolveCategoryKey } from "@/utils/category.util";
+import { formatISO, subDays } from "date-fns";
 
 /**
  * Секунди тривалості для стек-діаграми «день».
@@ -53,11 +56,12 @@ export const getDailyTaskAnalyticsData = (tasks: Items): DailyTaskAnalytics => {
     countAllTask: 0,
   };
   tasks.forEach((cat) => {
-    const categoryTitle =
+    const categoryTitleRaw =
       (cat as { title?: string }).title ??
       (cat as { name?: string }).name ??
       (cat as { categoryName?: string }).categoryName ??
       "";
+    const categoryTitle = resolveCategoryKey(categoryTitleRaw);
     const taskList = (cat as { tasks?: unknown[] }).tasks ?? [];
     if (!categoryTitle) return;
     const categoryStats = categoryEntity[categoryTitle] ?? {
@@ -128,10 +132,18 @@ export const getRangeDailyTaskAnalytics = (
   const categoryEntity: CategoryAnalyticsNameEntity = {};
   const taskEntity: RangeTaskAnalyticsNameEntity = {};
   const areaProgress = getAreaProgress(rangeTasks, range?.from, range?.to);
+  const taskStreaks = getTaskStreaksWithoutSkips(rangeTasks, range);
+  const todayIso = formatISO(new Date(), { representation: "date" }) as ISODate;
 
   const data = rangeTasks.map((item) => {
     const { date, items } = item;
-    const rangeData = getRangeAnalyticsData(items, categoryEntity, taskEntity);
+    const rangeData = getRangeAnalyticsData(
+      items,
+      categoryEntity,
+      taskEntity,
+      date,
+      todayIso,
+    );
     return { date, data: rangeData };
   });
   return {
@@ -139,6 +151,7 @@ export const getRangeDailyTaskAnalytics = (
     categoryEntity,
     rangeTaskEntity: taskEntity,
     areaProgress,
+    taskStreaks,
   };
 };
 
@@ -146,16 +159,21 @@ export const getRangeAnalyticsData = (
   tasks: Items,
   categoryEntity: CategoryAnalyticsNameEntity,
   taskEntity: RangeTaskAnalyticsNameEntity,
+  recordDate: string,
+  todayIso: ISODate,
 ): RangeTaskAnalytics => {
   let countTimeDone = 0;
   let countNotTimeDone = 0;
+  const recordDateIso = toIsoDateOnly(recordDate);
+  const isCurrentDay = recordDateIso === todayIso;
 
   tasks.forEach((cat) => {
-    const categoryTitle =
+    const categoryTitleRaw =
       (cat as { title?: string }).title ??
       (cat as { name?: string }).name ??
       (cat as { categoryName?: string }).categoryName ??
       "";
+    const categoryTitle = resolveCategoryKey(categoryTitleRaw);
     /** Ключ категорії для іконок: у випадаючому зберігається саме title (career, health, …), id може бути UUID */
     const taskList = (cat as { tasks?: unknown[] }).tasks ?? [];
     if (!categoryTitle) return;
@@ -194,9 +212,13 @@ export const getRangeAnalyticsData = (
           countTimeDone += timeDone;
           categoryEntity[categoryTitle].countDoneTime += timeDone;
         } else {
-          taskEntity[title].countIsNotDone += 1;
-          countNotTimeDone += timeDone;
-          categoryEntity[categoryTitle].taskNoDone.push(title);
+          // "Skip" is counted only for actually created-not-done tasks,
+          // except current day (task can still be completed later today).
+          if (!isCurrentDay) {
+            taskEntity[title].countIsNotDone += 1;
+            countNotTimeDone += timeDone;
+            categoryEntity[categoryTitle].taskNoDone.push(title);
+          }
         }
       } else {
         categoryEntity[categoryTitle].time += time;
@@ -207,8 +229,10 @@ export const getRangeAnalyticsData = (
           countTimeDone += timeDone;
           categoryEntity[categoryTitle].countDoneTime += timeDone;
         } else {
-          taskEntity[title].countIsNotDone += 1;
-          countNotTimeDone += time;
+          if (!isCurrentDay) {
+            taskEntity[title].countIsNotDone += 1;
+            countNotTimeDone += time;
+          }
         }
       }
     });
@@ -219,3 +243,122 @@ export const getRangeAnalyticsData = (
     countNotTimeDone,
   };
 };
+
+const MIN_STREAK_DAYS = 3;
+
+type TaskDayStatus = {
+  present: boolean;
+  done: boolean;
+};
+
+const toIsoDateOnly = (date: string): ISODate =>
+  date.slice(0, 10) as ISODate;
+
+const prevIsoDate = (date: ISODate): ISODate =>
+  formatISO(subDays(new Date(`${date}T12:00:00`), 1), {
+    representation: "date",
+  }) as ISODate;
+
+const normalizeTaskTitle = (value: string) =>
+  value.trim().toLowerCase().replace(/\s+/g, " ");
+
+function getTaskStreaksWithoutSkips(
+  rangeTasks: DailyTaskRecord[],
+  range?: { from: ISODate; to: ISODate },
+): TaskStreakInsight[] {
+  if (!rangeTasks.length) return [];
+
+  const sortedDates = Array.from(
+    new Set(rangeTasks.map((record) => toIsoDateOnly(record.date))),
+  ).sort();
+
+  const rangeFrom = range?.from ?? sortedDates[0];
+  const rangeTo = range?.to ?? sortedDates[sortedDates.length - 1];
+
+  const anchorDate =
+    [...sortedDates].reverse().find((date) => date <= rangeTo) ?? rangeTo;
+  const todayIso = formatISO(new Date(), { representation: "date" }) as ISODate;
+
+  type AccTask = {
+    key: string;
+    title: string;
+    categoryId: string;
+    byDate: Map<ISODate, TaskDayStatus>;
+  };
+
+  const taskMap = new Map<string, AccTask>();
+
+  rangeTasks.forEach((record) => {
+    const dateKey = toIsoDateOnly(record.date);
+    if (dateKey < rangeFrom || dateKey > rangeTo) return;
+
+    record.items.forEach((category) => {
+      const categoryId = resolveCategoryKey(category.title || "");
+      if (!categoryId) return;
+
+      category.tasks.forEach((task) => {
+        const normalizedTitle = normalizeTaskTitle(task.title || "");
+        if (!normalizedTitle) return;
+
+        const taskKey = `${categoryId}::${normalizedTitle}`;
+        if (!taskMap.has(taskKey)) {
+          taskMap.set(taskKey, {
+            key: taskKey,
+            title: task.title,
+            categoryId,
+            byDate: new Map<ISODate, TaskDayStatus>(),
+          });
+        }
+
+        const acc = taskMap.get(taskKey)!;
+        const prev = acc.byDate.get(dateKey) ?? { present: false, done: false };
+        acc.byDate.set(dateKey, {
+          present: true,
+          done: prev.done || Boolean(task.isDone),
+        });
+      });
+    });
+  });
+
+  const streaks: TaskStreakInsight[] = [];
+
+  taskMap.forEach((task) => {
+    let streak = 0;
+    let current = anchorDate;
+
+    while (current >= rangeFrom) {
+      const status = task.byDate.get(current);
+      const isToday = current === todayIso;
+      if (status?.present && status.done) {
+        streak += 1;
+        current = prevIsoDate(current);
+        continue;
+      }
+      // A skip counts only when the task exists on that date and is not done.
+      // Current day is ignored as a skip (can still be done later today).
+      if (status?.present && !status.done) {
+        if (isToday) {
+          current = prevIsoDate(current);
+          continue;
+        }
+        break;
+      }
+      // Date without this task is not a skip.
+      current = prevIsoDate(current);
+    }
+
+    if (streak >= MIN_STREAK_DAYS) {
+      streaks.push({
+        key: task.key,
+        title: task.title,
+        days: streak,
+        categoryId: task.categoryId,
+      });
+    }
+  });
+
+  return streaks.sort((a, b) => {
+    if (b.days !== a.days) return b.days - a.days;
+    return a.title.localeCompare(b.title);
+  });
+}

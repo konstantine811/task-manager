@@ -19,6 +19,7 @@ import { CATEGORY_OPTIONS } from "@/components/dnd/config/category-options";
 import CompletedProgressBarChart from "./analytics-comonents/completed-progress-bar-chart";
 import AreaProgressOverview from "./analytics-comonents/area-progress-overview";
 import { formatISO } from "date-fns";
+import TaskStreaksOverview from "./analytics-comonents/task-streaks-overview";
 
 const Analytics = () => {
   const [t] = useTranslation();
@@ -103,8 +104,13 @@ const Analytics = () => {
                   <AreaProgressOverview data={analyticsData.areaProgress} />
                 </div>
               </AnimatedItem>
+              <AnimatedItem index={3}>
+                <div className="pt-10">
+                  <TaskStreaksOverview data={analyticsData.taskStreaks} />
+                </div>
+              </AnimatedItem>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start pt-10">
-                <AnimatedItem index={3}>
+                <AnimatedItem index={4}>
                   <ChartPieCategoryWrap
                     className="w-full"
                     data={mergedCategoryEntity ?? analyticsData.categoryEntity}
@@ -113,14 +119,14 @@ const Analytics = () => {
                     includeAllCategories
                   />
                 </AnimatedItem>
-                <AnimatedItem index={4}>
+                <AnimatedItem index={5}>
                   <ChartPieTaskPlannedWrap
                     className="w-full"
                     data={analyticsData.rangeTaskEntity}
                   />
                 </AnimatedItem>
               </div>
-              <AnimatedItem index={5}>
+              <AnimatedItem index={6}>
                 <div className="mt-10">
                   <RangeAnalyticsTable data={analyticsData.rangeTaskEntity} />
                 </div>

@@ -6,29 +6,9 @@ import {
 import { UniqueIdentifier } from "@dnd-kit/core";
 import { denormalizeItems, normalizeItems } from "./normalize";
 import { CATEGORY_OPTIONS } from "@/components/dnd/config/category-options";
-import i18n from "i18next";
+import { resolveCategoryKey } from "@/utils/category.util";
 
-const normalizeCategoryLabel = (value: string) =>
-  value.trim().toLowerCase().replace(/\s+/g, " ");
-
-export const resolveCategoryKey = (raw: string) => {
-  const value = raw.trim();
-  if (!value) return value;
-
-  if (CATEGORY_OPTIONS.includes(value)) return value;
-
-  const normalized = normalizeCategoryLabel(value);
-
-  for (const key of CATEGORY_OPTIONS) {
-    if (normalizeCategoryLabel(key) === normalized) return key;
-    const uaLabel = i18n.t(`task_manager.categories.${key}`, { lng: "ua" });
-    if (normalizeCategoryLabel(uaLabel) === normalized) return key;
-    const enLabel = i18n.t(`task_manager.categories.${key}`, { lng: "en" });
-    if (normalizeCategoryLabel(enLabel) === normalized) return key;
-  }
-
-  return normalized;
-};
+export { resolveCategoryKey };
 
 export function mergeItemsDeep(base: Items, incoming: Items): Items {
   const baseN = normalizeItems(base);

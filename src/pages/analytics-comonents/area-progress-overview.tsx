@@ -2,28 +2,25 @@ import {
   DEFAULT_CATEGORY_STYLE,
   CATEGORY_STYLE,
 } from "@/components/dnd/config/category-style.config";
+import { getChartColorForAnalyticsCategory } from "@/config/chart-colors.config";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import type { AreaProgress, ProgressTrend } from "@/types/progress.model";
-import type { TFunction } from "i18next";
 
-function formatAreaDurationMinutes(minutes: number, t: TFunction) {
+function formatAreaDurationCompact(minutes: number, lang: string) {
   const m = Math.max(0, Math.round(minutes));
   const h = Math.floor(m / 60);
   const r = m % 60;
-  if (h > 0 && r > 0) {
-    return t("task_manager.analytics.area_progress.duration_hm", {
-      hours: h,
-      minutes: r,
-    });
-  }
-  if (h > 0) {
-    return t("task_manager.analytics.area_progress.duration_h", { hours: h });
-  }
-  return t("task_manager.analytics.area_progress.duration_m", { minutes: m });
+  const isUa = lang.startsWith("uk") || lang.startsWith("ua");
+  const hUnit = isUa ? "г" : "h";
+  const mUnit = isUa ? "хв" : "m";
+
+  if (h > 0 && r > 0) return `${h}${hUnit} ${r}${mUnit}`;
+  if (h > 0) return `${h}${hUnit}`;
+  return `${m}${mUnit}`;
 }
 
 const TREND_STYLES: Record<ProgressTrend, string> = {
@@ -38,8 +35,8 @@ const AreaProgressOverview = ({ data }: { data: AreaProgress[] }) => {
   const sortedData = useMemo(
     () =>
       [...data].sort((a, b) => {
-        if (b.completedTime !== a.completedTime) {
-          return b.completedTime - a.completedTime;
+        if (b.spentTime !== a.spentTime) {
+          return b.spentTime - a.spentTime;
         }
         return b.activeDays - a.activeDays;
       }),
@@ -60,24 +57,25 @@ const AreaProgressOverview = ({ data }: { data: AreaProgress[] }) => {
         {sortedData.map((item) => {
           const style = CATEGORY_STYLE[item.areaId] ?? DEFAULT_CATEGORY_STYLE;
           const Icon = style.icon;
+          const categoryColor = getChartColorForAnalyticsCategory(item.areaId, 0, t);
           const completionRatio =
             item.plannedTime > 0
-              ? Math.min(100, Math.round((item.completedTime / item.plannedTime) * 100))
+              ? Math.min(100, Math.round((item.spentTime / item.plannedTime) * 100))
               : 0;
 
           return (
             <Card key={item.areaId} className="border-white/10 bg-background/60 backdrop-blur">
-              <CardHeader className="gap-3">
+              <CardHeader className="gap-2 px-4 py-3">
                 <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2.5">
                     <div className="rounded-lg border border-white/10 bg-white/5 p-2">
                       <Icon className={cn("h-4 w-4", style.color)} />
                     </div>
                     <div>
-                      <CardTitle>
+                      <CardTitle className="text-lg">
                         {t(`task_manager.categories.${item.areaId}`)}
                       </CardTitle>
-                      <p className="mt-1 text-sm text-muted-foreground">
+                      <p className="mt-0.5 text-xs text-muted-foreground">
                         {t("task_manager.analytics.area_progress.last_activity")}{" "}
                         {item.lastActivityAt
                           ? new Date(item.lastActivityAt).toLocaleDateString(i18n.language)
@@ -95,32 +93,47 @@ const AreaProgressOverview = ({ data }: { data: AreaProgress[] }) => {
                   </span>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-                  <div className="rounded-lg border border-white/10 bg-white/5 p-3">
-                    <p className="text-xs text-muted-foreground">
+              <CardContent className="space-y-3 px-4 pb-4">
+                <div className="grid grid-cols-2 gap-2 md:grid-cols-3 2xl:grid-cols-5">
+                  <div className="relative overflow-hidden rounded-lg border border-white/10 bg-white/5 p-2.5">
+                    <div
+                      className="absolute inset-y-0 left-0 z-0 transition-all duration-300"
+                      style={{
+                        width: `${Math.max(0, Math.min(100, item.consistencyScore))}%`,
+                        background: `linear-gradient(90deg, ${categoryColor}33 0%, ${categoryColor}22 100%)`,
+                      }}
+                    />
+                    <p className="relative z-10 text-xs text-muted-foreground">
                       {t("task_manager.analytics.area_progress.consistency")}
                     </p>
-                    <p className="mt-1 text-2xl font-semibold">{item.consistencyScore}%</p>
+                    <p className="relative z-10 mt-1 text-xl font-semibold leading-tight">
+                      {item.consistencyScore}%
+                    </p>
                   </div>
-                  <div className="rounded-lg border border-white/10 bg-white/5 p-3">
+                  <div className="rounded-lg border border-white/10 bg-white/5 p-2.5">
                     <p className="text-xs text-muted-foreground">
                       {t("task_manager.analytics.area_progress.active_days")}
                     </p>
-                    <p className="mt-1 text-2xl font-semibold">{item.activeDays}</p>
+                    <p className="mt-1 text-xl font-semibold leading-tight">{item.activeDays}</p>
                   </div>
-                  <div className="rounded-lg border border-white/10 bg-white/5 p-3">
+                  <div className="rounded-lg border border-white/10 bg-white/5 p-2.5">
                     <p className="text-xs text-muted-foreground">
                       {t("task_manager.analytics.area_progress.completed_tasks")}
                     </p>
-                    <p className="mt-1 text-2xl font-semibold">{item.completedTasks}</p>
+                    <p className="mt-1 text-xl font-semibold leading-tight">{item.completedTasks}</p>
                   </div>
-                  <div className="rounded-lg border border-white/10 bg-white/5 p-3">
+                  <div className="rounded-lg border border-white/10 bg-white/5 p-2.5">
                     <p className="text-xs text-muted-foreground">
-                      {t("task_manager.analytics.area_progress.completed_time")}
+                      {t("task_manager.analytics.area_progress.skipped_tasks")}
                     </p>
-                    <p className="mt-1 text-2xl font-semibold wrap-break-word">
-                      {formatAreaDurationMinutes(item.completedTime, t)}
+                    <p className="mt-1 text-xl font-semibold leading-tight">{item.skippedTasks}</p>
+                  </div>
+                  <div className="rounded-lg border border-white/10 bg-white/5 p-2.5">
+                    <p className="text-xs text-muted-foreground">
+                      {t("task_manager.analytics.area_progress.spent_time")}
+                    </p>
+                    <p className="mt-1 text-lg md:text-xl font-semibold leading-tight font-mono tracking-tight whitespace-nowrap">
+                      {formatAreaDurationCompact(item.spentTime, i18n.language)}
                     </p>
                   </div>
                 </div>
@@ -129,10 +142,10 @@ const AreaProgressOverview = ({ data }: { data: AreaProgress[] }) => {
                     <span className="text-muted-foreground">
                       {t("task_manager.analytics.area_progress.time_completion")}
                     </span>
-                    <span className="font-medium text-right wrap-break-word">
-                      {formatAreaDurationMinutes(item.completedTime, t)}
+                    <span className="font-medium text-right font-mono text-xs sm:text-sm tracking-tight">
+                      {formatAreaDurationCompact(item.spentTime, i18n.language)}
                       {" / "}
-                      {formatAreaDurationMinutes(item.plannedTime, t)}
+                      {formatAreaDurationCompact(item.plannedTime, i18n.language)}
                     </span>
                   </div>
                   <Progress value={completionRatio} />

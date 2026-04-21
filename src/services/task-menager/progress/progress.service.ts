@@ -9,10 +9,12 @@ import type {
   ProgressSnapshot,
 } from "@/types/progress.model";
 import { FIRST_RELEASE_PROGRESS_METRICS } from "@/types/progress.constants";
-import { differenceInCalendarDays, parseISO } from "date-fns";
+import { differenceInCalendarDays, formatISO, parseISO } from "date-fns";
+import { resolveCategoryKey } from "@/utils/category.util";
 
 function toAreaKey(value: string): AreaId | null {
-  return CATEGORY_OPTIONS.includes(value as AreaId) ? (value as AreaId) : null;
+  const key = resolveCategoryKey(value);
+  return CATEGORY_OPTIONS.includes(key as AreaId) ? (key as AreaId) : null;
 }
 
 function isoDateOnly(value: string): string {
@@ -21,18 +23,36 @@ function isoDateOnly(value: string): string {
 
 const SECONDS_PER_MINUTE = 60;
 
+function getTaskPlannedMinutes(task: ItemTask): number {
+  // For determined/planned tasks, `time` may represent time-of-day,
+  // so planned workload must come from tracked duration field (`timeDone`).
+  if (task.isDetermined || task.isPlanned) {
+    return (task.timeDone > 0 ? task.timeDone : 0) / SECONDS_PER_MINUTE;
+  }
+  return (task.time > 0 ? task.time : 0) / SECONDS_PER_MINUTE;
+}
+
+function getTaskSpentMinutes(task: ItemTask): number {
+  if (task.isDetermined || task.isPlanned) {
+    return (task.timeDone > 0 ? task.timeDone : 0) / SECONDS_PER_MINUTE;
+  }
+
+  if (task.timeDone > 0) return task.timeDone / SECONDS_PER_MINUTE;
+  if (task.isDone && task.time > 0) return task.time / SECONDS_PER_MINUTE;
+  return 0;
+}
+
 /**
  * Хвилини саме виконаної роботи (`time` / `timeDone` у задачі зберігаються в секундах).
  * `timeDone` для невиконаних задач не враховуємо.
  */
 function getTaskCompletedMinutes(task: ItemTask): number {
   if (!task.isDone) return 0;
-  const seconds = task.timeDone > 0 ? task.timeDone : task.time;
-  return seconds / SECONDS_PER_MINUTE;
+  return getTaskSpentMinutes(task);
 }
 
 function taskHadMovement(task: ItemTask): boolean {
-  return task.isDone || (task.timeDone ?? 0) > 0;
+  return task.isDone || getTaskSpentMinutes(task) > 0;
 }
 
 function createEmptyAreaProgress(areaId: AreaId): AreaProgress {
@@ -40,6 +60,8 @@ function createEmptyAreaProgress(areaId: AreaId): AreaProgress {
     areaId,
     activeDays: 0,
     completedTasks: 0,
+    skippedTasks: 0,
+    spentTime: 0,
     completedTime: 0,
     plannedTime: 0,
     consistencyScore: 0,
@@ -119,6 +141,7 @@ export function buildAreaProgress(
   const activeDateMap = new Map<AreaId, Set<string>>(
     CATEGORY_OPTIONS.map((areaId) => [areaId, new Set<string>()])
   );
+  const todayIso = formatISO(new Date(), { representation: "date" });
 
   const getTimeForArea = (record: DailyTaskRecord, areaId: AreaId) => {
     let total = 0;
@@ -127,7 +150,7 @@ export function buildAreaProgress(
       if (key !== areaId) return;
 
       category.tasks.forEach((task) => {
-        total += getTaskCompletedMinutes(task);
+        total += getTaskSpentMinutes(task);
       });
     });
     return total;
@@ -145,14 +168,20 @@ export function buildAreaProgress(
 
       category.tasks.forEach((task) => {
         const completedMinutes = getTaskCompletedMinutes(task);
-        const plannedMinutes =
-          task.time > 0 ? task.time / SECONDS_PER_MINUTE : 0;
+        const plannedMinutes = getTaskPlannedMinutes(task);
+        const spentMinutes = getTaskSpentMinutes(task);
 
         area.plannedTime += plannedMinutes;
+        area.spentTime += spentMinutes;
         area.completedTime += completedMinutes;
 
         if (task.isDone) {
           area.completedTasks += 1;
+        } else {
+          // Do not count current day as skip yet — task may still be completed today.
+          if (dateKey !== todayIso) {
+            area.skippedTasks += 1;
+          }
         }
 
         if (taskHadMovement(task)) {
@@ -189,8 +218,10 @@ export function buildAreaProgress(
           ? Math.round((area.activeDays / totalDaysInPeriod) * 100)
           : 0;
     area.completionRate =
-      area.plannedTime > 0
-        ? Math.round((area.completedTime / area.plannedTime) * 100)
+      area.spentTime > 0 || area.plannedTime > 0
+        ? area.plannedTime > 0
+          ? Math.round((area.spentTime / area.plannedTime) * 100)
+          : 0
         : 0;
 
     const streaks = calcStreaks(activeDates);
