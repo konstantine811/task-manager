@@ -4,7 +4,7 @@ import DailyTaskWrapper from "./daily-components/daily-task-wrapper";
 import { useParams } from "react-router";
 import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import DailySidePanelWrapper from "./daily-components/daily-side-panel-wrapper";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   loadDailyTasksByDate,
   loadDailyJournalByDate,
@@ -23,6 +23,19 @@ import DailyAnalytics from "./daily-components/daily-analytics";
 import { BreakPoints } from "@/config/adaptive.config";
 import { DailyTaskAnalytics } from "@/types/analytics/task-analytics.model";
 import DailyJournalCard from "./daily-components/daily-journal-card";
+import CoinCelebrationOverlay, {
+  type CoinCelebrationEvent,
+} from "./daily-components/coin-celebration-overlay";
+import { getDailyTaskAnalyticsData } from "@/services/task-menager/analytics/daily-handle-data";
+import { CATEGORY_STYLE, DEFAULT_CATEGORY_STYLE } from "@/components/dnd/config/category-style.config";
+import { type CoinColor } from "@/components/ui-abc/coin";
+
+const getCoinColorByTaskPercent = (taskPercent: number): CoinColor | null => {
+  if (taskPercent >= 100) return "gold";
+  if (taskPercent >= 65) return "silver";
+  if (taskPercent > 30) return "bronze";
+  return null;
+};
 
 const DailyTask = () => {
   const { isAdoptiveSize: mdSize, screenWidth } = useIsAdoptive("lg");
@@ -37,6 +50,10 @@ const DailyTask = () => {
   const [isJournalLoading, setIsJournalLoading] = useState(false);
   const [dailyAnalyticsData, setDailyAnalyticsData] =
     useState<DailyTaskAnalytics | null>(null);
+  const [overlayCelebrations, setOverlayCelebrations] = useState<
+    CoinCelebrationEvent[]
+  >([]);
+  const prevCoinStateRef = useRef<Record<string, CoinColor>>({});
   const [t] = useTranslation();
 
   useEffect(() => {
@@ -153,6 +170,58 @@ const DailyTask = () => {
     [date],
   );
 
+  useEffect(() => {
+    if (!mdSize) {
+      setOverlayCelebrations((prev) => (prev.length > 0 ? [] : prev));
+      prevCoinStateRef.current = {};
+      return;
+    }
+    if (!dailyTask || dailyTask.length === 0) {
+      prevCoinStateRef.current = {};
+      return;
+    }
+
+    const { categoryEntity } = getDailyTaskAnalyticsData(dailyTask);
+    const nextCoinState: Record<string, CoinColor> = {};
+    const triggered: CoinCelebrationEvent[] = [];
+
+    Object.entries(categoryEntity).forEach(([categoryKey, categoryStats]) => {
+      const countTotal = categoryStats.taskDone.length + categoryStats.taskNoDone.length;
+      if (countTotal <= 0) return;
+      const taskPct = Math.round((categoryStats.countDone / countTotal) * 100);
+      const coinColor = getCoinColorByTaskPercent(taskPct);
+      if (!coinColor) return;
+
+      nextCoinState[categoryKey] = coinColor;
+      const prevColor = prevCoinStateRef.current[categoryKey];
+      const shouldTrigger =
+        !prevColor ||
+        (prevColor !== coinColor &&
+          (coinColor === "silver" || coinColor === "gold"));
+
+      if (!shouldTrigger) return;
+
+      const labelKey = `task_manager.categories.${categoryKey}`;
+      const label = t(labelKey) !== labelKey ? t(labelKey) : categoryKey;
+      const style = CATEGORY_STYLE[categoryKey] ?? DEFAULT_CATEGORY_STYLE;
+      triggered.push({
+        id: `mobile-overlay-${categoryKey}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        coinColor,
+        label,
+        Icon: style.icon,
+      });
+    });
+
+    prevCoinStateRef.current = nextCoinState;
+    if (triggered.length > 0) {
+      setOverlayCelebrations((prev) => [...prev, ...triggered]);
+    }
+  }, [dailyTask, mdSize, t]);
+
+  const handleOverlayCelebrationDone = useCallback((id: string) => {
+    setOverlayCelebrations((prev) => prev.filter((item) => item.id !== id));
+  }, []);
+
   return (
     <DailyTaskContext.Provider
       value={{
@@ -166,6 +235,12 @@ const DailyTask = () => {
         dailyTasks: dailyTask || [],
       }}
     >
+      {mdSize && (
+        <CoinCelebrationOverlay
+          events={overlayCelebrations}
+          onDone={handleOverlayCelebrationDone}
+        />
+      )}
       <div className="flex h-full min-h-0 w-full justify-center overflow-y-auto">
         {/* Ліва колонка */}
 

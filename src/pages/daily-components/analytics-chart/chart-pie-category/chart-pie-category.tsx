@@ -3,6 +3,7 @@ import * as d3 from "d3";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import i18n from "i18next";
+import { createPortal } from "react-dom";
 import { paresSecondToTime } from "@/utils/time.util";
 import {
   getChartColorForAnalyticsCategory,
@@ -66,6 +67,14 @@ interface FlyingCoin {
   translateY: number;
   title: string;
 }
+
+const areSetsEqual = <T,>(a: Set<T>, b: Set<T>): boolean => {
+  if (a.size !== b.size) return false;
+  for (const value of a) {
+    if (!b.has(value)) return false;
+  }
+  return true;
+};
 
 const getCoinColorByTaskPercent = (taskPercent: number): CoinColor | null => {
   if (taskPercent >= 100) return "gold";
@@ -497,6 +506,9 @@ const ChartPieCategory = ({
       },
     ];
   });
+  const coinItemsSignature = coinItems
+    .map((item) => `${item.coinKey}:${item.coinColor}:${item.taskPct}`)
+    .join("|");
 
   useEffect(() => {
     coinSpawnAudioRef.current = new Audio("/sfx/coins.wav");
@@ -522,9 +534,10 @@ const ChartPieCategory = ({
       return item.coinColor === "silver" || item.coinColor === "gold";
     });
     prevCoinStateRef.current = currentCoinState;
-    setActiveFlyingKeys(
-      (prev) => new Set(Array.from(prev).filter((key) => currentKeys.has(key))),
-    );
+    setActiveFlyingKeys((prev) => {
+      const next = new Set(Array.from(prev).filter((key) => currentKeys.has(key)));
+      return areSetsEqual(prev, next) ? prev : next;
+    });
 
     if (flightRafRef.current !== null) {
       window.cancelAnimationFrame(flightRafRef.current);
@@ -590,7 +603,7 @@ const ChartPieCategory = ({
       }
       flightRafRef.current = null;
     });
-  }, [coinItems, isSoundEnabled]);
+  }, [coinItemsSignature, isSoundEnabled]);
 
   const handleFlightComplete = (flight: FlyingCoin) => {
     setFlyingCoins((prev) => prev.filter((item) => item.id !== flight.id));
@@ -628,85 +641,93 @@ const ChartPieCategory = ({
         className="chart-tooltip fixed z-[100] max-w-xs p-2 text-sm rounded-lg shadow-xl pointer-events-none hidden"
         aria-hidden
       />
-      {flyingCoins.map((flight) => {
-        const holdDuration = 2.4;
-        const flyDuration = 0.9;
-        const totalDuration = holdDuration + flyDuration;
-        const holdPhase = holdDuration / totalDuration;
-        const confettiCount = 24;
-        const confettiColors =
-          flight.coinColor === "gold"
-            ? ["#fcd34d", "#f59e0b", "#fde68a"]
-            : flight.coinColor === "silver"
-              ? ["#e2e8f0", "#cbd5e1", "#94a3b8"]
-              : ["#f59e0b", "#d97706", "#fdba74"];
-        const Icon = flight.Icon;
-        return (
-          <div
-            key={flight.id}
-            className="pointer-events-none fixed z-[140]"
-            style={{
-              left: flight.startLeft,
-              top: flight.startTop,
-              width: flight.size,
-              height: flight.size,
-            }}
-            title={flight.title}
-          >
-            <motion.div
-              className="absolute inset-0"
-              style={{ transformStyle: "preserve-3d" }}
-              initial={{ opacity: 0, scale: 0.55, rotateY: -900 }}
-              animate={{
-                opacity: [0, 1, 1, 1],
-                scale: [0.55, 1.16, 1.16, 1],
-                rotateY: [-900, -220, 760, 0],
-                x: [0, 0, 0, flight.translateX],
-                y: [0, 0, 0, flight.translateY],
-              }}
-              transition={{
-                duration: totalDuration,
-                times: [0, 0.14, holdPhase, 1],
-                ease: [0.16, 1, 0.3, 1],
-              }}
-              onAnimationComplete={() => handleFlightComplete(flight)}
-            >
-              <Coin
-                icon={Icon}
-                color={flight.coinColor}
-                size={flight.size}
-                title={flight.title}
-              />
-            </motion.div>
-            <span className="coin-confetti-flash" />
-            <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-              {Array.from({ length: confettiCount }).map((_, confettiIndex) => {
-                const pieceSize = 6 + (confettiIndex % 4) * 2;
-                const pieceDistance = 44 + (confettiIndex % 6) * 10;
-                const pieceDuration = 0.92 + (confettiIndex % 5) * 0.08;
-                const pieceSpin = 160 + (confettiIndex % 7) * 60;
-                const confettiStyle = {
-                  "--coin-confetti-angle": `${(360 / confettiCount) * confettiIndex}deg`,
-                  "--coin-confetti-delay": `${0.06 + confettiIndex * 0.02}s`,
-                  "--coin-confetti-color":
-                    confettiColors[confettiIndex % confettiColors.length],
-                  "--coin-confetti-size": `${pieceSize}px`,
-                  "--coin-confetti-distance": `${pieceDistance}px`,
-                  "--coin-confetti-duration": `${pieceDuration}s`,
-                  "--coin-confetti-spin": `${pieceSpin}deg`,
-                } as CSSProperties;
-                return (
-                  <span
-                    key={`${flight.id}-confetti-${confettiIndex}`}
-                    className="coin-confetti"
-                    style={confettiStyle}
-                  />
-                );
-              })}
-            </div>
-          </div>
-        );
-      })}
+      {typeof document !== "undefined" &&
+        createPortal(
+          <>
+            {flyingCoins.map((flight) => {
+              const holdDuration = 2.4;
+              const flyDuration = 0.9;
+              const totalDuration = holdDuration + flyDuration;
+              const holdPhase = holdDuration / totalDuration;
+              const confettiCount = 24;
+              const confettiColors =
+                flight.coinColor === "gold"
+                  ? ["#fcd34d", "#f59e0b", "#fde68a"]
+                  : flight.coinColor === "silver"
+                    ? ["#e2e8f0", "#cbd5e1", "#94a3b8"]
+                    : ["#f59e0b", "#d97706", "#fdba74"];
+              const Icon = flight.Icon;
+              return (
+                <div
+                  key={flight.id}
+                  className="pointer-events-none fixed z-[10000]"
+                  style={{
+                    left: flight.startLeft,
+                    top: flight.startTop,
+                    width: flight.size,
+                    height: flight.size,
+                  }}
+                  title={flight.title}
+                >
+                  <motion.div
+                    className="absolute inset-0"
+                    style={{ transformStyle: "preserve-3d" }}
+                    initial={{ opacity: 0, scale: 0.55, rotateY: -900 }}
+                    animate={{
+                      opacity: [0, 1, 1, 1],
+                      scale: [0.55, 1.16, 1.16, 1],
+                      rotateY: [-900, -220, 760, 0],
+                      x: [0, 0, 0, flight.translateX],
+                      y: [0, 0, 0, flight.translateY],
+                    }}
+                    transition={{
+                      duration: totalDuration,
+                      times: [0, 0.14, holdPhase, 1],
+                      ease: [0.16, 1, 0.3, 1],
+                    }}
+                    onAnimationComplete={() => handleFlightComplete(flight)}
+                  >
+                    <Coin
+                      icon={Icon}
+                      color={flight.coinColor}
+                      size={flight.size}
+                      title={flight.title}
+                    />
+                  </motion.div>
+                  <span className="coin-confetti-flash" />
+                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                    {Array.from({ length: confettiCount }).map(
+                      (_, confettiIndex) => {
+                        const pieceSize = 6 + (confettiIndex % 4) * 2;
+                        const pieceDistance = 44 + (confettiIndex % 6) * 10;
+                        const pieceDuration = 0.92 + (confettiIndex % 5) * 0.08;
+                        const pieceSpin = 160 + (confettiIndex % 7) * 60;
+                        const confettiStyle = {
+                          "--coin-confetti-angle": `${(360 / confettiCount) * confettiIndex}deg`,
+                          "--coin-confetti-delay": `${0.06 + confettiIndex * 0.02}s`,
+                          "--coin-confetti-color":
+                            confettiColors[confettiIndex % confettiColors.length],
+                          "--coin-confetti-size": `${pieceSize}px`,
+                          "--coin-confetti-distance": `${pieceDistance}px`,
+                          "--coin-confetti-duration": `${pieceDuration}s`,
+                          "--coin-confetti-spin": `${pieceSpin}deg`,
+                        } as CSSProperties;
+                        return (
+                          <span
+                            key={`${flight.id}-confetti-${confettiIndex}`}
+                            className="coin-confetti"
+                            style={confettiStyle}
+                          />
+                        );
+                      },
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </>,
+          document.body,
+        )}
       <div className="relative z-10 p-4 sm:p-5">
         {coinItems.length > 0 && (
           <div className="mb-4 rounded-lg border border-zinc-200/80 dark:border-white/10 bg-white/70 dark:bg-white/[0.03] p-2.5">
