@@ -1,6 +1,6 @@
 import { CategoryAnalyticsNameEntity } from "@/types/analytics/task-analytics.model";
 import * as d3 from "d3";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import i18n from "i18next";
 import { paresSecondToTime } from "@/utils/time.util";
@@ -12,6 +12,9 @@ import {
   CATEGORY_STYLE,
   DEFAULT_CATEGORY_STYLE,
 } from "@/components/dnd/config/category-style.config";
+import Coin, { type CoinColor } from "@/components/ui-abc/coin";
+import { motion } from "framer-motion";
+import { useSoundEnabledStore } from "@/storage/soundEnabled";
 
 interface ChartPieCategoryProps {
   data: CategoryAnalyticsNameEntity;
@@ -38,6 +41,47 @@ interface PieEntity {
   categoryId?: string;
 }
 
+type CoinIcon = typeof DEFAULT_CATEGORY_STYLE.icon;
+
+interface CoinAwardItem {
+  name: string;
+  label: string;
+  taskPct: number;
+  Icon: CoinIcon;
+  colorClass: string;
+  coinColor: CoinColor;
+  coinKey: string;
+  coinTitle: string;
+}
+
+interface FlyingCoin {
+  id: string;
+  coinKey: string;
+  Icon: CoinIcon;
+  coinColor: CoinColor;
+  size: number;
+  startLeft: number;
+  startTop: number;
+  translateX: number;
+  translateY: number;
+  title: string;
+}
+
+const getCoinColorByTaskPercent = (taskPercent: number): CoinColor | null => {
+  if (taskPercent >= 100) return "gold";
+  if (taskPercent >= 65) return "silver";
+  if (taskPercent > 30) return "bronze";
+  return null;
+};
+
+const getCoinSoundVolume = (coinColor: CoinColor): number => {
+  if (coinColor === "gold") return 1;
+  if (coinColor === "silver") return 0.7;
+  return 0.5;
+};
+
+const COIN_SOUND_START_OFFSET_SECONDS = 0;
+
 const ChartPieCategory = ({
   data,
   width = 320,
@@ -50,18 +94,25 @@ const ChartPieCategory = ({
   const ref = useRef<SVGSVGElement | null>(null);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const coinTargetRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const prevCoinStateRef = useRef<Record<string, CoinColor>>({});
+  const flightRafRef = useRef<number | null>(null);
+  const soundTimersRef = useRef<number[]>([]);
+  const coinSpawnAudioRef = useRef<HTMLAudioElement | null>(null);
+  const [flyingCoins, setFlyingCoins] = useState<FlyingCoin[]>([]);
+  const [activeFlyingKeys, setActiveFlyingKeys] = useState<Set<string>>(
+    new Set(),
+  );
+  const isSoundEnabled = useSoundEnabledStore((state) => state.isSoundEnabled);
   const [t] = useTranslation();
 
   const entries = Object.entries(data).map(([id, value]) => {
     const countTotal = value.taskDone.length + value.taskNoDone.length;
     const taskPct =
-      countTotal > 0
-        ? Math.round((value.countDone / countTotal) * 100)
-        : 0;
+      countTotal > 0 ? Math.round((value.countDone / countTotal) * 100) : 0;
     /** Відсоток виконаного часу від запланованого (може бути > 100) */
-    const timePct = value.time > 0
-      ? Math.round((value.countDoneTime / value.time) * 100)
-      : 0;
+    const timePct =
+      value.time > 0 ? Math.round((value.countDoneTime / value.time) * 100) : 0;
     return {
       name: id,
       time: value.time,
@@ -71,7 +122,10 @@ const ChartPieCategory = ({
       taskPct,
       timePct,
       /** Segment size: completed time in completed-only mode, else planned total. Min 1 for pie. */
-      segmentValue: Math.max(showCompletedOnly ? value.countDoneTime : value.time, 1),
+      segmentValue: Math.max(
+        showCompletedOnly ? value.countDoneTime : value.time,
+        1,
+      ),
       categoryId: value.categoryId,
     };
   });
@@ -117,7 +171,7 @@ const ChartPieCategory = ({
             data: {} as PieEntity,
             index: 0,
             value: 0,
-          })
+          }),
         )
         .attr("fill", "rgba(161,161,170,0.2)")
         .attr("stroke", "rgba(161,161,170,0.3)")
@@ -173,20 +227,24 @@ const ChartPieCategory = ({
         `task_manager.categories.${entry.name}`
           ? t(`task_manager.categories.${entry.name}`)
           : entry.name;
-      const pct =
-        showCompletedOnly
-          ? (totalSec > 0 ? Math.round((entry.doneTime / totalSec) * 100) : 0)
-          : entry.time > 0
-            ? Math.round((entry.doneTime / entry.time) * 100)
-            : 0;
-      const { hours: doneH, minutes: doneM } = paresSecondToTime(entry.doneTime);
-      const { hours: plannedH, minutes: plannedM } = paresSecondToTime(entry.time);
-      const timeStr =
-        showCompletedOnly
-          ? `${doneH}:${doneM}`
-          : entry.time > 0
-            ? `${doneH}:${doneM} / ${plannedH}:${plannedM}`
-            : `0:00 / 0:00`;
+      const pct = showCompletedOnly
+        ? totalSec > 0
+          ? Math.round((entry.doneTime / totalSec) * 100)
+          : 0
+        : entry.time > 0
+          ? Math.round((entry.doneTime / entry.time) * 100)
+          : 0;
+      const { hours: doneH, minutes: doneM } = paresSecondToTime(
+        entry.doneTime,
+      );
+      const { hours: plannedH, minutes: plannedM } = paresSecondToTime(
+        entry.time,
+      );
+      const timeStr = showCompletedOnly
+        ? `${doneH}:${doneM}`
+        : entry.time > 0
+          ? `${doneH}:${doneM} / ${plannedH}:${plannedM}`
+          : `0:00 / 0:00`;
       tooltip.innerHTML = `
         <div class="chart-tooltip-title font-semibold">${label}</div>
         <div class="chart-tooltip-time mt-1">${timeStr} · ${pct}%</div>
@@ -201,8 +259,10 @@ const ChartPieCategory = ({
         const rect = tooltip.getBoundingClientRect();
         let left = e.clientX + 12;
         let top = e.clientY + 12;
-        if (left + rect.width > window.innerWidth - 8) left = e.clientX - rect.width - 12;
-        if (top + rect.height > window.innerHeight - 8) top = e.clientY - rect.height - 12;
+        if (left + rect.width > window.innerWidth - 8)
+          left = e.clientX - rect.width - 12;
+        if (top + rect.height > window.innerHeight - 8)
+          top = e.clientY - rect.height - 12;
         if (top < 8) top = 8;
         if (left < 8) left = 8;
         tooltip.style.left = `${left}px`;
@@ -295,7 +355,7 @@ const ChartPieCategory = ({
           const entry = entries[i];
           const progress = Math.max(
             0,
-            Math.min(entry.time > 0 ? entry.doneTime / entry.time : 0, 1)
+            Math.min(entry.time > 0 ? entry.doneTime / entry.time : 0, 1),
           );
           const currentOuter =
             innerRadius + (outerRadius - innerRadius) * progress;
@@ -318,30 +378,42 @@ const ChartPieCategory = ({
         })
         .on("mouseleave", hidePieTooltip);
     }
-  }, [chartEntries, width, height, fillType, showCompletedOnly, useTimeCompletion, includeAllCategories, i18n.language, t]);
+  }, [
+    chartEntries,
+    width,
+    height,
+    fillType,
+    showCompletedOnly,
+    useTimeCompletion,
+    includeAllCategories,
+    i18n.language,
+    t,
+  ]);
 
   const legendItems = (
-    includeAllCategories ? chartEntries : showCompletedOnly ? entries : chartEntries
-  ).filter((e) =>
-    includeAllCategories ||
-    !showCompletedOnly ||
-    e.doneTime > 0
+    includeAllCategories
+      ? chartEntries
+      : showCompletedOnly
+        ? entries
+        : chartEntries
   )
+    .filter((e) => includeAllCategories || !showCompletedOnly || e.doneTime > 0)
     .map((e, i) => {
       /** In completed-only mode, % is share of completed time in total completed time. */
       const pct = showCompletedOnly
-        ? (totalSec > 0 ? Math.round((e.doneTime / totalSec) * 100) : 0)
+        ? totalSec > 0
+          ? Math.round((e.doneTime / totalSec) * 100)
+          : 0
         : e.time > 0
           ? Math.round(Math.min(100, (e.doneTime / e.time) * 100))
           : 0;
       const { hours: doneH, minutes: doneM } = paresSecondToTime(e.doneTime);
       const { hours: plannedH, minutes: plannedM } = paresSecondToTime(e.time);
-      const timeLabel =
-        showCompletedOnly
-          ? `${doneH}:${doneM}`
-          : e.time > 0
-            ? `${doneH}:${doneM} / ${plannedH}:${plannedM}`
-            : `0:00 / 0:00`;
+      const timeLabel = showCompletedOnly
+        ? `${doneH}:${doneM}`
+        : e.time > 0
+          ? `${doneH}:${doneM} / ${plannedH}:${plannedM}`
+          : `0:00 / 0:00`;
       const label =
         t(`task_manager.categories.${e.name}`) !==
         `task_manager.categories.${e.name}`
@@ -357,12 +429,145 @@ const ChartPieCategory = ({
         label,
         time: timeLabel,
         pct,
+        taskPct: e.taskPct,
         color: chartHex,
         Icon: style.icon,
         colorClass: style.color,
       };
     })
     .sort((a, b) => b.pct - a.pct);
+
+  const coinItems: CoinAwardItem[] = legendItems.flatMap((item) => {
+    const coinColor = getCoinColorByTaskPercent(item.taskPct);
+    if (!coinColor) return [];
+    return [
+      {
+        ...item,
+        coinColor,
+        coinKey: `coin-${item.name}`,
+        coinTitle:
+          t(`chart.coin_tier.${coinColor}`) !== `chart.coin_tier.${coinColor}`
+            ? t(`chart.coin_tier.${coinColor}`)
+            : coinColor,
+      },
+    ];
+  });
+
+  useEffect(() => {
+    coinSpawnAudioRef.current = new Audio("/sfx/coins.wav");
+    coinSpawnAudioRef.current.preload = "auto";
+    return () => {
+      if (coinSpawnAudioRef.current) {
+        coinSpawnAudioRef.current.pause();
+      }
+      coinSpawnAudioRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    const currentCoinState = Object.fromEntries(
+      coinItems.map((item) => [item.coinKey, item.coinColor] as const),
+    );
+    const prevCoinState = prevCoinStateRef.current;
+    const currentKeys = new Set(Object.keys(currentCoinState));
+    const triggeredItems = coinItems.filter((item) => {
+      const prevColor = prevCoinState[item.coinKey];
+      if (!prevColor) return true;
+      if (prevColor === item.coinColor) return false;
+      return item.coinColor === "silver" || item.coinColor === "gold";
+    });
+    prevCoinStateRef.current = currentCoinState;
+    setActiveFlyingKeys(
+      (prev) => new Set(Array.from(prev).filter((key) => currentKeys.has(key))),
+    );
+
+    if (flightRafRef.current !== null) {
+      window.cancelAnimationFrame(flightRafRef.current);
+      flightRafRef.current = null;
+    }
+    if (triggeredItems.length === 0) return;
+
+    if (isSoundEnabled) {
+      triggeredItems.forEach((item, index) => {
+        const timerId = window.setTimeout(() => {
+          const baseAudio = coinSpawnAudioRef.current;
+          const audio =
+            baseAudio && index === 0
+              ? baseAudio
+              : baseAudio
+                ? (baseAudio.cloneNode(true) as HTMLAudioElement)
+                : new Audio("/sfx/coins.wav");
+          audio.volume = getCoinSoundVolume(item.coinColor);
+          audio.currentTime = COIN_SOUND_START_OFFSET_SECONDS;
+          void audio.play().catch(() => undefined);
+        }, index * 120);
+        soundTimersRef.current.push(timerId);
+      });
+    }
+
+    flightRafRef.current = window.requestAnimationFrame(() => {
+      const generatedFlights: FlyingCoin[] = [];
+      const generatedKeys: string[] = [];
+
+      triggeredItems.forEach((item) => {
+        const target = coinTargetRefs.current[item.coinKey];
+        if (!target) return;
+
+        const rect = target.getBoundingClientRect();
+        const size = Math.max(34, Math.round(rect.width) || 34);
+        const startLeft = window.innerWidth / 2 - size / 2;
+        const startTop = window.innerHeight / 2 - size / 2;
+        const endLeft = rect.left + rect.width / 2 - size / 2;
+        const endTop = rect.top + rect.height / 2 - size / 2;
+
+        generatedFlights.push({
+          id: `${item.coinKey}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          coinKey: item.coinKey,
+          Icon: item.Icon,
+          coinColor: item.coinColor,
+          size,
+          startLeft,
+          startTop,
+          translateX: endLeft - startLeft,
+          translateY: endTop - startTop,
+          title: `${item.label} · ${item.taskPct}%`,
+        });
+        generatedKeys.push(item.coinKey);
+      });
+
+      if (generatedFlights.length > 0) {
+        setFlyingCoins((prev) => [...prev, ...generatedFlights]);
+        setActiveFlyingKeys((prev) => {
+          const next = new Set(prev);
+          generatedKeys.forEach((key) => next.add(key));
+          return next;
+        });
+      }
+      flightRafRef.current = null;
+    });
+  }, [coinItems, isSoundEnabled]);
+
+  const handleFlightComplete = (flight: FlyingCoin) => {
+    setFlyingCoins((prev) => prev.filter((item) => item.id !== flight.id));
+
+    setActiveFlyingKeys((prev) => {
+      if (!prev.has(flight.coinKey)) return prev;
+      const next = new Set(prev);
+      next.delete(flight.coinKey);
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    return () => {
+      if (flightRafRef.current !== null) {
+        window.cancelAnimationFrame(flightRafRef.current);
+        flightRafRef.current = null;
+      }
+      soundTimersRef.current.forEach((timerId) => window.clearTimeout(timerId));
+      soundTimersRef.current = [];
+    };
+  }, []);
 
   const LEGEND_COLLAPSE_THRESHOLD = 10;
   const canCollapse = legendItems.length > LEGEND_COLLAPSE_THRESHOLD;
@@ -378,7 +583,129 @@ const ChartPieCategory = ({
         className="chart-tooltip fixed z-[100] max-w-xs p-2 text-sm rounded-lg shadow-xl pointer-events-none hidden"
         aria-hidden
       />
+      {flyingCoins.map((flight) => {
+        const holdDuration = 2.4;
+        const flyDuration = 0.9;
+        const totalDuration = holdDuration + flyDuration;
+        const holdPhase = holdDuration / totalDuration;
+        const confettiCount = 24;
+        const confettiColors =
+          flight.coinColor === "gold"
+            ? ["#fcd34d", "#f59e0b", "#fde68a"]
+            : flight.coinColor === "silver"
+              ? ["#e2e8f0", "#cbd5e1", "#94a3b8"]
+              : ["#f59e0b", "#d97706", "#fdba74"];
+        const Icon = flight.Icon;
+        return (
+          <div
+            key={flight.id}
+            className="pointer-events-none fixed z-[140]"
+            style={{
+              left: flight.startLeft,
+              top: flight.startTop,
+              width: flight.size,
+              height: flight.size,
+            }}
+            title={flight.title}
+          >
+            <motion.div
+              className="absolute inset-0"
+              style={{ transformStyle: "preserve-3d" }}
+              initial={{ opacity: 0, scale: 0.55, rotateY: -900 }}
+              animate={{
+                opacity: [0, 1, 1, 1],
+                scale: [0.55, 1.16, 1.16, 1],
+                rotateY: [-900, -220, 760, 0],
+                x: [0, 0, 0, flight.translateX],
+                y: [0, 0, 0, flight.translateY],
+              }}
+              transition={{
+                duration: totalDuration,
+                times: [0, 0.14, holdPhase, 1],
+                ease: [0.16, 1, 0.3, 1],
+              }}
+              onAnimationComplete={() => handleFlightComplete(flight)}
+            >
+              <Coin
+                icon={Icon}
+                color={flight.coinColor}
+                size={flight.size}
+                title={flight.title}
+              />
+            </motion.div>
+            <span className="coin-confetti-flash" />
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+              {Array.from({ length: confettiCount }).map((_, confettiIndex) => {
+                const pieceSize = 6 + (confettiIndex % 4) * 2;
+                const pieceDistance = 44 + (confettiIndex % 6) * 10;
+                const pieceDuration = 0.92 + (confettiIndex % 5) * 0.08;
+                const pieceSpin = 160 + (confettiIndex % 7) * 60;
+                const confettiStyle = {
+                  "--coin-confetti-angle": `${(360 / confettiCount) * confettiIndex}deg`,
+                  "--coin-confetti-delay": `${0.06 + confettiIndex * 0.02}s`,
+                  "--coin-confetti-color":
+                    confettiColors[confettiIndex % confettiColors.length],
+                  "--coin-confetti-size": `${pieceSize}px`,
+                  "--coin-confetti-distance": `${pieceDistance}px`,
+                  "--coin-confetti-duration": `${pieceDuration}s`,
+                  "--coin-confetti-spin": `${pieceSpin}deg`,
+                } as CSSProperties;
+                return (
+                  <span
+                    key={`${flight.id}-confetti-${confettiIndex}`}
+                    className="coin-confetti"
+                    style={confettiStyle}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
       <div className="relative z-10 p-4 sm:p-5">
+        {coinItems.length > 0 && (
+          <div className="mb-4 rounded-lg border border-zinc-200/80 dark:border-white/10 bg-white/70 dark:bg-white/[0.03] p-2.5">
+            <p className="mb-2 text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.08em] text-zinc-500 dark:text-zinc-300/80">
+              {t("chart.category_completion_rewards_title")}
+            </p>
+            <div className="flex flex-wrap items-stretch gap-2">
+              {coinItems.map((item) => {
+                const isFlying = activeFlyingKeys.has(item.coinKey);
+                const Icon = item.Icon;
+                return (
+                  <div
+                    key={item.coinKey}
+                    className="coin-award-cell relative min-w-[86px] rounded-md border border-zinc-200/80 dark:border-white/10 bg-white/80 dark:bg-white/[0.04] px-2 py-1.5 flex flex-col items-center justify-between"
+                    title={`${item.label} · ${item.taskPct}%`}
+                  >
+                    <span
+                      className={`text-[10px] leading-none font-semibold tracking-wide uppercase text-center max-w-[82px] truncate ${item.colorClass}`}
+                      title={item.label}
+                    >
+                      {item.label}
+                    </span>
+                    <div
+                      ref={(node) => {
+                        coinTargetRefs.current[item.coinKey] = node;
+                      }}
+                      className={`relative mt-1.5 transition-opacity duration-150 ${isFlying ? "opacity-0" : "opacity-100"}`}
+                    >
+                      <Coin
+                        icon={Icon}
+                        color={item.coinColor}
+                        size={34}
+                        title={`${item.label} · ${item.taskPct}%`}
+                      />
+                    </div>
+                    <span className="mt-1 text-[10px] leading-none font-semibold tracking-wide text-zinc-600 dark:text-zinc-300/90 uppercase">
+                      {item.coinTitle}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-5 items-stretch">
           <div className="md:col-span-3 flex items-center justify-center p-6 sm:p-8">
             <div className="relative w-64 aspect-square md:w-72 shrink-0">

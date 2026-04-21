@@ -439,6 +439,12 @@
     "pie_category_total_subtitle": "Планові + виконані задачі",
     "pie_task_planned_completed_title": "Відсоток виконання за задачами",
     "pie_task_planned_completed_subtitle": "Запланований vs виконаний час",
+    "category_completion_rewards_title": "Нагороди за виконання категорій",
+    "coin_tier": {
+      "bronze": "Бронза",
+      "silver": "Срібло",
+      "gold": "Золото"
+    },
     "category_percentage_widgets_title": "Віджети за відсотками по категоріях",
     "category_percentage_widgets_subtitle": "Запланований vs виконаний час за обраний період",
     "chart_total": "Разом",

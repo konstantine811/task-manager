@@ -432,6 +432,12 @@
     "pie_category_total_subtitle": "Planned + completed tasks",
     "pie_task_planned_completed_title": "Completion % by Tasks",
     "pie_task_planned_completed_subtitle": "Planned vs completed time",
+    "category_completion_rewards_title": "Category Completion Rewards",
+    "coin_tier": {
+      "bronze": "Bronze",
+      "silver": "Silver",
+      "gold": "Gold"
+    },
     "category_percentage_widgets_title": "Category progress widgets",
     "category_percentage_widgets_subtitle": "Planned vs completed time for selected period",
     "chart_total": "Total",

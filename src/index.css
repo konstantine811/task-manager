@@ -125,6 +125,108 @@ html:not(.dark) .text-glow {
   animation: fadeIn 0.3s ease-out forwards;
 }
 
+@keyframes coinConfettiBurst {
+  0% {
+    opacity: 0;
+    transform:
+      rotate(var(--coin-confetti-angle))
+      translateY(0)
+      rotate(0deg)
+      scale(0.25);
+  }
+  10% {
+    opacity: 1;
+  }
+  72% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform:
+      rotate(var(--coin-confetti-angle))
+      translateY(calc(-1 * var(--coin-confetti-distance, 56px)))
+      rotate(var(--coin-confetti-spin, 420deg))
+      scale(1);
+  }
+}
+
+.coin-award-cell {
+  perspective: 900px;
+}
+
+.coin-confetti {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--coin-confetti-size, 8px);
+  height: calc(var(--coin-confetti-size, 8px) * 1.35);
+  margin-left: calc(var(--coin-confetti-size, 8px) * -0.5);
+  margin-top: calc(var(--coin-confetti-size, 8px) * -0.5);
+  border-radius: 2px;
+  background:
+    linear-gradient(
+      140deg,
+      rgba(255, 255, 255, 0.95) 0%,
+      var(--coin-confetti-color, #fcd34d) 40%,
+      color-mix(in srgb, var(--coin-confetti-color, #fcd34d), black 12%) 100%
+    );
+  box-shadow:
+    0 0 12px rgba(255, 255, 255, 0.65),
+    0 0 24px color-mix(in srgb, var(--coin-confetti-color, #fcd34d), white 20%);
+  opacity: 0;
+  transform-origin: center;
+  will-change: transform, opacity;
+  animation: coinConfettiBurst
+    var(--coin-confetti-duration, 1s)
+    cubic-bezier(0.16, 1, 0.3, 1)
+    forwards;
+  animation-delay: var(--coin-confetti-delay, 0s);
+}
+
+@keyframes coinConfettiFlash {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  18% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+  55% {
+    opacity: 0.5;
+    transform: scale(1.85);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.8);
+  }
+}
+
+.coin-confetti-flash {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  background:
+    radial-gradient(circle, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0) 72%);
+  filter: blur(0.3px);
+  pointer-events: none;
+  animation: coinConfettiFlash 0.72s ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .coin-confetti {
+    animation: none;
+    opacity: 0;
+  }
+  .coin-confetti-flash {
+    animation: none;
+    opacity: 0;
+  }
+}
+
 /* Chrono design system - shared with Landing & Tasks */
 /* Subtle borders like Landing: border-white/5, minimal visibility */
 .chrono-task-card {
