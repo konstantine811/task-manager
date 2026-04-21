@@ -62,6 +62,8 @@ export function MultipleContainers({
   onSuggestedTaskMovedToTemplate,
   onTaskDone,
   onTaskUndone,
+  getAnotherTasksForCategory,
+  onAddAnotherTask,
 }: MultipleContainersProps) {
   const [t] = useTranslation();
   const sH = useHeaderSizeStore((s) => s.size);
@@ -244,34 +246,40 @@ export function MultipleContainers({
                     : horizontalListSortingStrategy
                 }
               >
-                {items.map((category, catIdx) => (
-                  <AnimatedItem key={category.id} index={catIdx}>
-                    <DroppableContainer
-                      id={category.id}
-                      templated={templated}
-                      label={minimal ? undefined : category.title}
-                      columns={columns}
-                      items={category.tasks}
-                      scrollable={scrollable}
-                      style={containerStyle}
-                      options={CATEGORY_OPTIONS}
-                      onAddTask={(id) => {
-                        setAddTaskContainerId(id);
-                        setIsDialogOpen(true);
-                      }}
-                      onAddTaskWithAI={(id) => {
-                        setAiDialogContainerId(id);
-                        setIsAiDialogOpen(true);
-                      }}
-                      onChangeCategory={(value) =>
-                        handleChangeCategory(value, category.id)
-                      }
-                      {...(minimal ? { unstyled: true } : {})}
-                      onRemove={() => {
-                        setIsOpenAgreeDialog(true);
-                        setRemoveContainerId(category.id);
-                      }}
-                    >
+                {items.map((category, catIdx) => {
+                  const anotherTasksForCategory =
+                    getAnotherTasksForCategory?.(category.id, category.title) ??
+                    [];
+                  return (
+                    <AnimatedItem key={category.id} index={catIdx}>
+                      <DroppableContainer
+                        id={category.id}
+                        templated={templated}
+                        label={minimal ? undefined : category.title}
+                        columns={columns}
+                        items={category.tasks}
+                        scrollable={scrollable}
+                        style={containerStyle}
+                        options={CATEGORY_OPTIONS}
+                        onAddTask={(id) => {
+                          setAddTaskContainerId(id);
+                          setIsDialogOpen(true);
+                        }}
+                        onAddTaskWithAI={(id) => {
+                          setAiDialogContainerId(id);
+                          setIsAiDialogOpen(true);
+                        }}
+                        anotherTasks={anotherTasksForCategory}
+                        onAddAnotherTask={onAddAnotherTask}
+                        onChangeCategory={(value) =>
+                          handleChangeCategory(value, category.id)
+                        }
+                        {...(minimal ? { unstyled: true } : {})}
+                        onRemove={() => {
+                          setIsOpenAgreeDialog(true);
+                          setRemoveContainerId(category.id);
+                        }}
+                      >
                       <SortableContext
                         items={category.tasks.map((t) => t.id)}
                         strategy={strategy}
@@ -348,9 +356,10 @@ export function MultipleContainers({
                           </TooltipProvider>
                         )}
                       </SortableContext>
-                    </DroppableContainer>
-                  </AnimatedItem>
-                ))}
+                      </DroppableContainer>
+                    </AnimatedItem>
+                  );
+                })}
 
                 {!minimal && (
                   <DroppableContainer

@@ -11,6 +11,7 @@ import type {
   GetItemStyles,
   Items,
   ItemTask,
+  NormalizedTask,
 } from "@/types/drag-and-drop.model";
 import type { AdvisorTask } from "@/services/ai/gemini.types";
 
@@ -51,4 +52,11 @@ export interface MultipleContainersProps {
   onTaskDone?: (task: ItemTask) => void;
   /** Called when task is unchecked (відміна прогресу цілей) */
   onTaskUndone?: (task: ItemTask) => void;
+  /** Returns "not on board yet" template tasks for a concrete category */
+  getAnotherTasksForCategory?: (
+    categoryId: UniqueIdentifier,
+    categoryTitle: string,
+  ) => NormalizedTask[];
+  /** Adds one task from "not on board yet" dropdown */
+  onAddAnotherTask?: (task: NormalizedTask) => void;
 }

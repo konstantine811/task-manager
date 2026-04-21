@@ -18,6 +18,7 @@ import {
   findPlannedOrDeterminedTask,
   mergeItemsDeep,
   mergeItemsWithPlannedTasks,
+  resolveCategoryKey,
 } from "@/services/task-menager/merge-tasks";
 import Preloader from "@/components/page-partials/preloader/preloader";
 import { TaskManagerProvider } from "@/components/dnd/context/task-manager-context";
@@ -184,6 +185,17 @@ const DailyTaskWrapper = () => {
     [dailyTasks, handleChangeTasks]
   );
 
+  const getAnotherTasksForCategory = useCallback(
+    (categoryId: string | number, categoryTitle: string) => {
+      const categoryKey = resolveCategoryKey(categoryTitle);
+      return anotherNormalizedTasks.filter((task) => {
+        if (String(task.categoryId) === String(categoryId)) return true;
+        return resolveCategoryKey(task.categoryName) === categoryKey;
+      });
+    },
+    [anotherNormalizedTasks]
+  );
+
   return (
     <>
       {!isFuture ? (
@@ -200,6 +212,8 @@ const DailyTaskWrapper = () => {
                 onDeletePlannedTask={deletePlannedTask}
                 onChangeTasks={handleChangeTasks}
                 onEditPlannedTask={onUpdatePlannedTask}
+                getAnotherTasksForCategory={getAnotherTasksForCategory}
+                onAddAnotherTask={handleAddTemplateTask}
               />
             </TaskManagerProvider>
           )}

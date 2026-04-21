@@ -6,7 +6,7 @@ import {
 import { Container, Props } from "./container";
 import { CSS } from "@dnd-kit/utilities";
 import { UniqueIdentifier } from "@dnd-kit/core";
-import { ItemTask } from "@/types/drag-and-drop.model";
+import { ItemTask, NormalizedTask } from "@/types/drag-and-drop.model";
 import WrapperHoverElement from "../ui-abc/wrapper-hover-element";
 import SoundHoverElement from "../ui-abc/sound-hover-element";
 import { HoverStyleElement, SoundTypeElement } from "@/types/sound";
@@ -19,6 +19,14 @@ import {
   getChartColorForAnalyticsCategory,
 } from "@/config/chart-colors.config";
 import { Plus, Sparkles } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 
 const animateLayoutChanges: AnimateLayoutChanges = (args) =>
   defaultAnimateLayoutChanges({ ...args, wasDragging: true });
@@ -32,6 +40,8 @@ function DroppableContainer({
   placeholder,
   onAddTask,
   onAddTaskWithAI,
+  anotherTasks = [],
+  onAddAnotherTask,
   style,
   options,
   templated,
@@ -45,6 +55,8 @@ function DroppableContainer({
   style?: React.CSSProperties;
   onAddTask?: (containerId: UniqueIdentifier) => void;
   onAddTaskWithAI?: (containerId: UniqueIdentifier) => void;
+  anotherTasks?: NormalizedTask[];
+  onAddAnotherTask?: (task: NormalizedTask) => void;
   templated: boolean;
   onChangeCategory?: (value: string) => void;
 }) {
@@ -114,7 +126,8 @@ function DroppableContainer({
       <ul className="flex flex-col gap-1">{children}</ul>
 
       {/* Add task button - Aura compact */}
-      {!placeholder && (onAddTask || onAddTaskWithAI) && (
+      {!placeholder &&
+        (onAddTask || onAddTaskWithAI || (onAddAnotherTask && anotherTasks.length > 0)) && (
         <div className="mt-4 flex items-center gap-2 px-2 py-1">
           {onAddTask && (
             <WrapperHoverElement className="min-w-0">
@@ -133,6 +146,49 @@ function DroppableContainer({
                 </Button>
               </SoundHoverElement>
             </WrapperHoverElement>
+          )}
+          {onAddAnotherTask && anotherTasks.length > 0 && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <div>
+                  <WrapperHoverElement className="min-w-0">
+                    <SoundHoverElement
+                      animValue={0.99}
+                      hoverTypeElement={SoundTypeElement.LINK}
+                      hoverStyleElement={HoverStyleElement.quad}
+                    >
+                      <Button
+                        variant="ghost"
+                        className="h-auto min-h-10 rounded-xl border border-indigo-500/20 bg-indigo-500/8 px-3 py-2 text-sm font-medium text-indigo-700 transition-colors flex items-center gap-2 hover:bg-indigo-500/15 hover:text-indigo-800 dark:text-indigo-300 dark:hover:bg-indigo-500/20 dark:hover:text-indigo-200"
+                      >
+                        <Plus className="w-3.5 h-3.5 shrink-0" />
+                        {t("task_manager.add_all_tasks.by_category.button")}
+                      </Button>
+                    </SoundHoverElement>
+                  </WrapperHoverElement>
+                </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-72 chrono-dropdown-content relative pt-0">
+                <div className="sticky top-0 bg-background z-10 pt-2">
+                  <DropdownMenuLabel className="text-muted-foreground whitespace-normal">
+                    {t("task_manager.add_all_tasks.by_category.description")}
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                </div>
+                {anotherTasks.map((task, index) => (
+                  <DropdownMenuCheckboxItem
+                    key={task.id}
+                    className="px-2"
+                    onCheckedChange={() => {
+                      onAddAnotherTask(task);
+                    }}
+                  >
+                    <span>{index + 1}.</span>
+                    {task.title}
+                  </DropdownMenuCheckboxItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
           {onAddTaskWithAI && (
             <WrapperHoverElement>

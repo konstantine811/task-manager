@@ -11,7 +11,7 @@ import i18n from "i18next";
 const normalizeCategoryLabel = (value: string) =>
   value.trim().toLowerCase().replace(/\s+/g, " ");
 
-const resolveCategoryKey = (raw: string) => {
+export const resolveCategoryKey = (raw: string) => {
   const value = raw.trim();
   if (!value) return value;
 

@@ -252,6 +252,10 @@
       "header": {
         "title": "From template — not on this day yet",
         "description": "Pick a task from the list (adds one at a time). Only template items that are not already on this day’s board. The button above merges tasks scheduled for today automatically."
+      },
+      "by_category": {
+        "button": "Others",
+        "description": "Pick a task from the list (adds one at a time). Only tasks from this category that are not on this day’s board yet."
       }
     },
     "analytics": {
