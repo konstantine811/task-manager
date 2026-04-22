@@ -1,8 +1,14 @@
 import { cn } from "@/lib/utils";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent, ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { AlignCenter, AlignLeft, AlignRight, ImagePlus, Info } from "lucide-react";
+import {
+  AlignCenter,
+  AlignLeft,
+  AlignRight,
+  ImagePlus,
+  Info,
+} from "lucide-react";
 import {
   BlockTypeSelect,
   ButtonWithTooltip,
@@ -92,7 +98,7 @@ const DailyJournalCard = ({
   onUploadImage,
 }: DailyJournalCardProps) => {
   const [t] = useTranslation();
-  const [content, setContent] = useState(initialContent);
+  const [editorMarkdown, setEditorMarkdown] = useState(initialContent);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const isTouch = isTouchDevice;
@@ -121,7 +127,8 @@ const DailyJournalCard = ({
 
       isSavingRef.current = true;
       while (pendingSaveRef.current !== null) {
-        const { content: contentToSave, date: saveDate } = pendingSaveRef.current;
+        const { content: contentToSave, date: saveDate } =
+          pendingSaveRef.current;
         pendingSaveRef.current = null;
 
         if (saveDate !== activeDateRef.current) continue;
@@ -159,6 +166,24 @@ const DailyJournalCard = ({
     void enqueueSave(latestContentRef.current, latestContentDateRef.current);
   }, [enqueueSave]);
 
+  const scheduleSave = useCallback(
+    (nextContent: string, sourceDate: string) => {
+      if (isLoading) return;
+      if (sourceDate !== activeDateRef.current) return;
+      if (nextContent === lastSavedRef.current) return;
+
+      if (saveTimeoutRef.current !== null) {
+        window.clearTimeout(saveTimeoutRef.current);
+      }
+
+      saveTimeoutRef.current = window.setTimeout(() => {
+        saveTimeoutRef.current = null;
+        void enqueueSave(nextContent, sourceDate);
+      }, 900);
+    },
+    [enqueueSave, isLoading],
+  );
+
   useEffect(() => {
     activeDateRef.current = date;
     scopeRef.current += 1;
@@ -175,7 +200,7 @@ const DailyJournalCard = ({
     latestContentDateRef.current = date;
     lastAppliedInitialRef.current = initialContent;
 
-    setContent(initialContent);
+    setEditorMarkdown(initialContent);
     setSaveState("idle");
     editorRef.current?.setMarkdown(initialContent);
   }, [date]);
@@ -184,6 +209,14 @@ const DailyJournalCard = ({
     if (initialContent === lastAppliedInitialRef.current) return;
     lastAppliedInitialRef.current = initialContent;
 
+    // Parent echoes local autosave back via props.
+    // If content is already the same in editor, do not re-apply markdown
+    // because that resets selection/caret to the end.
+    if (initialContent === latestContentRef.current) {
+      lastSavedRef.current = initialContent;
+      return;
+    }
+
     // Do not overwrite active local typing with remote updates.
     const hasUnsavedLocal = latestContentRef.current !== lastSavedRef.current;
     if (isEditorFocusedRef.current || hasUnsavedLocal) return;
@@ -191,7 +224,7 @@ const DailyJournalCard = ({
     lastSavedRef.current = initialContent;
     latestContentRef.current = initialContent;
     latestContentDateRef.current = activeDateRef.current;
-    setContent(initialContent);
+    setEditorMarkdown(initialContent);
     setSaveState("idle");
     editorRef.current?.setMarkdown(initialContent);
   }, [initialContent]);
@@ -202,27 +235,6 @@ const DailyJournalCard = ({
     const timeoutId = window.setTimeout(() => setSaveState("idle"), 1800);
     return () => window.clearTimeout(timeoutId);
   }, [saveState]);
-
-  useEffect(() => {
-    if (isLoading) return;
-    if (content === lastSavedRef.current) return;
-
-    if (saveTimeoutRef.current !== null) {
-      window.clearTimeout(saveTimeoutRef.current);
-    }
-
-    saveTimeoutRef.current = window.setTimeout(() => {
-      saveTimeoutRef.current = null;
-      void enqueueSave(content, activeDateRef.current);
-    }, 900);
-
-    return () => {
-      if (saveTimeoutRef.current !== null) {
-        window.clearTimeout(saveTimeoutRef.current);
-        saveTimeoutRef.current = null;
-      }
-    };
-  }, [content, enqueueSave, isLoading]);
 
   useEffect(() => {
     return () => {
@@ -282,6 +294,68 @@ const DailyJournalCard = ({
     [onUploadImage, uploadImageAndInsert],
   );
 
+  const toolbarContents = useCallback(
+    () => (
+      <>
+        <UndoRedo />
+        <BlockTypeSelect />
+        <BoldItalicUnderlineToggles />
+        <AlignmentToolbarButton
+          title={t("task_manager.journal.align_left")}
+          mode="left"
+        >
+          <AlignLeft className="h-4 w-4" />
+        </AlignmentToolbarButton>
+        <AlignmentToolbarButton
+          title={t("task_manager.journal.align_center")}
+          mode="center"
+        >
+          <AlignCenter className="h-4 w-4" />
+        </AlignmentToolbarButton>
+        <AlignmentToolbarButton
+          title={t("task_manager.journal.align_right")}
+          mode="right"
+        >
+          <AlignRight className="h-4 w-4" />
+        </AlignmentToolbarButton>
+        {onUploadImage && !isTouch && (
+          <ButtonWithTooltip
+            title={t("task_manager.journal.add_image")}
+            onClick={handlePickImageClick}
+            disabled={isUploadingImage}
+          >
+            <ImagePlus className="h-4 w-4" />
+          </ButtonWithTooltip>
+        )}
+        <ListsToggle />
+        <CreateLink />
+        <InsertThematicBreak />
+      </>
+    ),
+    [handlePickImageClick, isTouch, isUploadingImage, onUploadImage, t],
+  );
+
+  const editorPlugins = useMemo(
+    () => [
+      headingsPlugin(),
+      quotePlugin(),
+      listsPlugin(),
+      linkPlugin(),
+      linkDialogPlugin(),
+      imagePlugin({
+        imageUploadHandler: onUploadImage ? uploadImageAndInsert : undefined,
+      }),
+      journalAlignmentPersistencePlugin(),
+      thematicBreakPlugin(),
+      markdownShortcutPlugin(),
+      toolbarPlugin({
+        toolbarClassName: "journal-mdx-toolbar",
+        toolbarContents,
+      }),
+    ],
+    [onUploadImage, toolbarContents, uploadImageAndInsert],
+  );
+
   return (
     <section className="mb-5 rounded-2xl border border-zinc-200/80 bg-white/70 p-4 shadow-sm dark:border-white/10 dark:bg-white/5">
       <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -307,7 +381,9 @@ const DailyJournalCard = ({
                   className="max-w-xs text-xs leading-5 border border-zinc-300/80 bg-white text-zinc-900 shadow-lg dark:border-white/10 dark:bg-zinc-950 dark:text-zinc-100"
                 >
                   <p>{t("task_manager.journal.description")}</p>
-                  <p className="mt-1">Markdown shortcuts: `#`, `-`, `**`, `[link]`</p>
+                  <p className="mt-1">
+                    Markdown shortcuts: `#`, `-`, `**`, `[link]`
+                  </p>
                 </TooltipContent>
               </Tooltip>
             )}
@@ -346,7 +422,7 @@ const DailyJournalCard = ({
         <div className="min-h-28 animate-pulse rounded-xl border border-zinc-200/80 bg-zinc-100/80 dark:border-white/10 dark:bg-white/5" />
       ) : (
         <div
-          className="overflow-hidden rounded-xl border border-zinc-200/80 bg-white/80 shadow-sm dark:border-white/10 dark:bg-white/5"
+          className="overflow-hidden rounded-t-xl border border-zinc-200/80 bg-white/80 shadow-sm dark:border-white/10 dark:bg-white/5"
           onFocusCapture={() => {
             isEditorFocusedRef.current = true;
           }}
@@ -359,72 +435,20 @@ const DailyJournalCard = ({
         >
           <MDXEditor
             ref={editorRef}
-            markdown={content}
+            markdown={editorMarkdown}
             onChange={(markdown) => {
               latestContentRef.current = markdown;
               latestContentDateRef.current = activeDateRef.current;
-              setContent(markdown);
               if (saveState === "error") {
                 setSaveState("idle");
               }
+              scheduleSave(markdown, activeDateRef.current);
             }}
             placeholder={t("task_manager.journal.placeholder")}
             spellCheck={false}
             className="journal-mdx-editor"
             contentEditableClassName="journal-mdx-content"
-            plugins={[
-              headingsPlugin(),
-              quotePlugin(),
-              listsPlugin(),
-              linkPlugin(),
-              linkDialogPlugin(),
-              imagePlugin({
-                imageUploadHandler: onUploadImage ? uploadImageAndInsert : undefined,
-              }),
-              journalAlignmentPersistencePlugin(),
-              thematicBreakPlugin(),
-              markdownShortcutPlugin(),
-              toolbarPlugin({
-                toolbarClassName: "journal-mdx-toolbar",
-                toolbarContents: () => (
-                  <>
-                    <UndoRedo />
-                    <BlockTypeSelect />
-                    <BoldItalicUnderlineToggles />
-                    <AlignmentToolbarButton
-                      title={t("task_manager.journal.align_left")}
-                      mode="left"
-                    >
-                      <AlignLeft className="h-4 w-4" />
-                    </AlignmentToolbarButton>
-                    <AlignmentToolbarButton
-                      title={t("task_manager.journal.align_center")}
-                      mode="center"
-                    >
-                      <AlignCenter className="h-4 w-4" />
-                    </AlignmentToolbarButton>
-                    <AlignmentToolbarButton
-                      title={t("task_manager.journal.align_right")}
-                      mode="right"
-                    >
-                      <AlignRight className="h-4 w-4" />
-                    </AlignmentToolbarButton>
-                    {onUploadImage && !isTouch && (
-                      <ButtonWithTooltip
-                        title={t("task_manager.journal.add_image")}
-                        onClick={handlePickImageClick}
-                        disabled={isUploadingImage}
-                      >
-                        <ImagePlus className="h-4 w-4" />
-                      </ButtonWithTooltip>
-                    )}
-                    <ListsToggle />
-                    <CreateLink />
-                    <InsertThematicBreak />
-                  </>
-                ),
-              }),
-            ]}
+            plugins={editorPlugins}
           />
         </div>
       )}
@@ -432,4 +456,4 @@ const DailyJournalCard = ({
   );
 };
 
-export default DailyJournalCard;
+export default memo(DailyJournalCard);

@@ -1053,6 +1053,7 @@ html:not(.dark) .chrono-dialog .chrono-time-drum-colon {
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 12px;
+  padding-bottom: 24px;
   line-height: 1.7;
   font-size: 14px;
   color: rgb(39 39 42);

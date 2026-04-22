@@ -61,7 +61,7 @@ const useChartTooltip = () => {
   const TooltipElement = (
     <div
       ref={ref}
-      className="chart-tooltip fixed z-[100] max-w-sm p-2 text-sm rounded-lg shadow-xl will-change-transform pointer-events-none opacity-0 items-center flex-col gap-2 backdrop-blur-sm"
+      className="chart-tooltip fixed z-[2147483001] max-w-sm p-2 text-sm rounded-lg shadow-xl will-change-transform pointer-events-none opacity-0 items-center flex-col gap-2 backdrop-blur-sm"
     />
   );
 

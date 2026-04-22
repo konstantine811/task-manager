@@ -338,7 +338,7 @@ const DailyTask = () => {
 
         {screenWidth >= BreakPoints["2xl"] && (
           <div className="flex-1">
-            <div className="px-4 pt-10 sticky" style={{ top: `${hS}px` }}>
+            <div className="px-4 pt-10 sticky z-40" style={{ top: `${hS}px` }}>
               <DailyAnalytics />
             </div>
           </div>

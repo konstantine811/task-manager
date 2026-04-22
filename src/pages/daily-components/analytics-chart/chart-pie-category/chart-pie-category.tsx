@@ -688,7 +688,7 @@ const ChartPieCategory = ({
     >
       <div
         ref={tooltipRef}
-        className="chart-tooltip fixed z-[100] max-w-xs p-2 text-sm rounded-lg shadow-xl pointer-events-none hidden"
+        className="chart-tooltip fixed z-[2147483001] max-w-xs p-2 text-sm rounded-lg shadow-xl pointer-events-none hidden"
         aria-hidden
       />
       {typeof document !== "undefined" &&
