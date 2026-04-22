@@ -215,6 +215,7 @@
       "vapid_missing": "Push notifications are missing a configured VAPID key.",
       "offset_1h": "in 1 hour",
       "offset_5m": "in 5 minutes",
+      "offset_now": "now",
       "body": "{{task}} at {{time}} ({{offset}})"
     },
     "template_daily_task_title": "Daily Task Template",

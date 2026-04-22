@@ -20,7 +20,7 @@ const functions = (0, functions_1.getFunctions)();
 const REGION = "us-central1";
 const PUSH_DEVICES_COLLECTION = "push-devices";
 const REMINDER_SCHEDULES_COLLECTION = "daily-task-reminders";
-const REMINDER_OFFSETS_SECONDS = [3600, 300];
+const REMINDER_OFFSETS_SECONDS = [3600, 300, 0];
 const getReminderScheduleRef = (uid, date) => db.doc(`${REMINDER_SCHEDULES_COLLECTION}/${uid}/days/${date}`);
 const getPushDevicesCollection = (uid) => db.collection(PUSH_DEVICES_COLLECTION).doc(uid).collection("installations");
 const buildTaskQueueId = (reminderId, salt) => node_crypto_1.default
@@ -44,7 +44,10 @@ const offsetLabelByLanguage = (offsetSeconds, language) => {
     if (offsetSeconds === 3600) {
         return isUkrainian ? "за 1 годину" : "in 1 hour";
     }
-    return isUkrainian ? "за 5 хвилин" : "in 5 minutes";
+    if (offsetSeconds === 300) {
+        return isUkrainian ? "за 5 хвилин" : "in 5 minutes";
+    }
+    return isUkrainian ? "зараз" : "now";
 };
 const reminderTitleByLanguage = (language) => {
     const normalized = language.toLowerCase();

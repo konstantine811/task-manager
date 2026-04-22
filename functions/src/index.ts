@@ -21,7 +21,7 @@ const functions = getFunctions();
 const REGION = "us-central1";
 const PUSH_DEVICES_COLLECTION = "push-devices";
 const REMINDER_SCHEDULES_COLLECTION = "daily-task-reminders";
-const REMINDER_OFFSETS_SECONDS = [3600, 300] as const;
+const REMINDER_OFFSETS_SECONDS = [3600, 300, 0] as const;
 
 type ReminderOffset = (typeof REMINDER_OFFSETS_SECONDS)[number];
 
@@ -120,8 +120,11 @@ const offsetLabelByLanguage = (offsetSeconds: number, language: string): string 
   if (offsetSeconds === 3600) {
     return isUkrainian ? "за 1 годину" : "in 1 hour";
   }
+  if (offsetSeconds === 300) {
+    return isUkrainian ? "за 5 хвилин" : "in 5 minutes";
+  }
 
-  return isUkrainian ? "за 5 хвилин" : "in 5 minutes";
+  return isUkrainian ? "зараз" : "now";
 };
 
 const reminderTitleByLanguage = (language: string): string => {

@@ -2,7 +2,7 @@ import type { TFunction } from "i18next";
 import type { Items } from "@/types/drag-and-drop.model";
 import { parseDate } from "@/utils/date.util";
 
-export const REMINDER_OFFSETS_SECONDS = [3600, 300] as const;
+export const REMINDER_OFFSETS_SECONDS = [3600, 300, 0] as const;
 
 export type ReminderOffset = (typeof REMINDER_OFFSETS_SECONDS)[number];
 
@@ -38,7 +38,8 @@ export const formatClockFromSeconds = (seconds: number): string => {
 
 export const getNotificationBodyOffsetKey = (offset: ReminderOffset): string => {
   if (offset === 3600) return "task_manager.notifications.offset_1h";
-  return "task_manager.notifications.offset_5m";
+  if (offset === 300) return "task_manager.notifications.offset_5m";
+  return "task_manager.notifications.offset_now";
 };
 
 export const extractReminderTasks = (

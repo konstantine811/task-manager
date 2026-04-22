@@ -238,6 +238,7 @@
       "vapid_missing": "Для push-сповіщень бракує VAPID ключа у конфігурації.",
       "offset_1h": "за 1 годину",
       "offset_5m": "за 5 хвилин",
+      "offset_now": "зараз",
       "body": "{{task}} о {{time}} ({{offset}})"
     },
     "drag_task_here": "Перетягни сюди задачу",
