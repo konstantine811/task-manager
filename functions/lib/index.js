@@ -49,20 +49,28 @@ const offsetLabelByLanguage = (offsetSeconds, language) => {
     }
     return isUkrainian ? "зараз" : "now";
 };
-const reminderTitleByLanguage = (language) => {
+const reminderFallbackTaskTitleByLanguage = (language) => {
     const normalized = language.toLowerCase();
     return normalized.startsWith("uk") || normalized.startsWith("ua")
-        ? "Нагадування про задачу"
-        : "Task reminder";
+        ? "Задача"
+        : "Task";
 };
-const reminderBodyByLanguage = (language, taskTitle, taskClockLabel, offsetSeconds) => {
+const reminderTitleByLanguage = (language, taskTitle) => {
+    const normalizedTitle = taskTitle.trim();
+    return normalizedTitle || reminderFallbackTaskTitleByLanguage(language);
+};
+const reminderBodyByLanguage = (language, taskClockLabel, offsetSeconds) => {
     const normalized = language.toLowerCase();
     const isUkrainian = normalized.startsWith("uk") || normalized.startsWith("ua");
     const offsetLabel = offsetLabelByLanguage(offsetSeconds, language);
     if (isUkrainian) {
-        return `${taskTitle} о ${taskClockLabel} (${offsetLabel})`;
+        return offsetSeconds === 0
+            ? `Час виконувати • заплановано на ${taskClockLabel}`
+            : `${offsetLabel} • заплановано на ${taskClockLabel}`;
     }
-    return `${taskTitle} at ${taskClockLabel} (${offsetLabel})`;
+    return offsetSeconds == 0
+        ? `Time to do it • scheduled for ${taskClockLabel}`
+        : `${offsetLabel} • scheduled for ${taskClockLabel}`;
 };
 const resolveReminderDate = (date, scheduledSeconds, timeZone, timeZoneOffsetMinutes) => {
     const { year, month, day } = parseDateParts(date);
@@ -263,8 +271,8 @@ exports.dispatchTaskReminder = (0, tasks_1.onTaskDispatched)({
     await Promise.all(activeDevices.map(async (docSnap) => {
         const device = docSnap.data();
         const language = device.language || "uk";
-        const title = reminderTitleByLanguage(language);
-        const body = reminderBodyByLanguage(language, reminder.taskTitle, reminder.taskClockLabel, reminder.offsetSeconds);
+        const title = reminderTitleByLanguage(language, reminder.taskTitle);
+        const body = reminderBodyByLanguage(language, reminder.taskClockLabel, reminder.offsetSeconds);
         try {
             await messaging.send({
                 token: device.token,
@@ -274,6 +282,8 @@ exports.dispatchTaskReminder = (0, tasks_1.onTaskDispatched)({
                     url: `/app/daily/${date}`,
                     reminderId,
                     date,
+                    language,
+                    notificationType: "task_reminder",
                     taskTitle: reminder.taskTitle,
                     taskClockLabel: reminder.taskClockLabel,
                     offsetSeconds: String(reminder.offsetSeconds),

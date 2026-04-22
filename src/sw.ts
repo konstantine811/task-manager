@@ -18,7 +18,14 @@ interface ReminderNotificationData {
   body?: string;
   url?: string;
   reminderId?: string;
+  taskTitle?: string;
+  taskClockLabel?: string;
+  offsetSeconds?: number | null;
+  language?: string;
 }
+
+const NOTIFICATION_ICON = "/pwa-192x192.png";
+const NOTIFICATION_BADGE = "/pwa-192x192.png";
 
 self.skipWaiting();
 clientsClaim();
@@ -49,17 +56,27 @@ if (firebaseConfig.apiKey) {
     const body = payload.data?.body || payload.notification?.body || "";
     const url = payload.data?.url || "/app";
     const reminderId = payload.data?.reminderId;
+    const taskTitle = payload.data?.taskTitle || title;
+    const taskClockLabel = payload.data?.taskClockLabel;
+    const language = payload.data?.language;
+    const offsetValue = Number(payload.data?.offsetSeconds ?? NaN);
+    const offsetSeconds = Number.isFinite(offsetValue) ? offsetValue : null;
 
     void self.registration.showNotification(title, {
       body,
-      icon: "/pwa-192x192.png",
-      badge: "/pwa-192x192.png",
-      tag: reminderId || `${title}:${body}`,
+      icon: NOTIFICATION_ICON,
+      badge: NOTIFICATION_BADGE,
+      tag: reminderId ? `task-reminder:${reminderId}` : `task-reminder:${title}:${body}`,
+      requireInteraction: offsetSeconds === 0,
       data: {
         title,
         body,
         url,
         reminderId,
+        taskTitle,
+        taskClockLabel,
+        offsetSeconds,
+        language,
       } satisfies ReminderNotificationData,
     });
   });

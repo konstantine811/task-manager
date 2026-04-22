@@ -127,16 +127,20 @@ const offsetLabelByLanguage = (offsetSeconds: number, language: string): string 
   return isUkrainian ? "зараз" : "now";
 };
 
-const reminderTitleByLanguage = (language: string): string => {
+const reminderFallbackTaskTitleByLanguage = (language: string): string => {
   const normalized = language.toLowerCase();
   return normalized.startsWith("uk") || normalized.startsWith("ua")
-    ? "Нагадування про задачу"
-    : "Task reminder";
+    ? "Задача"
+    : "Task";
+};
+
+const reminderTitleByLanguage = (language: string, taskTitle: string): string => {
+  const normalizedTitle = taskTitle.trim();
+  return normalizedTitle || reminderFallbackTaskTitleByLanguage(language);
 };
 
 const reminderBodyByLanguage = (
   language: string,
-  taskTitle: string,
   taskClockLabel: string,
   offsetSeconds: number,
 ): string => {
@@ -145,10 +149,14 @@ const reminderBodyByLanguage = (
   const offsetLabel = offsetLabelByLanguage(offsetSeconds, language);
 
   if (isUkrainian) {
-    return `${taskTitle} о ${taskClockLabel} (${offsetLabel})`;
+    return offsetSeconds === 0
+      ? `Час виконувати • заплановано на ${taskClockLabel}`
+      : `${offsetLabel} • заплановано на ${taskClockLabel}`;
   }
 
-  return `${taskTitle} at ${taskClockLabel} (${offsetLabel})`;
+  return offsetSeconds == 0
+    ? `Time to do it • scheduled for ${taskClockLabel}`
+    : `${offsetLabel} • scheduled for ${taskClockLabel}`;
 };
 
 const resolveReminderDate = (
@@ -430,10 +438,9 @@ export const dispatchTaskReminder = onTaskDispatched<DispatchReminderPayload>(
       activeDevices.map(async (docSnap) => {
         const device = docSnap.data() as PushDeviceDoc;
         const language = device.language || "uk";
-        const title = reminderTitleByLanguage(language);
+        const title = reminderTitleByLanguage(language, reminder.taskTitle);
         const body = reminderBodyByLanguage(
           language,
-          reminder.taskTitle,
           reminder.taskClockLabel,
           reminder.offsetSeconds,
         );
@@ -447,6 +454,8 @@ export const dispatchTaskReminder = onTaskDispatched<DispatchReminderPayload>(
               url: `/app/daily/${date}`,
               reminderId,
               date,
+              language,
+              notificationType: "task_reminder",
               taskTitle: reminder.taskTitle,
               taskClockLabel: reminder.taskClockLabel,
               offsetSeconds: String(reminder.offsetSeconds),
