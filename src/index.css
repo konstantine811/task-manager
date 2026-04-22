@@ -1029,7 +1029,9 @@ html:not(.dark) .chrono-dialog .chrono-time-drum-colon {
   textarea,
   select,
   [data-slot="select-trigger"],
-  [data-slot="command-input"] {
+  [data-slot="command-input"],
+  .journal-mdx-content,
+  .journal-mdx-editor [contenteditable="true"] {
     font-size: 16px !important;
   }
 }
