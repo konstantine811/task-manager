@@ -51,6 +51,9 @@ const DailyTask = () => {
     null,
   );
   const [journalContent, setJournalContent] = useState("");
+  const [journalContentDate, setJournalContentDate] = useState<string | null>(
+    null,
+  );
   const [isJournalLoading, setIsJournalLoading] = useState(false);
   const [dailyAnalyticsData, setDailyAnalyticsData] =
     useState<DailyTaskAnalytics | null>(null);
@@ -182,6 +185,7 @@ const DailyTask = () => {
     let isMounted = true;
     let unsubscribe: (() => void) | undefined;
 
+    setJournalContentDate(null);
     setIsJournalLoading(true);
 
     (async () => {
@@ -191,6 +195,7 @@ const DailyTask = () => {
         ({ items }) => {
           if (!isMounted) return;
           setJournalContent(items?.content ?? "");
+          setJournalContentDate(date);
           setIsJournalLoading(false);
         },
       );
@@ -200,6 +205,7 @@ const DailyTask = () => {
       const journal = await loadDailyJournalByDate(date);
       if (!isMounted) return;
       setJournalContent(journal?.content ?? "");
+      setJournalContentDate(date);
       setIsJournalLoading(false);
     })();
 
@@ -214,6 +220,7 @@ const DailyTask = () => {
       if (!date) return;
       // Optimistic local value so user sees immediate persistence.
       setJournalContent(content);
+      setJournalContentDate(date);
       await saveDailyJournal(date, { content });
     },
     [date],
@@ -320,7 +327,7 @@ const DailyTask = () => {
           {date && (
             <DailyJournalCard
               date={date}
-              initialContent={journalContent}
+              initialContent={journalContentDate === date ? journalContent : ""}
               isLoading={isJournalLoading}
               onSave={handleSaveJournal}
               onUploadImage={handleUploadJournalImage}

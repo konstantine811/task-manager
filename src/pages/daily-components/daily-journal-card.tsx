@@ -52,6 +52,11 @@ interface DailyJournalCardProps {
   onUploadImage?: (file: File) => Promise<string>;
 }
 
+interface PendingSave {
+  content: string;
+  date: string;
+}
+
 interface AlignmentToolbarButtonProps {
   mode: "left" | "center" | "right";
   title: string;
@@ -94,28 +99,32 @@ const DailyJournalCard = ({
 
   const lastSavedRef = useRef(initialContent);
   const latestContentRef = useRef(initialContent);
-  const pendingSaveRef = useRef<string | null>(null);
+  const latestContentDateRef = useRef(date);
+  const pendingSaveRef = useRef<PendingSave | null>(null);
   const isSavingRef = useRef(false);
   const saveTimeoutRef = useRef<number | null>(null);
   const scopeRef = useRef(0);
+  const activeDateRef = useRef(date);
   const editorRef = useRef<MDXEditorMethods | null>(null);
   const isEditorFocusedRef = useRef(false);
   const lastAppliedInitialRef = useRef(initialContent);
   const imageInputRef = useRef<HTMLInputElement | null>(null);
 
   const enqueueSave = useCallback(
-    async (nextContent: string) => {
+    async (nextContent: string, sourceDate: string) => {
       if (isLoading) return;
+      if (sourceDate !== activeDateRef.current) return;
       if (nextContent === lastSavedRef.current) return;
 
-      pendingSaveRef.current = nextContent;
+      pendingSaveRef.current = { content: nextContent, date: sourceDate };
       if (isSavingRef.current) return;
 
       isSavingRef.current = true;
       while (pendingSaveRef.current !== null) {
-        const contentToSave = pendingSaveRef.current;
+        const { content: contentToSave, date: saveDate } = pendingSaveRef.current;
         pendingSaveRef.current = null;
 
+        if (saveDate !== activeDateRef.current) continue;
         if (contentToSave === lastSavedRef.current) continue;
 
         const saveScope = scopeRef.current;
@@ -146,10 +155,12 @@ const DailyJournalCard = ({
       saveTimeoutRef.current = null;
     }
 
-    void enqueueSave(latestContentRef.current);
+    if (latestContentDateRef.current !== activeDateRef.current) return;
+    void enqueueSave(latestContentRef.current, latestContentDateRef.current);
   }, [enqueueSave]);
 
   useEffect(() => {
+    activeDateRef.current = date;
     scopeRef.current += 1;
 
     if (saveTimeoutRef.current !== null) {
@@ -161,6 +172,7 @@ const DailyJournalCard = ({
     isSavingRef.current = false;
     lastSavedRef.current = initialContent;
     latestContentRef.current = initialContent;
+    latestContentDateRef.current = date;
     lastAppliedInitialRef.current = initialContent;
 
     setContent(initialContent);
@@ -178,6 +190,7 @@ const DailyJournalCard = ({
 
     lastSavedRef.current = initialContent;
     latestContentRef.current = initialContent;
+    latestContentDateRef.current = activeDateRef.current;
     setContent(initialContent);
     setSaveState("idle");
     editorRef.current?.setMarkdown(initialContent);
@@ -200,7 +213,7 @@ const DailyJournalCard = ({
 
     saveTimeoutRef.current = window.setTimeout(() => {
       saveTimeoutRef.current = null;
-      void enqueueSave(content);
+      void enqueueSave(content, activeDateRef.current);
     }, 900);
 
     return () => {
@@ -221,7 +234,8 @@ const DailyJournalCard = ({
 
   useEffect(() => {
     const handlePageHide = () => {
-      void enqueueSave(latestContentRef.current);
+      if (latestContentDateRef.current !== activeDateRef.current) return;
+      void enqueueSave(latestContentRef.current, latestContentDateRef.current);
     };
     window.addEventListener("pagehide", handlePageHide);
     return () => window.removeEventListener("pagehide", handlePageHide);
@@ -348,6 +362,7 @@ const DailyJournalCard = ({
             markdown={content}
             onChange={(markdown) => {
               latestContentRef.current = markdown;
+              latestContentDateRef.current = activeDateRef.current;
               setContent(markdown);
               if (saveState === "error") {
                 setSaveState("idle");
