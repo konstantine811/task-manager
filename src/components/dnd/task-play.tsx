@@ -9,7 +9,6 @@ import TaskLocalTimeStatic from "./task-local-time-static";
 import { useCallback, useEffect, useRef } from "react";
 import { useTaskManager } from "./context/use-task-manger-context";
 import { initializeSfx, playSfx } from "@/services/audio/sfx";
-import { primeTaskMediaTransport } from "@/services/audio/task-media-transport";
 import { useSoundEnabledStore } from "@/storage/soundEnabled";
 
 const TaskPlay = ({
@@ -41,7 +40,6 @@ const TaskPlay = ({
     if (isPlaying) {
       stopPlayingTask();
     } else {
-      void primeTaskMediaTransport().catch(() => undefined);
       setPlayingTask(task);
     }
   };
