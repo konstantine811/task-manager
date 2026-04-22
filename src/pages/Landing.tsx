@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router";
 import {
   LandingBackground,
   ChronoNav,
@@ -9,11 +11,25 @@ import {
 } from "@/components/landing";
 import { useAuth } from "@/hooks/useAuth";
 import { PageLoader } from "@/components/ui/page-loader";
+import { getTodayDailyRoute } from "@/config/route-paths";
+import { hasEnteredAppThisSession } from "@/config/app-session";
 
 export default function Landing() {
-  const { loading: authLoading } = useAuth();
+  const { isAuthenticated, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (authLoading || !isAuthenticated) return;
+    if (hasEnteredAppThisSession()) return;
+
+    navigate(getTodayDailyRoute(), { replace: true });
+  }, [authLoading, isAuthenticated, navigate]);
 
   if (authLoading) {
+    return <PageLoader />;
+  }
+
+  if (isAuthenticated && !hasEnteredAppThisSession()) {
     return <PageLoader />;
   }
 
