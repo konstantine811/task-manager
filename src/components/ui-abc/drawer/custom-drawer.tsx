@@ -31,7 +31,12 @@ const CustomDrawer = ({
   const hs = useHeaderSizeStore((s) => s.size);
 
   return (
-    <Drawer open={open} onOpenChange={setOpen} preventScrollRestoration={false}>
+    <Drawer
+      open={open}
+      onOpenChange={setOpen}
+      preventScrollRestoration={false}
+      handleOnly
+    >
       <DrawerTrigger asChild>
         <div>
           <Button
@@ -56,7 +61,10 @@ const CustomDrawer = ({
         </div>
       </DrawerTrigger>
       <DrawerContent className="z-1000 rounded-t-2xl border border-zinc-300/80 bg-white/88 text-zinc-900 shadow-2xl backdrop-blur-xl outline-none dark:border-white/10 dark:bg-[rgba(10,10,12,0.82)] dark:text-zinc-100">
-        <ScrollArea className="w-full touch-auto overscroll-contain px-2 max-h-[60vh] overflow-auto">
+        <ScrollArea
+          data-vaul-no-drag
+          className="w-full touch-pan-y touch-auto overscroll-contain px-2 max-h-[60vh] overflow-auto"
+        >
           <DrawerHeader>
             <DrawerTitle>{t(title)}</DrawerTitle>
             <DrawerDescription>{t(description)}</DrawerDescription>
