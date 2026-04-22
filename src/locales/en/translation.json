@@ -207,6 +207,14 @@
         "error": "Save error"
       }
     },
+    "notifications": {
+      "title": "Task reminder",
+      "toast_title": "Reminder",
+      "permission_hint": "Enable notifications for this site to receive reminders on your phone.",
+      "offset_1h": "in 1 hour",
+      "offset_5m": "in 5 minutes",
+      "body": "{{task}} at {{time}} ({{offset}})"
+    },
     "template_daily_task_title": "Daily Task Template",
     "daily_task_title": "Your Tasks for",
     "edit": "Edit Task",

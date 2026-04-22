@@ -31,6 +31,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { isTouchDevice } from "@/utils/touch-inspect";
 import { journalAlignmentPersistencePlugin } from "./journal-alignment-persistence-plugin";
 import "@mdxeditor/editor/style.css";
 
@@ -89,6 +90,7 @@ const DailyJournalCard = ({
   const [content, setContent] = useState(initialContent);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const isTouch = isTouchDevice;
 
   const lastSavedRef = useRef(initialContent);
   const latestContentRef = useRef(initialContent);
@@ -274,25 +276,27 @@ const DailyJournalCard = ({
             <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
               {t("task_manager.journal.title")}
             </h3>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  className="inline-flex h-6 w-6 items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-200/80 hover:text-zinc-800 dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-zinc-200"
-                  aria-label={t("task_manager.journal.info_label")}
+            {!isTouch && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    className="inline-flex h-6 w-6 items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-200/80 hover:text-zinc-800 dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-zinc-200"
+                    aria-label={t("task_manager.journal.info_label")}
+                  >
+                    <Info className="h-3.5 w-3.5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent
+                  side="top"
+                  sideOffset={10}
+                  className="max-w-xs text-xs leading-5 border border-zinc-300/80 bg-white text-zinc-900 shadow-lg dark:border-white/10 dark:bg-zinc-950 dark:text-zinc-100"
                 >
-                  <Info className="h-3.5 w-3.5" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent
-                side="top"
-                sideOffset={10}
-                className="max-w-xs text-xs leading-5 border border-zinc-300/80 bg-white text-zinc-900 shadow-lg dark:border-white/10 dark:bg-zinc-950 dark:text-zinc-100"
-              >
-                <p>{t("task_manager.journal.description")}</p>
-                <p className="mt-1">Markdown shortcuts: `#`, `-`, `**`, `[link]`</p>
-              </TooltipContent>
-            </Tooltip>
+                  <p>{t("task_manager.journal.description")}</p>
+                  <p className="mt-1">Markdown shortcuts: `#`, `-`, `**`, `[link]`</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
           </div>
         </div>
 
@@ -307,6 +311,17 @@ const DailyJournalCard = ({
         )}
 
         <div className="flex items-center gap-2">
+          {isTouch && onUploadImage && (
+            <button
+              type="button"
+              onClick={handlePickImageClick}
+              disabled={isUploadingImage}
+              className="inline-flex items-center gap-2 rounded-lg border border-zinc-300/80 bg-zinc-100/80 px-3 py-1.5 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-200/80 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-white/10 dark:text-zinc-200 dark:hover:bg-white/15"
+            >
+              <ImagePlus className="h-4 w-4" />
+              <span>{t("task_manager.journal.add_image")}</span>
+            </button>
+          )}
           <span className={cn("text-xs font-medium", saveStateTone[saveState])}>
             {t(`task_manager.journal.status.${saveState}`)}
           </span>
@@ -379,7 +394,7 @@ const DailyJournalCard = ({
                     >
                       <AlignRight className="h-4 w-4" />
                     </AlignmentToolbarButton>
-                    {onUploadImage && (
+                    {onUploadImage && !isTouch && (
                       <ButtonWithTooltip
                         title={t("task_manager.journal.add_image")}
                         onClick={handlePickImageClick}

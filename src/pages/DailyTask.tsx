@@ -32,6 +32,7 @@ import CoinCelebrationOverlay, {
 import { getDailyTaskAnalyticsData } from "@/services/task-menager/analytics/daily-handle-data";
 import { CATEGORY_STYLE, DEFAULT_CATEGORY_STYLE } from "@/components/dnd/config/category-style.config";
 import { type CoinColor } from "@/components/ui-abc/coin";
+import { useDeterminedTaskReminders } from "./hooks/useDeterminedTaskReminders";
 
 const getCoinColorByTaskPercent = (taskPercent: number): CoinColor | null => {
   if (taskPercent >= 100) return "gold";
@@ -58,6 +59,8 @@ const DailyTask = () => {
   >([]);
   const prevCoinStateRef = useRef<Record<string, CoinColor>>({});
   const [t] = useTranslation();
+
+  useDeterminedTaskReminders(date, dailyTask);
 
   useEffect(() => {
     setDateVal(date);

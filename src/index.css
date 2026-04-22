@@ -1127,6 +1127,64 @@ html:not(.dark) .chrono-dialog .chrono-time-drum-colon {
   border-radius: 10px;
 }
 
+/* Make image resize handles usable on touch devices in MDX editor */
+@media (hover: none) and (pointer: coarse) {
+  .journal-mdx-editor [class*="_imageResizer_"] {
+    width: 18px !important;
+    height: 18px !important;
+    border-radius: 9999px;
+    border-width: 2px !important;
+    touch-action: none !important;
+    z-index: 3;
+  }
+
+  .journal-mdx-editor [class*="_imageResizerN_"] {
+    top: -11px !important;
+    left: calc(50% - 9px) !important;
+  }
+
+  .journal-mdx-editor [class*="_imageResizerNe_"] {
+    top: -11px !important;
+    right: -11px !important;
+  }
+
+  .journal-mdx-editor [class*="_imageResizerE_"] {
+    top: calc(50% - 9px) !important;
+    right: -11px !important;
+    bottom: auto !important;
+  }
+
+  .journal-mdx-editor [class*="_imageResizerSe_"] {
+    right: -11px !important;
+    bottom: -11px !important;
+  }
+
+  .journal-mdx-editor [class*="_imageResizerS_"] {
+    bottom: -11px !important;
+    left: calc(50% - 9px) !important;
+  }
+
+  .journal-mdx-editor [class*="_imageResizerSw_"] {
+    bottom: -11px !important;
+    left: -11px !important;
+  }
+
+  .journal-mdx-editor [class*="_imageResizerW_"] {
+    top: calc(50% - 9px) !important;
+    left: -11px !important;
+    bottom: auto !important;
+  }
+
+  .journal-mdx-editor [class*="_imageResizerNw_"] {
+    top: -11px !important;
+    left: -11px !important;
+  }
+
+  .journal-mdx-editor [class*="_imageControlWrapperResizing_"] {
+    touch-action: none !important;
+  }
+}
+
 .dark .journal-mdx-editor {
   color: rgb(228 228 231);
   --basePageBg: #0c0c0d;
