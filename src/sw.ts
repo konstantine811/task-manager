@@ -30,13 +30,27 @@ const NOTIFICATION_BADGE = "/pwa-192x192.png";
 self.skipWaiting();
 clientsClaim();
 cleanupOutdatedCaches();
-precacheAndRoute(self.__WB_MANIFEST);
+const precacheManifest = self.__WB_MANIFEST;
+precacheAndRoute(precacheManifest);
 
-registerRoute(
-  new NavigationRoute(createHandlerBoundToURL("/index.html"), {
-    denylist: [/^\/api\//],
-  }),
+const precachedUrls = new Set(
+  precacheManifest.map((entry) =>
+    typeof entry === "string" ? entry : entry.url,
+  ),
 );
+const appShellUrl = precachedUrls.has("index.html")
+  ? "index.html"
+  : precachedUrls.has("/index.html")
+    ? "/index.html"
+    : null;
+
+if (appShellUrl) {
+  registerRoute(
+    new NavigationRoute(createHandlerBoundToURL(appShellUrl), {
+      denylist: [/^\/api\//],
+    }),
+  );
+}
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
