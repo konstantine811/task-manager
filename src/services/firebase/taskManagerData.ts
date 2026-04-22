@@ -126,10 +126,22 @@ export const saveDailyTasks = async <T>(
 
   try {
     const cleanItems = stripUndefined(items);
+    const timeZone =
+      typeof Intl !== "undefined"
+        ? Intl.DateTimeFormat().resolvedOptions().timeZone
+        : undefined;
+    const timeZoneOffsetMinutes = -new Date().getTimezoneOffset();
+
     await setDoc(ref, {
       updatedAt: new Date().toISOString(),
       email: user.email,
       items: cleanItems,
+      ...(collectionName === FirebaseCollection.dailyTasks
+        ? {
+            timeZone,
+            timeZoneOffsetMinutes,
+          }
+        : {}),
     }, { merge: true });
   } catch (error) {
     console.error("🔥 Error saving tasks:", error);

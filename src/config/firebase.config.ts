@@ -10,7 +10,7 @@ if (!apiKey || typeof apiKey !== "string" || apiKey.length < 10) {
   );
 }
 
-const firebaseConfig = {
+export const firebaseConfig = {
   apiKey,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID ?? "abc-folio",
@@ -23,6 +23,9 @@ const firebaseConfig = {
     import.meta.env.VITE_FIREBASE_APP_ID ??
     "1:493686804138:web:1c5f418cae4e89d9440ad3",
 };
+
+export const firebaseFunctionsRegion =
+  import.meta.env.VITE_FIREBASE_FUNCTIONS_REGION ?? "us-central1";
 
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);

@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:functions": "npm --prefix functions run build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -53,6 +54,7 @@
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.3.0",
     "vaul": "^1.1.2",
+    "vite-plugin-pwa": "^1.2.0",
     "zod": "^3.25.57",
     "zustand": "^5.0.3"
   },

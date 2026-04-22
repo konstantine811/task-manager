@@ -3,12 +3,14 @@ import { Toaster } from "sonner";
 import { Suspense } from "react";
 import { routes } from "./config/routes";
 import useSetTheme from "./hooks/useSetTheme";
+import { PushNotificationsBootstrap } from "./services/notifications/push";
 
 function App() {
   useSetTheme();
 
   return (
     <>
+      <PushNotificationsBootstrap />
       <Suspense
         fallback={
           <div className="flex min-h-screen items-center justify-center">

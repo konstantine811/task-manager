@@ -16,6 +16,7 @@ npm run dev
 
 ```bash
 npm run build
+npm run build:functions
 npm run preview   # перегляд production-збірки
 ```
 
@@ -29,6 +30,17 @@ npm run preview   # перегляд production-збірки
 ## Firebase
 
 Використовується той самий Firebase-проєкт, що й у портфоліо (колекції `template-tasks`, `daily-tasks`, `planned-tasks`, `daily-analytics`), щоб дані були спільними.
+
+### PWA + Push reminders
+
+- Для web push потрібен `VITE_FIREBASE_VAPID_KEY`.
+- Frontend реєструє PWA service worker та FCM token.
+- Backend reminder scheduler знаходиться у `functions/` і синхронізується через Firebase Functions.
+- Перед деплоєм backend-частини згенеруй build:
+
+```bash
+npm run build:functions
+```
 
 ## Далі
 

@@ -211,6 +211,8 @@
       "title": "Task reminder",
       "toast_title": "Reminder",
       "permission_hint": "Enable notifications for this site to receive reminders on your phone.",
+      "ios_pwa_hint": "On iPhone, open the app from the Home Screen and allow notifications for the installed PWA.",
+      "vapid_missing": "Push notifications are missing a configured VAPID key.",
       "offset_1h": "in 1 hour",
       "offset_5m": "in 5 minutes",
       "body": "{{task}} at {{time}} ({{offset}})"

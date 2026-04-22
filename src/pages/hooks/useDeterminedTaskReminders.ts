@@ -1,77 +1,28 @@
 import { Items } from "@/types/drag-and-drop.model";
-import { parseDate } from "@/utils/date.util";
 import { useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import {
+  buildReminderPlans,
+  extractReminderTasks,
+  getNotificationBodyOffsetKey,
+  isTodayIsoDate,
+} from "@/services/notifications/reminder-sync";
+import { usePushNotificationsStore } from "@/storage/pushNotifications";
 import { useSoundEnabledStore } from "@/storage/soundEnabled";
-
-const REMINDER_OFFSETS_SECONDS = [3600, 300] as const;
-
-type ReminderOffset = (typeof REMINDER_OFFSETS_SECONDS)[number];
-
-interface ReminderTask {
-  id: string;
-  title: string;
-  scheduledSeconds: number;
-}
-
-interface ReminderPlan {
-  key: string;
-  fireAtMs: number;
-  taskTitle: string;
-  taskClockLabel: string;
-  offset: ReminderOffset;
-}
-
-const isTodayIsoDate = (date: string): boolean => {
-  const selected = parseDate(date);
-  selected.setHours(0, 0, 0, 0);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return selected.getTime() === today.getTime();
-};
-
-const formatClockFromSeconds = (seconds: number): string => {
-  const normalized = Math.max(0, Math.floor(seconds));
-  const hours = Math.floor(normalized / 3600) % 24;
-  const minutes = Math.floor((normalized % 3600) / 60);
-  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
-};
-
-const getNotificationBodyOffsetKey = (offset: ReminderOffset): string => {
-  if (offset === 3600) return "task_manager.notifications.offset_1h";
-  return "task_manager.notifications.offset_5m";
-};
 
 export const useDeterminedTaskReminders = (date?: string, dailyTasks?: Items) => {
   const [t] = useTranslation();
   const isSoundEnabled = useSoundEnabledStore((s) => s.isSoundEnabled);
+  const pushStatus = usePushNotificationsStore((s) => s.status);
   const scheduledTimersRef = useRef<Map<string, number>>(new Map());
   const firedRemindersRef = useRef<Set<string>>(new Set());
-  const permissionRequestedRef = useRef(false);
-  const permissionHintShownRef = useRef(false);
   const dingAudioRef = useRef<HTMLAudioElement | null>(null);
-  const audioUnlockedRef = useRef(false);
 
-  const reminderTasks = useMemo<ReminderTask[]>(() => {
-    if (!dailyTasks || dailyTasks.length === 0) return [];
-    const tasks: ReminderTask[] = [];
-
-    dailyTasks.forEach((category) => {
-      category.tasks.forEach((task) => {
-        if (!task.isDetermined || task.isDone) return;
-        if (!Number.isFinite(task.time) || task.time <= 0) return;
-        tasks.push({
-          id: String(task.id),
-          title: task.title || t("task_manager.new_task"),
-          scheduledSeconds: Math.floor(task.time),
-        });
-      });
-    });
-
-    tasks.sort((a, b) => a.scheduledSeconds - b.scheduledSeconds);
-    return tasks;
-  }, [dailyTasks, t]);
+  const reminderTasks = useMemo(
+    () => extractReminderTasks(dailyTasks, t),
+    [dailyTasks, t],
+  );
 
   const reminderSignature = useMemo(
     () =>
@@ -86,84 +37,25 @@ export const useDeterminedTaskReminders = (date?: string, dailyTasks?: Items) =>
     audio.preload = "auto";
     dingAudioRef.current = audio;
 
-    const unlockAudioAndNotifications = () => {
-      if (!audioUnlockedRef.current && dingAudioRef.current) {
-        const audioEl = dingAudioRef.current;
-        audioEl.muted = true;
-        void audioEl.play()
-          .then(() => {
-            audioEl.pause();
-            audioEl.currentTime = 0;
-            audioEl.muted = false;
-            audioUnlockedRef.current = true;
-          })
-          .catch(() => {
-            audioEl.muted = false;
-          });
-      }
-
-      if (
-        typeof window !== "undefined" &&
-        "Notification" in window &&
-        Notification.permission === "default" &&
-        !permissionRequestedRef.current
-      ) {
-        permissionRequestedRef.current = true;
-        void Notification.requestPermission().then((permission) => {
-          if (permission !== "granted" && !permissionHintShownRef.current) {
-            permissionHintShownRef.current = true;
-            toast(t("task_manager.notifications.permission_hint"));
-          }
-        });
-      }
-    };
-
-    window.addEventListener("pointerdown", unlockAudioAndNotifications, {
-      passive: true,
-    });
-    window.addEventListener("keydown", unlockAudioAndNotifications, {
-      passive: true,
-    });
-
     return () => {
-      window.removeEventListener("pointerdown", unlockAudioAndNotifications);
-      window.removeEventListener("keydown", unlockAudioAndNotifications);
       dingAudioRef.current?.pause();
       dingAudioRef.current = null;
     };
-  }, [t]);
+  }, []);
 
   useEffect(() => {
     scheduledTimersRef.current.forEach((timerId) => window.clearTimeout(timerId));
     scheduledTimersRef.current.clear();
 
     if (!date || !isTodayIsoDate(date) || reminderTasks.length === 0) return;
+    if (pushStatus === "registered") return;
 
-    const dayStart = parseDate(date);
-    dayStart.setHours(0, 0, 0, 0);
-    const dayStartMs = dayStart.getTime();
-    const nowMs = Date.now();
-
-    const plans: ReminderPlan[] = [];
-    reminderTasks.forEach((task) => {
-      const dueAtMs = dayStartMs + task.scheduledSeconds * 1000;
-      REMINDER_OFFSETS_SECONDS.forEach((offset) => {
-        const fireAtMs = dueAtMs - offset * 1000;
-        if (fireAtMs <= nowMs) return;
-
-        const key = `${date}:${task.id}:${task.scheduledSeconds}:${offset}`;
-        if (firedRemindersRef.current.has(key)) return;
-
-        plans.push({
-          key,
-          fireAtMs,
-          taskTitle: task.title,
-          taskClockLabel: formatClockFromSeconds(task.scheduledSeconds),
-          offset,
-        });
-      });
-    });
-
+    const plans = buildReminderPlans(
+      date,
+      reminderTasks,
+      Date.now(),
+      firedRemindersRef.current,
+    );
     if (plans.length === 0) return;
 
     plans.forEach((plan) => {
@@ -222,5 +114,5 @@ export const useDeterminedTaskReminders = (date?: string, dailyTasks?: Items) =>
       scheduledTimersRef.current.forEach((timerId) => window.clearTimeout(timerId));
       scheduledTimersRef.current.clear();
     };
-  }, [date, reminderSignature, reminderTasks, t, isSoundEnabled]);
+  }, [date, reminderSignature, reminderTasks, t, isSoundEnabled, pushStatus]);
 };
