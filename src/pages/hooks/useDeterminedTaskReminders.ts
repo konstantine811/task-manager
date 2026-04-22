@@ -3,6 +3,7 @@ import { parseDate } from "@/utils/date.util";
 import { useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { useSoundEnabledStore } from "@/storage/soundEnabled";
 
 const REMINDER_OFFSETS_SECONDS = [3600, 300] as const;
 
@@ -44,10 +45,13 @@ const getNotificationBodyOffsetKey = (offset: ReminderOffset): string => {
 
 export const useDeterminedTaskReminders = (date?: string, dailyTasks?: Items) => {
   const [t] = useTranslation();
+  const isSoundEnabled = useSoundEnabledStore((s) => s.isSoundEnabled);
   const scheduledTimersRef = useRef<Map<string, number>>(new Map());
   const firedRemindersRef = useRef<Set<string>>(new Set());
   const permissionRequestedRef = useRef(false);
   const permissionHintShownRef = useRef(false);
+  const dingAudioRef = useRef<HTMLAudioElement | null>(null);
+  const audioUnlockedRef = useRef(false);
 
   const reminderTasks = useMemo<ReminderTask[]>(() => {
     if (!dailyTasks || dailyTasks.length === 0) return [];
@@ -76,6 +80,58 @@ export const useDeterminedTaskReminders = (date?: string, dailyTasks?: Items) =>
         .join("|"),
     [reminderTasks],
   );
+
+  useEffect(() => {
+    const audio = new Audio("/sfx/ding.wav");
+    audio.preload = "auto";
+    dingAudioRef.current = audio;
+
+    const unlockAudioAndNotifications = () => {
+      if (!audioUnlockedRef.current && dingAudioRef.current) {
+        const audioEl = dingAudioRef.current;
+        audioEl.muted = true;
+        void audioEl.play()
+          .then(() => {
+            audioEl.pause();
+            audioEl.currentTime = 0;
+            audioEl.muted = false;
+            audioUnlockedRef.current = true;
+          })
+          .catch(() => {
+            audioEl.muted = false;
+          });
+      }
+
+      if (
+        typeof window !== "undefined" &&
+        "Notification" in window &&
+        Notification.permission === "default" &&
+        !permissionRequestedRef.current
+      ) {
+        permissionRequestedRef.current = true;
+        void Notification.requestPermission().then((permission) => {
+          if (permission !== "granted" && !permissionHintShownRef.current) {
+            permissionHintShownRef.current = true;
+            toast(t("task_manager.notifications.permission_hint"));
+          }
+        });
+      }
+    };
+
+    window.addEventListener("pointerdown", unlockAudioAndNotifications, {
+      passive: true,
+    });
+    window.addEventListener("keydown", unlockAudioAndNotifications, {
+      passive: true,
+    });
+
+    return () => {
+      window.removeEventListener("pointerdown", unlockAudioAndNotifications);
+      window.removeEventListener("keydown", unlockAudioAndNotifications);
+      dingAudioRef.current?.pause();
+      dingAudioRef.current = null;
+    };
+  }, [t]);
 
   useEffect(() => {
     scheduledTimersRef.current.forEach((timerId) => window.clearTimeout(timerId));
@@ -110,27 +166,6 @@ export const useDeterminedTaskReminders = (date?: string, dailyTasks?: Items) =>
 
     if (plans.length === 0) return;
 
-    if (typeof window !== "undefined" && "Notification" in window) {
-      if (Notification.permission === "default" && !permissionRequestedRef.current) {
-        permissionRequestedRef.current = true;
-        void Notification.requestPermission().then((permission) => {
-          if (
-            permission !== "granted" &&
-            !permissionHintShownRef.current
-          ) {
-            permissionHintShownRef.current = true;
-            toast(t("task_manager.notifications.permission_hint"));
-          }
-        });
-      } else if (
-        Notification.permission !== "granted" &&
-        !permissionHintShownRef.current
-      ) {
-        permissionHintShownRef.current = true;
-        toast(t("task_manager.notifications.permission_hint"));
-      }
-    }
-
     plans.forEach((plan) => {
       const delayMs = Math.max(0, plan.fireAtMs - Date.now());
       const timerId = window.setTimeout(() => {
@@ -143,7 +178,28 @@ export const useDeterminedTaskReminders = (date?: string, dailyTasks?: Items) =>
           offset: t(getNotificationBodyOffsetKey(plan.offset)),
         });
 
-        if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
+        toast(t("task_manager.notifications.toast_title"), {
+          description: body,
+        });
+
+        if ("vibrate" in navigator) {
+          navigator.vibrate([80, 40, 80]);
+        }
+
+        if (isSoundEnabled && audioUnlockedRef.current && dingAudioRef.current) {
+          const audio = dingAudioRef.current;
+          audio.currentTime = 0;
+          audio.volume = 1;
+          void audio.play().catch(() => undefined);
+        }
+
+        if (
+          typeof document !== "undefined" &&
+          typeof window !== "undefined" &&
+          "Notification" in window &&
+          Notification.permission === "granted" &&
+          document.visibilityState !== "visible"
+        ) {
           const notification = new Notification(
             t("task_manager.notifications.title"),
             {
@@ -158,12 +214,7 @@ export const useDeterminedTaskReminders = (date?: string, dailyTasks?: Items) =>
             window.focus();
             notification.close();
           };
-          return;
         }
-
-        toast(t("task_manager.notifications.toast_title"), {
-          description: body,
-        });
       }, delayMs);
 
       scheduledTimersRef.current.set(plan.key, timerId);
@@ -173,5 +224,5 @@ export const useDeterminedTaskReminders = (date?: string, dailyTasks?: Items) =>
       scheduledTimersRef.current.forEach((timerId) => window.clearTimeout(timerId));
       scheduledTimersRef.current.clear();
     };
-  }, [date, reminderSignature, reminderTasks, t]);
+  }, [date, reminderSignature, reminderTasks, t, isSoundEnabled]);
 };
