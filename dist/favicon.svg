@@ -1,5 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="6" fill="#ffffff"/>
-  <!-- Infinity symbol: left loop up, right loop down, crossing at center -->
-  <path d="M8 16C8 6 16 6 24 16C24 26 16 26 8 16" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <rect x="80" y="80" width="864" height="864" rx="176" fill="#ffffff" />
+  <path
+    d="M300 512C300 380 408 380 512 512C616 644 724 644 724 512C724 380 616 380 512 512C408 644 300 644 300 512"
+    fill="none"
+    stroke="#000000"
+    stroke-width="72"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
 </svg>
