@@ -77,6 +77,7 @@ export interface DailyAnalyticsData {
   countDoneTime: number;
   countTime: number;
   countDoneTask: number;
+  countTrackedTask: number;
   countAllTask: number;
 }
 

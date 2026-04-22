@@ -16,15 +16,15 @@ const DailyAnalytics = () => {
   const [categoryEntity, setCategoryEntity] =
     useState<CategoryAnalyticsNameEntity>({});
   const [dailyAnaltyics, setDailyAnaltyics] = useState<DailyAnalyticsData>();
-  const doneDailyEntity = Object.fromEntries(
-    Object.entries(dailyEntity).filter(([, task]) => task.isDone),
+  const trackedDailyEntity = Object.fromEntries(
+    Object.entries(dailyEntity).filter(([, task]) => task.time > 0),
   );
   const doneCategoryEntity = Object.fromEntries(
     Object.entries(categoryEntity).filter(
       ([, category]) => category.countDone > 0 || category.countDoneTime > 0,
     ),
   );
-  const hasDoneTasks = (dailyAnaltyics?.countDoneTask ?? 0) > 0;
+  const hasTrackedTime = (dailyAnaltyics?.countDoneTime ?? 0) > 0;
 
   useEffect(() => {
     if (!dailyTasks || dailyTasks.length === 0) {
@@ -41,13 +41,14 @@ const DailyAnalytics = () => {
   }, [dailyTasks]);
   return (
     <div className="flex flex-col gap-4">
-      {hasDoneTasks && <ChartTimeStackWrapper data={doneDailyEntity} />}
-      {hasDoneTasks && dailyAnaltyics && <DailyAnalyticsTable data={dailyAnaltyics} />}
-      {hasDoneTasks && Object.keys(doneCategoryEntity).length > 0 && (
+      {hasTrackedTime && <ChartTimeStackWrapper data={trackedDailyEntity} />}
+      {hasTrackedTime && dailyAnaltyics && <DailyAnalyticsTable data={dailyAnaltyics} />}
+      {hasTrackedTime && Object.keys(doneCategoryEntity).length > 0 && (
         <ChartPieCategoryWrap
           className="pb-8 md:py-8"
           data={doneCategoryEntity}
           showCompletedOnly
+          subtitleKey="chart.pie_category_tracked_subtitle"
           useTimeCompletion
         />
       )}

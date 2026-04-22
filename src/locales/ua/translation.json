@@ -214,6 +214,10 @@
       "title": "Щоденник дня",
       "description": "Markdown-нотатка для цього дня у стилі Obsidian.",
       "info_label": "Інформація про markdown",
+      "align_left": "Вирівняти ліворуч",
+      "align_center": "Вирівняти по центру",
+      "align_right": "Вирівняти праворуч",
+      "add_image": "Додати фото",
       "editor": "Редагування",
       "preview": "Перегляд",
       "placeholder": "# День\n\n## Фокус\n- \n\n## Нотатки\n",
@@ -292,7 +296,8 @@
       "daily_table": {
         "indicator": "Показник",
         "count": "Кількість",
-        "time": "Час"
+        "time": "Час",
+        "tracked": "Затрекано"
       },
       "header_range": {
         "title": "Аналітика задач які є за період",
@@ -435,6 +440,7 @@
     "task_day_count": "Завдання на сьогодні",
     "pie_category_daily_time": "Відсоток виконання за категоріями",
     "pie_category_completed_subtitle": "Лише виконані задачі",
+    "pie_category_tracked_subtitle": "Виконані + затрекані задачі",
     "pie_category_planned_completed_subtitle": "Запланований vs виконаний час",
     "pie_category_total_subtitle": "Планові + виконані задачі",
     "pie_task_planned_completed_title": "Відсоток виконання за задачами",

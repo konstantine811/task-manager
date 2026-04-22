@@ -1,15 +1,19 @@
 import { cn } from "@/lib/utils";
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { ChangeEvent, ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { Info } from "lucide-react";
+import { AlignCenter, AlignLeft, AlignRight, ImagePlus, Info } from "lucide-react";
 import {
   BlockTypeSelect,
+  ButtonWithTooltip,
   BoldItalicUnderlineToggles,
   CreateLink,
+  imagePlugin,
   InsertThematicBreak,
   ListsToggle,
   MDXEditor,
   UndoRedo,
+  activeEditor$,
   headingsPlugin,
   linkDialogPlugin,
   linkPlugin,
@@ -18,13 +22,16 @@ import {
   quotePlugin,
   thematicBreakPlugin,
   toolbarPlugin,
+  useCellValue,
 } from "@mdxeditor/editor";
 import type { MDXEditorMethods } from "@mdxeditor/editor";
+import { FORMAT_ELEMENT_COMMAND } from "lexical";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { journalAlignmentPersistencePlugin } from "./journal-alignment-persistence-plugin";
 import "@mdxeditor/editor/style.css";
 
 type SaveState = "idle" | "saving" | "saved" | "error";
@@ -41,17 +48,47 @@ interface DailyJournalCardProps {
   initialContent: string;
   isLoading?: boolean;
   onSave: (content: string) => Promise<void>;
+  onUploadImage?: (file: File) => Promise<string>;
 }
+
+interface AlignmentToolbarButtonProps {
+  mode: "left" | "center" | "right";
+  title: string;
+  children: ReactNode;
+}
+
+const AlignmentToolbarButton = ({
+  mode,
+  title,
+  children,
+}: AlignmentToolbarButtonProps) => {
+  const editor = useCellValue(activeEditor$);
+
+  return (
+    <ButtonWithTooltip
+      title={title}
+      onClick={() => {
+        if (!editor) return;
+        editor.focus();
+        editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, mode);
+      }}
+    >
+      {children}
+    </ButtonWithTooltip>
+  );
+};
 
 const DailyJournalCard = ({
   date,
   initialContent,
   isLoading = false,
   onSave,
+  onUploadImage,
 }: DailyJournalCardProps) => {
   const [t] = useTranslation();
   const [content, setContent] = useState(initialContent);
   const [saveState, setSaveState] = useState<SaveState>("idle");
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   const lastSavedRef = useRef(initialContent);
   const latestContentRef = useRef(initialContent);
@@ -62,6 +99,7 @@ const DailyJournalCard = ({
   const editorRef = useRef<MDXEditorMethods | null>(null);
   const isEditorFocusedRef = useRef(false);
   const lastAppliedInitialRef = useRef(initialContent);
+  const imageInputRef = useRef<HTMLInputElement | null>(null);
 
   const enqueueSave = useCallback(
     async (nextContent: string) => {
@@ -187,6 +225,47 @@ const DailyJournalCard = ({
     return () => window.removeEventListener("pagehide", handlePageHide);
   }, [enqueueSave]);
 
+  const uploadImageAndInsert = useCallback(
+    async (file: File): Promise<string> => {
+      if (!onUploadImage) {
+        throw new Error("Image upload is not available");
+      }
+
+      setIsUploadingImage(true);
+      setSaveState("saving");
+
+      try {
+        const imageUrl = await onUploadImage(file);
+        return imageUrl;
+      } finally {
+        setIsUploadingImage(false);
+      }
+    },
+    [onUploadImage],
+  );
+
+  const handlePickImageClick = useCallback(() => {
+    imageInputRef.current?.click();
+  }, []);
+
+  const handleImageInputChange = useCallback(
+    async (event: ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      event.currentTarget.value = "";
+      if (!file || !onUploadImage) return;
+
+      try {
+        const imageUrl = await uploadImageAndInsert(file);
+        const alt = file.name.replace(/\.[^.]+$/, "") || "image";
+        editorRef.current?.insertMarkdown(`\n![${alt}](${imageUrl})\n`);
+      } catch (error) {
+        console.error("Failed to upload journal image:", error);
+        setSaveState("error");
+      }
+    },
+    [onUploadImage, uploadImageAndInsert],
+  );
+
   return (
     <section className="mb-5 rounded-2xl border border-zinc-200/80 bg-white/70 p-4 shadow-sm dark:border-white/10 dark:bg-white/5">
       <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -216,6 +295,16 @@ const DailyJournalCard = ({
             </Tooltip>
           </div>
         </div>
+
+        {onUploadImage && (
+          <input
+            ref={imageInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleImageInputChange}
+          />
+        )}
 
         <div className="flex items-center gap-2">
           <span className={cn("text-xs font-medium", saveStateTone[saveState])}>
@@ -259,6 +348,10 @@ const DailyJournalCard = ({
               listsPlugin(),
               linkPlugin(),
               linkDialogPlugin(),
+              imagePlugin({
+                imageUploadHandler: onUploadImage ? uploadImageAndInsert : undefined,
+              }),
+              journalAlignmentPersistencePlugin(),
               thematicBreakPlugin(),
               markdownShortcutPlugin(),
               toolbarPlugin({
@@ -268,6 +361,33 @@ const DailyJournalCard = ({
                     <UndoRedo />
                     <BlockTypeSelect />
                     <BoldItalicUnderlineToggles />
+                    <AlignmentToolbarButton
+                      title={t("task_manager.journal.align_left")}
+                      mode="left"
+                    >
+                      <AlignLeft className="h-4 w-4" />
+                    </AlignmentToolbarButton>
+                    <AlignmentToolbarButton
+                      title={t("task_manager.journal.align_center")}
+                      mode="center"
+                    >
+                      <AlignCenter className="h-4 w-4" />
+                    </AlignmentToolbarButton>
+                    <AlignmentToolbarButton
+                      title={t("task_manager.journal.align_right")}
+                      mode="right"
+                    >
+                      <AlignRight className="h-4 w-4" />
+                    </AlignmentToolbarButton>
+                    {onUploadImage && (
+                      <ButtonWithTooltip
+                        title={t("task_manager.journal.add_image")}
+                        onClick={handlePickImageClick}
+                        disabled={isUploadingImage}
+                      >
+                        <ImagePlus className="h-4 w-4" />
+                      </ButtonWithTooltip>
+                    )}
                     <ListsToggle />
                     <CreateLink />
                     <InsertThematicBreak />

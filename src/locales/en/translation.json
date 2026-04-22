@@ -191,6 +191,10 @@
       "title": "Daily journal",
       "description": "A markdown note for this day in an Obsidian-like style.",
       "info_label": "Markdown info",
+      "align_left": "Align left",
+      "align_center": "Align center",
+      "align_right": "Align right",
+      "add_image": "Add image",
       "editor": "Editor",
       "preview": "Preview",
       "placeholder": "# Day\n\n## Focus\n- \n\n## Notes\n",
@@ -287,7 +291,8 @@
       "daily_table": {
         "indicator": "Indicator",
         "count": "Count",
-        "time": "Time"
+        "time": "Time",
+        "tracked": "Tracked"
       },
       "header_range": {
         "title": "Task Analytics for Period",
@@ -428,6 +433,7 @@
     "task_day_count": "Tasks for Today",
     "pie_category_daily_time": "Completion % by Categories",
     "pie_category_completed_subtitle": "Completed tasks only",
+    "pie_category_tracked_subtitle": "Completed + tracked tasks",
     "pie_category_planned_completed_subtitle": "Planned vs completed time",
     "pie_category_total_subtitle": "Planned + completed tasks",
     "pie_task_planned_completed_title": "Completion % by Tasks",

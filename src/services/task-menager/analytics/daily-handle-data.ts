@@ -15,18 +15,20 @@ import { resolveCategoryKey } from "@/utils/category.util";
 import { formatISO, subDays } from "date-fns";
 
 /**
- * Секунди тривалості для стек-діаграми «день».
- * У planned з діалогу: `time` = час доби (TimePicker), `timeDone` = тривалість (TimePickerInputs).
- * Якщо брати `time` для ширини сегмента — 14:00 перетворюється на ~14 «годин» бару.
+ * Фактично затреканий час по задачі (сек).
+ * Для невиконаних задач враховуємо лише те, що реально натрекали (`timeDone`), а не план (`time`).
  */
-function taskBarDurationSeconds(task: ItemTask): number {
-  if (task.isPlanned || task.isDetermined) {
+function taskTrackedSeconds(task: ItemTask): number {
+  if (task.isDetermined) {
+    return task.isDone && task.timeDone > 0 ? task.timeDone : 0;
+  }
+  if (task.isPlanned) {
     return task.timeDone > 0 ? task.timeDone : 0;
   }
   if (task.isDone) {
     return task.timeDone > 0 ? task.timeDone : task.time;
   }
-  return task.time;
+  return task.timeDone > 0 ? task.timeDone : 0;
 }
 
 export const getAreaProgress = (
@@ -53,6 +55,7 @@ export const getDailyTaskAnalyticsData = (tasks: Items): DailyTaskAnalytics => {
     countDoneTime: 0,
     countTime: 0,
     countDoneTask: 0,
+    countTrackedTask: 0,
     countAllTask: 0,
   };
   tasks.forEach((cat) => {
@@ -87,20 +90,15 @@ export const getDailyTaskAnalyticsData = (tasks: Items): DailyTaskAnalytics => {
       } = task;
 
       const timeDo = isDetermined || isPlanned || isDone ? timeDone : time;
-      // "Completed" analytics should only include tasks that are currently marked done.
-      // Otherwise an undone task with a preserved timeDone would still appear as completed.
-      const timeDoneCategory = isDone
-        ? isDetermined || isPlanned
-          ? timeDone
-          : timeDone || time
-        : 0;
+      const trackedTime = taskTrackedSeconds(task);
       dailyAnalytics.countTime += timeDo;
       dailyAnalytics.countAllTask += 1;
-      dailyAnalytics.countDoneTime += timeDoneCategory;
+      dailyAnalytics.countDoneTime += trackedTime;
       dailyAnalytics.countDoneTask += isDone ? 1 : 0;
+      dailyAnalytics.countTrackedTask += trackedTime > 0 ? 1 : 0;
 
       categoryStats.time += timeDo;
-      categoryStats.countDoneTime += timeDoneCategory;
+      categoryStats.countDoneTime += trackedTime;
 
       if (isDone) {
         categoryStats.countDone += 1;
@@ -111,8 +109,8 @@ export const getDailyTaskAnalyticsData = (tasks: Items): DailyTaskAnalytics => {
 
       dailyEntity[id] = {
         title,
-        time: taskBarDurationSeconds(task),
-        timeDone,
+        time: trackedTime,
+        timeDone: trackedTime,
         category: categoryTitle,
         isDone,
         priority,

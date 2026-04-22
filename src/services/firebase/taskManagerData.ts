@@ -3,6 +3,7 @@ import {
   db,
   FirebaseCollection,
   FirebaseCollectionProps,
+  storage,
 } from "@/config/firebase.config";
 
 /** Firestore rejects undefined. Recursively strip undefined from objects/arrays. */
@@ -52,6 +53,12 @@ import {
   Unsubscribe,
   where,
 } from "firebase/firestore";
+import {
+  deleteObject,
+  getDownloadURL,
+  ref as storageRef,
+  uploadBytes,
+} from "firebase/storage";
 
 export const saveTemplateTasks = async (items: Items) => {
   const user = await waitForUserAuth();
@@ -430,12 +437,218 @@ export async function loadDailyTasksByRange(
   return results;
 }
 
+const DAILY_JOURNAL_STORAGE_ROOT = "task-manager-chrono";
+
+const guessImageExtByMimeType = (contentType: string): string => {
+  const normalized = contentType.toLowerCase();
+  if (normalized === "image/jpeg") return "jpg";
+  if (normalized === "image/png") return "png";
+  if (normalized === "image/webp") return "webp";
+  if (normalized === "image/gif") return "gif";
+  if (normalized === "image/bmp") return "bmp";
+  if (normalized === "image/heic") return "heic";
+  if (normalized === "image/heif") return "heif";
+  if (normalized === "image/avif") return "avif";
+  return "jpg";
+};
+
+const toHex = (buffer: ArrayBuffer): string => {
+  return [...new Uint8Array(buffer)]
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+};
+
+const hashFileBytes = async (file: File): Promise<string> => {
+  if (typeof crypto === "undefined" || !crypto.subtle) {
+    return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+  }
+  const fileBuffer = await file.arrayBuffer();
+  const hashBuffer = await crypto.subtle.digest("SHA-256", fileBuffer);
+  return toHex(hashBuffer);
+};
+
+const extractImageUrlsFromMarkdown = (content: string): Set<string> => {
+  const urls = new Set<string>();
+  if (!content.trim()) return urls;
+
+  const markdownImageRegex =
+    /!\[[^\]]*]\(\s*(?:<([^>]+)>|([^\s)]+))(?:\s+["'][^"']*["'])?\s*\)/g;
+  const htmlImageRegex = /<img[^>]+src=["']([^"']+)["'][^>]*>/gi;
+
+  for (const match of content.matchAll(markdownImageRegex)) {
+    const candidate = (match[1] || match[2] || "").trim();
+    if (candidate.startsWith("http://") || candidate.startsWith("https://") || candidate.startsWith("gs://")) {
+      urls.add(candidate);
+    }
+  }
+
+  for (const match of content.matchAll(htmlImageRegex)) {
+    const candidate = (match[1] || "").trim();
+    if (candidate) urls.add(candidate);
+  }
+
+  return urls;
+};
+
+const extractStorageObjectPathsFromMarkdown = (content: string): Set<string> => {
+  const paths = new Set<string>();
+  const urls = extractImageUrlsFromMarkdown(content);
+  urls.forEach((url) => {
+    const objectPath = extractStorageObjectPath(url);
+    if (objectPath) {
+      paths.add(objectPath);
+    }
+  });
+  return paths;
+};
+
+const extractStorageObjectPath = (url: string): string | null => {
+  if (!url) return null;
+  if (url.startsWith("gs://")) {
+    const slashIndex = url.indexOf("/", 5);
+    if (slashIndex === -1) return null;
+    return decodeURIComponent(url.slice(slashIndex + 1));
+  }
+
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname !== "firebasestorage.googleapis.com") return null;
+    const pathMatch = parsed.pathname.match(/\/o\/(.+)$/);
+    if (!pathMatch?.[1]) return null;
+    return decodeURIComponent(pathMatch[1]);
+  } catch {
+    return null;
+  }
+};
+
+const isDailyJournalStoragePath = (
+  objectPath: string,
+  uid: string,
+  date: string,
+): boolean => {
+  const nextPrefix = `${DAILY_JOURNAL_STORAGE_ROOT}/${uid}/daily-journal-images/${date}/`;
+  const legacyPrefix = `${uid}/daily-journal-images/${date}/`;
+  return objectPath.startsWith(nextPrefix) || objectPath.startsWith(legacyPrefix);
+};
+
 export const saveDailyJournal = async (date: string, journal: DailyJournal) => {
-  await saveDailyTasks<DailyJournal>(
-    journal,
-    date,
+  const user = await waitForUserAuth();
+  if (!user) {
+    console.warn("❌ Cannot save journal. User not authenticated.");
+    return;
+  }
+
+  const ref = doc(
+    db,
     FirebaseCollection.dailyJournal,
+    user.uid,
+    FirebaseCollectionProps[FirebaseCollection.dailyJournal].days,
+    date,
   );
+
+  let previousContent = "";
+  try {
+    const previousSnap = await getDoc(ref);
+    if (previousSnap.exists()) {
+      previousContent =
+        ((previousSnap.data().items as DailyJournal | undefined)?.content ?? "");
+    }
+  } catch (error) {
+    console.warn("⚠️ Failed to load previous journal version before save:", error);
+  }
+
+  const cleanJournal = stripUndefined(journal);
+  await setDoc(
+    ref,
+    {
+      updatedAt: new Date().toISOString(),
+      email: user.email,
+      items: cleanJournal,
+    },
+    { merge: true },
+  );
+
+  const nextContent = cleanJournal?.content ?? "";
+  const beforePaths = extractStorageObjectPathsFromMarkdown(previousContent);
+  const afterPaths = extractStorageObjectPathsFromMarkdown(nextContent);
+  const removedPaths = [...beforePaths].filter(
+    (objectPath) =>
+      !afterPaths.has(objectPath) &&
+      isDailyJournalStoragePath(objectPath, user.uid, date),
+  );
+
+  if (!removedPaths.length) return;
+
+  await Promise.allSettled(
+    removedPaths.map(async (objectPath) => {
+      try {
+        await deleteObject(storageRef(storage, objectPath));
+      } catch (error) {
+        const code =
+          typeof error === "object" && error !== null && "code" in error
+            ? String((error as { code: unknown }).code)
+            : "";
+        if (code === "storage/object-not-found") return;
+        console.warn("⚠️ Failed to delete removed journal image:", objectPath, error);
+      }
+    }),
+  );
+};
+
+export const uploadDailyJournalImage = async (
+  date: string,
+  file: File,
+): Promise<string> => {
+  const user = await waitForUserAuth();
+  if (!user) {
+    throw new Error("User not authenticated");
+  }
+
+  const safeName = file.name
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+
+  const ext = (safeName.split(".").pop() || "").toLowerCase();
+  const guessedTypeByExt: Record<string, string> = {
+    jpg: "image/jpeg",
+    jpeg: "image/jpeg",
+    png: "image/png",
+    webp: "image/webp",
+    gif: "image/gif",
+    bmp: "image/bmp",
+    heic: "image/heic",
+    heif: "image/heif",
+    avif: "image/avif",
+  };
+  const contentType =
+    file.type && file.type.startsWith("image/")
+      ? file.type
+      : guessedTypeByExt[ext] || "image/jpeg";
+
+  const normalizedExt = ext || guessImageExtByMimeType(contentType);
+  const fileHash = await hashFileBytes(file);
+  const path = `${DAILY_JOURNAL_STORAGE_ROOT}/${user.uid}/daily-journal-images/${date}/${fileHash}.${normalizedExt}`;
+  const fileRef = storageRef(storage, path);
+
+  try {
+    return await getDownloadURL(fileRef);
+  } catch (error) {
+    const code =
+      typeof error === "object" && error !== null && "code" in error
+        ? String((error as { code: unknown }).code)
+        : "";
+    if (code !== "storage/object-not-found") {
+      throw error;
+    }
+  }
+
+  await uploadBytes(fileRef, file, {
+    contentType,
+  });
+
+  return getDownloadURL(fileRef);
 };
 
 export const loadDailyJournalByDate = async (

@@ -10,6 +10,7 @@ import {
   loadDailyJournalByDate,
   saveDailyJournal,
   subscribeToDailyTasksByDate,
+  uploadDailyJournalImage,
   updatePlannedTasksOnServer,
 } from "@/services/firebase/taskManagerData";
 import { FirebaseCollection } from "@/config/firebase.config";
@@ -215,6 +216,16 @@ const DailyTask = () => {
     [date],
   );
 
+  const handleUploadJournalImage = useCallback(
+    async (file: File) => {
+      if (!date) {
+        throw new Error("Date is missing");
+      }
+      return uploadDailyJournalImage(date, file);
+    },
+    [date],
+  );
+
   useEffect(() => {
     if (!mdSize) {
       setOverlayCelebrations((prev) => (prev.length > 0 ? [] : prev));
@@ -309,6 +320,7 @@ const DailyTask = () => {
               initialContent={journalContent}
               isLoading={isJournalLoading}
               onSave={handleSaveJournal}
+              onUploadImage={handleUploadJournalImage}
             />
           )}
 

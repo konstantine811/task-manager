@@ -27,7 +27,7 @@ const DailyAnalyticsTable = ({ data }: { data: DailyAnalyticsData }) => {
     },
     [t]
   );
-  if (data.countDoneTask <= 0) return null;
+  if (data.countDoneTime <= 0) return null;
 
   return (
     <div className="flex flex-col gap-4">
@@ -42,8 +42,12 @@ const DailyAnalyticsTable = ({ data }: { data: DailyAnalyticsData }) => {
           </TableHeader>
           <TableBody>
             <TableRow>
-              <TableCell className="text-zinc-800 dark:text-zinc-200">Виконано</TableCell>
-              <TableCell className="font-mono text-zinc-700 dark:text-zinc-400">{data.countDoneTask}</TableCell>
+              <TableCell className="text-zinc-800 dark:text-zinc-200">
+                {t("task_manager.analytics.daily_table.tracked")}
+              </TableCell>
+              <TableCell className="font-mono text-zinc-700 dark:text-zinc-400">
+                {data.countTrackedTask}
+              </TableCell>
               <TableCell className="font-mono text-zinc-700 dark:text-zinc-400">
                 {parseTime(data.countDoneTime)}
               </TableCell>
