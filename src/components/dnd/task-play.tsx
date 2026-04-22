@@ -6,8 +6,9 @@ import { Pause, Play } from "lucide-react";
 import TaskLocalTime from "./task-local-time";
 import { useTranslation } from "react-i18next";
 import TaskLocalTimeStatic from "./task-local-time-static";
-import { useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useTaskManager } from "./context/use-task-manger-context";
+import { useSoundEnabledStore } from "@/storage/soundEnabled";
 
 const TaskPlay = ({
   task,
@@ -19,9 +20,15 @@ const TaskPlay = ({
   templated: boolean;
 }) => {
   const playingTask = useTaskManager((s) => s.playingTask);
+  const startedAt = useTaskManager((s) => s.startedAt);
   const setPlayingTask = useTaskManager((s) => s.setPlayingTask);
   const stopPlayingTask = useTaskManager((s) => s.stopPlayingTask);
+  const isSoundEnabled = useSoundEnabledStore((s) => s.isSoundEnabled);
   const [t] = useTranslation();
+  const dingAudioRef = useRef<HTMLAudioElement | null>(null);
+  const dingIntervalRef = useRef<number | null>(null);
+  const hasPlayedPlannedDingRef = useRef(false);
+  const prevLiveTimeRef = useRef(task.timeDone);
 
   const isPlaying = playingTask?.id === task.id;
   const displayTimeTooltip =
@@ -37,9 +44,78 @@ const TaskPlay = ({
     }
   };
 
+  const getLiveTimeDone = useCallback(() => {
+    const baseTimeDone =
+      playingTask?.id === task.id ? playingTask.timeDone : task.timeDone;
+    if (!isPlaying || !startedAt) return baseTimeDone;
+    const elapsed = Math.max(0, Math.floor((Date.now() - startedAt) / 1000));
+    return baseTimeDone + elapsed;
+  }, [isPlaying, playingTask, startedAt, task.id, task.timeDone]);
+
   useEffect(() => {
     onPlay(isPlaying);
   }, [isPlaying, onPlay]);
+
+  useEffect(() => {
+    const audio = new Audio("/sfx/ding.wav");
+    audio.preload = "auto";
+    dingAudioRef.current = audio;
+
+    return () => {
+      if (dingIntervalRef.current !== null) {
+        window.clearInterval(dingIntervalRef.current);
+        dingIntervalRef.current = null;
+      }
+      dingAudioRef.current?.pause();
+      dingAudioRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    const currentLiveTime = getLiveTimeDone();
+    prevLiveTimeRef.current = currentLiveTime;
+    hasPlayedPlannedDingRef.current =
+      task.time > 0 && currentLiveTime >= task.time;
+  }, [getLiveTimeDone, task.time]);
+
+  useEffect(() => {
+    if (dingIntervalRef.current !== null) {
+      window.clearInterval(dingIntervalRef.current);
+      dingIntervalRef.current = null;
+    }
+
+    if (!isPlaying || task.time <= 0) return;
+
+    dingIntervalRef.current = window.setInterval(() => {
+      const plannedSeconds = task.time;
+      if (plannedSeconds <= 0) return;
+
+      const currentLiveTime = getLiveTimeDone();
+      const previousLiveTime = prevLiveTimeRef.current;
+      prevLiveTimeRef.current = currentLiveTime;
+
+      const crossedPlannedTime =
+        previousLiveTime < plannedSeconds && currentLiveTime >= plannedSeconds;
+      if (!crossedPlannedTime || hasPlayedPlannedDingRef.current) return;
+
+      hasPlayedPlannedDingRef.current = true;
+      if (!isSoundEnabled) return;
+
+      const audio = dingAudioRef.current ?? new Audio("/sfx/ding.wav");
+      dingAudioRef.current = audio;
+      audio.currentTime = 0;
+      audio.volume = 1;
+      void audio.play().catch(() => undefined);
+    }, 300);
+
+    return () => {
+      if (dingIntervalRef.current !== null) {
+        window.clearInterval(dingIntervalRef.current);
+        dingIntervalRef.current = null;
+      }
+    };
+  }, [getLiveTimeDone, isPlaying, isSoundEnabled, task.time]);
+
   return (
     <div className="flex items-center gap-2">
       {!templated && (
