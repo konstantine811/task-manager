@@ -28,51 +28,6 @@ const DialogTask = ({
     }, 100);
   }, [setHover, isOpen]);
 
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const body = document.body;
-    const html = document.documentElement;
-    const scrollY = window.scrollY;
-
-    const previousBodyStyle = {
-      overflow: body.style.overflow,
-      position: body.style.position,
-      top: body.style.top,
-      left: body.style.left,
-      right: body.style.right,
-      width: body.style.width,
-      overscrollBehavior: body.style.overscrollBehavior,
-    };
-    const previousHtmlStyle = {
-      overflow: html.style.overflow,
-      overscrollBehavior: html.style.overscrollBehavior,
-    };
-
-    body.style.overflow = "hidden";
-    body.style.position = "fixed";
-    body.style.top = `-${scrollY}px`;
-    body.style.left = "0";
-    body.style.right = "0";
-    body.style.width = "100%";
-    body.style.overscrollBehavior = "none";
-    html.style.overflow = "hidden";
-    html.style.overscrollBehavior = "none";
-
-    return () => {
-      body.style.overflow = previousBodyStyle.overflow;
-      body.style.position = previousBodyStyle.position;
-      body.style.top = previousBodyStyle.top;
-      body.style.left = previousBodyStyle.left;
-      body.style.right = previousBodyStyle.right;
-      body.style.width = previousBodyStyle.width;
-      body.style.overscrollBehavior = previousBodyStyle.overscrollBehavior;
-      html.style.overflow = previousHtmlStyle.overflow;
-      html.style.overscrollBehavior = previousHtmlStyle.overscrollBehavior;
-      window.scrollTo(0, scrollY);
-    };
-  }, [isOpen]);
-
   const modal = (
     <AnimatePresence>
       {isOpen && (
