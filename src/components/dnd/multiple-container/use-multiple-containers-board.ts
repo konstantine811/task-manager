@@ -200,6 +200,9 @@ export function useMultipleContainersBoard({
     if (!remoteTimerState) {
       if (lastAppliedRemoteTimerSigRef.current === "stopped") return;
       lastAppliedRemoteTimerSigRef.current = "stopped";
+      // Keep local sync dedupe in sync with remote state.
+      // This prevents false "already stopped" skips after remote/local handover.
+      lastSyncedTimerSigRef.current = "stopped";
       syncTimerFromRemote(null, null);
       return;
     }
@@ -221,6 +224,9 @@ export function useMultipleContainersBoard({
     if (sig === lastAppliedRemoteTimerSigRef.current) return;
 
     lastAppliedRemoteTimerSigRef.current = sig;
+    // Mirror applied remote state in local sync dedupe marker,
+    // so a local stop always flushes correctly.
+    lastSyncedTimerSigRef.current = sig;
     syncTimerFromRemote(
       { ...remoteTask, timeDone: remoteTimerState.baseTimeDone },
       remoteTimerState.startedAt,
