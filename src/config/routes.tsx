@@ -1,12 +1,10 @@
 import { lazy, Suspense, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import { format } from "date-fns";
-import { DateTemplate } from "@/config/data-config";
-import { ROUTES } from "@/config/route-paths";
+import { getTodayDailyRoute } from "@/config/route-paths";
 import { PageLoader } from "@/components/ui/page-loader";
 
-export { ROUTES } from "@/config/route-paths";
+export { ROUTES, getTodayDailyRoute } from "@/config/route-paths";
 
 const Landing = lazy(() => import("@/pages/Landing"));
 const TemplateTask = lazy(() => import("@/pages/TemplateTask"));
@@ -29,8 +27,7 @@ function TaskManagerIndexRedirect() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const today = format(new Date(), DateTemplate.dayMonthYear);
-    navigate(`${ROUTES.DAILY}/${today}`, { replace: true });
+    navigate(getTodayDailyRoute(), { replace: true });
   }, [navigate]);
 
   return (

@@ -10,6 +10,7 @@ import {
 } from "firebase/messaging";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { initializeSfx, playSfx } from "@/services/audio/sfx";
 import { app, firebaseFunctionsRegion } from "@/config/firebase.config";
 import { useAuth } from "@/hooks/useAuth";
 import { usePushNotificationsStore } from "@/storage/pushNotifications";
@@ -158,22 +159,12 @@ export const PushNotificationsBootstrap = () => {
   const [t, i18n] = useTranslation();
   const isSoundEnabled = useSoundEnabledStore((s) => s.isSoundEnabled);
   const setPushStatus = usePushNotificationsStore((s) => s.setStatus);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const audioUnlockedRef = useRef(false);
   const registrationInFlightRef = useRef(false);
   const hintShownRef = useRef(false);
   const previousUserIdRef = useRef<string | null>(null);
 
   useEffect(() => {
-    const audio = new Audio("/sfx/ding.wav");
-    audio.preload = "auto";
-    audio.setAttribute("playsinline", "true");
-    audioRef.current = audio;
-
-    return () => {
-      audio.pause();
-      audioRef.current = null;
-    };
+    initializeSfx(["/sfx/ding.wav"]);
   }, []);
 
   useEffect(() => {
@@ -196,11 +187,8 @@ export const PushNotificationsBootstrap = () => {
           navigator.vibrate([80, 40, 80]);
         }
 
-        if (isSoundEnabled && audioRef.current) {
-          const audio = audioRef.current;
-          audio.currentTime = 0;
-          audio.volume = 1;
-          void audio.play().catch(() => undefined);
+        if (isSoundEnabled) {
+          void playSfx("/sfx/ding.wav").catch(() => undefined);
         }
       });
     })();
@@ -223,33 +211,6 @@ export const PushNotificationsBootstrap = () => {
 
     previousUserIdRef.current = user.uid;
   }, [setPushStatus, user]);
-
-  useEffect(() => {
-    const unlockAudio = () => {
-      if (audioUnlockedRef.current || !audioRef.current) return;
-
-      const audio = audioRef.current;
-      audio.muted = true;
-      void audio.play()
-        .then(() => {
-          audio.pause();
-          audio.currentTime = 0;
-          audio.muted = false;
-          audioUnlockedRef.current = true;
-        })
-        .catch(() => {
-          audio.muted = false;
-        });
-    };
-
-    window.addEventListener("pointerdown", unlockAudio, { passive: true });
-    window.addEventListener("keydown", unlockAudio, { passive: true });
-
-    return () => {
-      window.removeEventListener("pointerdown", unlockAudio);
-      window.removeEventListener("keydown", unlockAudio);
-    };
-  }, []);
 
   useEffect(() => {
     let cancelled = false;

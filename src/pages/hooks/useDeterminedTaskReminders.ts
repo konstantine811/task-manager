@@ -8,6 +8,7 @@ import {
   getNotificationBodyOffsetKey,
   isTodayIsoDate,
 } from "@/services/notifications/reminder-sync";
+import { initializeSfx, playSfx } from "@/services/audio/sfx";
 import { useSoundEnabledStore } from "@/storage/soundEnabled";
 
 export const useDeterminedTaskReminders = (date?: string, dailyTasks?: Items) => {
@@ -15,8 +16,6 @@ export const useDeterminedTaskReminders = (date?: string, dailyTasks?: Items) =>
   const isSoundEnabled = useSoundEnabledStore((s) => s.isSoundEnabled);
   const scheduledTimersRef = useRef<Map<string, number>>(new Map());
   const firedRemindersRef = useRef<Set<string>>(new Set());
-  const dingAudioRef = useRef<HTMLAudioElement | null>(null);
-  const audioUnlockedRef = useRef(false);
 
   const reminderTasks = useMemo(
     () => extractReminderTasks(dailyTasks, t),
@@ -32,37 +31,7 @@ export const useDeterminedTaskReminders = (date?: string, dailyTasks?: Items) =>
   );
 
   useEffect(() => {
-    const audio = new Audio("/sfx/ding.wav");
-    audio.preload = "auto";
-    audio.setAttribute("playsinline", "true");
-    dingAudioRef.current = audio;
-
-    const unlockAudio = () => {
-      if (audioUnlockedRef.current || !dingAudioRef.current) return;
-
-      const audioEl = dingAudioRef.current;
-      audioEl.muted = true;
-      void audioEl.play()
-        .then(() => {
-          audioEl.pause();
-          audioEl.currentTime = 0;
-          audioEl.muted = false;
-          audioUnlockedRef.current = true;
-        })
-        .catch(() => {
-          audioEl.muted = false;
-        });
-    };
-
-    window.addEventListener("pointerdown", unlockAudio, { passive: true });
-    window.addEventListener("keydown", unlockAudio, { passive: true });
-
-    return () => {
-      window.removeEventListener("pointerdown", unlockAudio);
-      window.removeEventListener("keydown", unlockAudio);
-      dingAudioRef.current?.pause();
-      dingAudioRef.current = null;
-    };
+    initializeSfx(["/sfx/ding.wav"]);
   }, []);
 
   useEffect(() => {
@@ -99,11 +68,8 @@ export const useDeterminedTaskReminders = (date?: string, dailyTasks?: Items) =>
           navigator.vibrate([80, 40, 80]);
         }
 
-        if (isSoundEnabled && dingAudioRef.current) {
-          const audio = dingAudioRef.current;
-          audio.currentTime = 0;
-          audio.volume = 1;
-          void audio.play().catch(() => undefined);
+        if (isSoundEnabled) {
+          void playSfx("/sfx/ding.wav").catch(() => undefined);
         }
 
         if (

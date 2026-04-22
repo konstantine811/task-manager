@@ -15,6 +15,7 @@ import {
 } from "@/components/dnd/config/category-style.config";
 import Coin, { type CoinColor } from "@/components/ui-abc/coin";
 import { motion } from "framer-motion";
+import { initializeSfx, playSfx } from "@/services/audio/sfx";
 import { useSoundEnabledStore } from "@/storage/soundEnabled";
 
 interface ChartPieCategoryProps {
@@ -117,11 +118,6 @@ const ChartPieCategory = ({
   const prevCoinStateRef = useRef<Record<string, CoinColor>>({});
   const flightRafRef = useRef<number | null>(null);
   const soundTimersRef = useRef<number[]>([]);
-  const coinSpawnAudioRef = useRef<Record<CoinColor, HTMLAudioElement | null>>({
-    bronze: null,
-    silver: null,
-    gold: null,
-  });
   const [flyingCoins, setFlyingCoins] = useState<FlyingCoin[]>([]);
   const [activeFlyingKeys, setActiveFlyingKeys] = useState<Set<string>>(
     new Set(),
@@ -527,20 +523,7 @@ const ChartPieCategory = ({
     .join("|");
 
   useEffect(() => {
-    (Object.keys(COIN_SOUND_BY_COLOR) as CoinColor[]).forEach((coinColor) => {
-      const audio = new Audio(COIN_SOUND_BY_COLOR[coinColor]);
-      audio.preload = "auto";
-      coinSpawnAudioRef.current[coinColor] = audio;
-    });
-    return () => {
-      (Object.keys(COIN_SOUND_BY_COLOR) as CoinColor[]).forEach((coinColor) => {
-        const audio = coinSpawnAudioRef.current[coinColor];
-        if (audio) {
-          audio.pause();
-        }
-        coinSpawnAudioRef.current[coinColor] = null;
-      });
-    };
+    initializeSfx(Object.values(COIN_SOUND_BY_COLOR));
   }, []);
 
   useEffect(() => {
@@ -570,24 +553,13 @@ const ChartPieCategory = ({
     if (triggeredItems.length === 0) return;
 
     if (isSoundEnabled) {
-      const usedBaseColors = new Set<CoinColor>();
       triggeredItems.forEach((item, index) => {
         const timerId = window.setTimeout(() => {
-          const baseAudio = coinSpawnAudioRef.current[item.coinColor];
-          const canUseBaseAudio =
-            !!baseAudio && !usedBaseColors.has(item.coinColor);
-          if (canUseBaseAudio) {
-            usedBaseColors.add(item.coinColor);
-          }
-          const audio = canUseBaseAudio
-            ? baseAudio
-            : baseAudio
-              ? (baseAudio.cloneNode(true) as HTMLAudioElement)
-              : new Audio(COIN_SOUND_BY_COLOR[item.coinColor]);
-          audio.volume = getCoinSoundVolume(item.coinColor);
-          audio.currentTime =
-            COIN_SOUND_START_OFFSET_SECONDS_BY_COLOR[item.coinColor] ?? 0;
-          void audio.play().catch(() => undefined);
+          void playSfx(COIN_SOUND_BY_COLOR[item.coinColor], {
+            volume: getCoinSoundVolume(item.coinColor),
+            offsetSeconds:
+              COIN_SOUND_START_OFFSET_SECONDS_BY_COLOR[item.coinColor] ?? 0,
+          }).catch(() => undefined);
         }, index * 120);
         soundTimersRef.current.push(timerId);
       });

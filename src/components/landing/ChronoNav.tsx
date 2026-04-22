@@ -2,12 +2,10 @@ import { Link, useLocation, useNavigate } from "react-router";
 import { Infinity, ArrowRight, LogOut, Moon, Sun } from "lucide-react";
 import { useThemeStore } from "@/storage/themeStore";
 import { ThemeType } from "@/config/theme-colors.config";
-import { ROUTES } from "@/config/routes";
+import { ROUTES, getTodayDailyRoute } from "@/config/routes";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
-import { DateTemplate } from "@/config/data-config";
 
 type ChronoNavProps = {
   /** Right side: landing = Login/Register or Tasks/Logout; app = minimal (logo = home) */
@@ -29,7 +27,6 @@ export function ChronoNav({ variant = "landing" }: ChronoNavProps) {
   ];
   const isDailyOrTemplatePage =
     pathname.startsWith(ROUTES.DAILY) || pathname.startsWith(ROUTES.TEMPLATE);
-  const today = format(new Date(), DateTemplate.dayMonthYear);
 
   const toggleTheme = () => {
     onSetTheme(
@@ -43,7 +40,7 @@ export function ChronoNav({ variant = "landing" }: ChronoNavProps) {
 
   const handleGoogleLogin = () => {
     loginWithGoogle()
-      .then(() => navigate(ROUTES.APP, { replace: true }))
+      .then(() => navigate(getTodayDailyRoute(), { replace: true }))
       .catch((err) => console.error("Google sign-in error:", err));
   };
 
@@ -72,7 +69,7 @@ export function ChronoNav({ variant = "landing" }: ChronoNavProps) {
                 <Link
                   key={item.key}
                   to={
-                    item.key === "daily" ? `${ROUTES.DAILY}/${today}` : item.to
+                    item.key === "daily" ? getTodayDailyRoute() : item.to
                   }
                   className={cn(
                     "rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
@@ -114,7 +111,7 @@ export function ChronoNav({ variant = "landing" }: ChronoNavProps) {
           )}
           {variant === "landing" && isAuthenticated && (
             <Link
-              to={ROUTES.APP}
+              to={getTodayDailyRoute()}
               className="h-7 px-3 bg-white text-black text-xs font-medium rounded-full flex items-center hover:bg-zinc-200 transition-colors shadow-[0_0_20px_rgba(255,255,255,0.1)]"
             >
               {t("nav.to_tasks")} <ArrowRight className="ml-1 w-3 h-3" />

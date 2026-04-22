@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router";
 import { Rocket, Play } from "lucide-react";
-import { ROUTES } from "@/config/routes";
+import { getTodayDailyRoute } from "@/config/routes";
 import { useAuth } from "@/hooks/useAuth";
 import { AppMockup } from "./AppMockup";
 
@@ -10,10 +10,10 @@ export function HeroSection() {
 
   const handleStart = () => {
     if (isAuthenticated) {
-      navigate(ROUTES.APP);
+      navigate(getTodayDailyRoute());
     } else {
       loginWithGoogle()
-        .then(() => navigate(ROUTES.APP, { replace: true }))
+        .then(() => navigate(getTodayDailyRoute(), { replace: true }))
         .catch((err) => console.error("Google sign-in error:", err));
     }
   };

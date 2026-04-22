@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import TaskLocalTimeStatic from "./task-local-time-static";
 import { useCallback, useEffect, useRef } from "react";
 import { useTaskManager } from "./context/use-task-manger-context";
+import { initializeSfx, playSfx } from "@/services/audio/sfx";
 import { useSoundEnabledStore } from "@/storage/soundEnabled";
 
 const TaskPlay = ({
@@ -25,7 +26,6 @@ const TaskPlay = ({
   const stopPlayingTask = useTaskManager((s) => s.stopPlayingTask);
   const isSoundEnabled = useSoundEnabledStore((s) => s.isSoundEnabled);
   const [t] = useTranslation();
-  const dingAudioRef = useRef<HTMLAudioElement | null>(null);
   const dingIntervalRef = useRef<number | null>(null);
   const hasPlayedPlannedDingRef = useRef(false);
   const prevLiveTimeRef = useRef(task.timeDone);
@@ -57,17 +57,12 @@ const TaskPlay = ({
   }, [isPlaying, onPlay]);
 
   useEffect(() => {
-    const audio = new Audio("/sfx/ding.wav");
-    audio.preload = "auto";
-    dingAudioRef.current = audio;
-
+    initializeSfx(["/sfx/ding.wav"]);
     return () => {
       if (dingIntervalRef.current !== null) {
         window.clearInterval(dingIntervalRef.current);
         dingIntervalRef.current = null;
       }
-      dingAudioRef.current?.pause();
-      dingAudioRef.current = null;
     };
   }, []);
 
@@ -101,11 +96,7 @@ const TaskPlay = ({
       hasPlayedPlannedDingRef.current = true;
       if (!isSoundEnabled) return;
 
-      const audio = dingAudioRef.current ?? new Audio("/sfx/ding.wav");
-      dingAudioRef.current = audio;
-      audio.currentTime = 0;
-      audio.volume = 1;
-      void audio.play().catch(() => undefined);
+      void playSfx("/sfx/ding.wav").catch(() => undefined);
     }, 300);
 
     return () => {
