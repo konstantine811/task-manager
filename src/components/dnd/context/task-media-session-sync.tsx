@@ -1,4 +1,8 @@
 import { useEffect, useMemo } from "react";
+import {
+  pauseTaskMediaTransport,
+  playTaskMediaTransport,
+} from "@/services/audio/task-media-transport";
 import { useTaskManager } from "./use-task-manger-context";
 
 const APP_TITLE = "Chrono // Керування часом";
@@ -39,6 +43,7 @@ export const TaskMediaSessionSync = () => {
     if (!canUseMediaSession()) return;
 
     if (!playingTask) {
+      pauseTaskMediaTransport();
       navigator.mediaSession.metadata = null;
       navigator.mediaSession.playbackState = "none";
       setMediaActionHandler("play", null);
@@ -50,6 +55,8 @@ export const TaskMediaSessionSync = () => {
       setMediaActionHandler("nexttrack", null);
       return;
     }
+
+    void playTaskMediaTransport().catch(() => undefined);
 
     navigator.mediaSession.metadata = new MediaMetadata({
       title: playingTask.title || "Активна задача",
