@@ -9,6 +9,7 @@ import {
   loadDailyTasksByDate,
   loadDailyJournalByDate,
   saveDailyJournal,
+  subscribeToDailyTasksByDate,
   updatePlannedTasksOnServer,
 } from "@/services/firebase/taskManagerData";
 import { FirebaseCollection } from "@/config/firebase.config";
@@ -142,12 +143,33 @@ const DailyTask = () => {
       setPlannedTasks([]);
       return;
     }
-    loadDailyTasksByDate<ItemTaskCategory[]>(
-      date,
-      FirebaseCollection.plannedTasks,
-    ).then((data) => {
+    let isMounted = true;
+    let unsubscribe: (() => void) | undefined;
+
+    (async () => {
+      unsubscribe = await subscribeToDailyTasksByDate<ItemTaskCategory[]>(
+        date,
+        FirebaseCollection.plannedTasks,
+        ({ items }) => {
+          if (!isMounted) return;
+          setPlannedTasks(items ?? []);
+        },
+      );
+
+      if (unsubscribe) return;
+
+      const data = await loadDailyTasksByDate<ItemTaskCategory[]>(
+        date,
+        FirebaseCollection.plannedTasks,
+      );
+      if (!isMounted) return;
       setPlannedTasks(data ?? []);
-    });
+    })();
+
+    return () => {
+      isMounted = false;
+      unsubscribe?.();
+    };
   }, [date]);
 
   useEffect(() => {

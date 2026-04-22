@@ -35,6 +35,7 @@ import {
   ItemTaskCategory,
 } from "@/types/drag-and-drop.model";
 import { DailyJournal } from "@/types/daily-journal.model";
+import { DailyTaskTimerSyncState } from "@/types/task-timer-sync.model";
 import { parseDates } from "@/utils/date.util";
 import { formatISO } from "date-fns";
 import { onAuthStateChanged, User } from "firebase/auth";
@@ -122,10 +123,98 @@ export const saveDailyTasks = async <T>(
       updatedAt: new Date().toISOString(),
       email: user.email,
       items: cleanItems,
-    });
+    }, { merge: true });
   } catch (error) {
     console.error("🔥 Error saving tasks:", error);
   }
+};
+
+export interface DailyTaskDocSnapshot<T> {
+  items: T | null;
+  timerState: DailyTaskTimerSyncState | null;
+}
+
+export const saveDailyTaskTimerState = async (
+  date: string,
+  timerState: DailyTaskTimerSyncState | null,
+) => {
+  const user = await waitForUserAuth();
+  if (!user) {
+    console.warn("❌ Cannot sync timer. User not authenticated.");
+    return;
+  }
+
+  const ref = doc(
+    db,
+    FirebaseCollection.dailyTasks,
+    user.uid,
+    FirebaseCollectionProps[FirebaseCollection.dailyTasks].days,
+    date,
+  );
+
+  try {
+    await setDoc(
+      ref,
+      {
+        updatedAt: new Date().toISOString(),
+        timerState: timerState ? stripUndefined(timerState) : null,
+      },
+      { merge: true },
+    );
+  } catch (error) {
+    console.error("🔥 Error syncing timer state:", error);
+  }
+};
+
+export const subscribeToDailyTasksByDate = async <T>(
+  date: string,
+  collectionName: FirebaseCollection,
+  onUpdate: (data: DailyTaskDocSnapshot<T>) => void,
+): Promise<Unsubscribe | undefined> => {
+  const user = await waitForUserAuth();
+  if (!user) return;
+
+  const uid = user.uid;
+  const ref = doc(
+    db,
+    collectionName,
+    uid,
+    collectionName === FirebaseCollection.plannedTasks ||
+      collectionName === FirebaseCollection.dailyTasks ||
+      collectionName === FirebaseCollection.dailyJournal
+      ? FirebaseCollectionProps[collectionName].days
+      : "",
+    date,
+  );
+
+  const unsubscribe = onSnapshot(ref, (docSnap) => {
+    if (!docSnap.exists()) {
+      onUpdate({ items: null, timerState: null });
+      return;
+    }
+
+    const data = docSnap.data();
+    const rawTimerState = data.timerState as
+      | Partial<DailyTaskTimerSyncState>
+      | null
+      | undefined;
+
+    const timerState =
+      rawTimerState &&
+      typeof rawTimerState.taskId === "string" &&
+      typeof rawTimerState.startedAt === "number" &&
+      typeof rawTimerState.baseTimeDone === "number" &&
+      typeof rawTimerState.updatedAt === "number"
+        ? (rawTimerState as DailyTaskTimerSyncState)
+        : null;
+
+    onUpdate({
+      items: (data.items as T | undefined) ?? null,
+      timerState,
+    });
+  });
+
+  return unsubscribe;
 };
 
 export const loadTemplateTasks = async (): Promise<Items | null> => {

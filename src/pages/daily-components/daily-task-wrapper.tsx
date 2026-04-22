@@ -3,6 +3,8 @@ import {
   loadTemplateTasks,
   saveDailyTasks,
   loadDailyTasksByDate,
+  saveDailyTaskTimerState,
+  subscribeToDailyTasksByDate,
 } from "@/services/firebase/taskManagerData";
 import {
   Items,
@@ -34,6 +36,7 @@ import {
 } from "@/services/task-menager/filter-tasks";
 import { normalizeItems } from "@/services/task-menager/normalize";
 import { resolveCategoryKey } from "@/utils/category.util";
+import { DailyTaskTimerSyncState } from "@/types/task-timer-sync.model";
 
 const DailyTaskWrapper = () => {
   const [dailyTasks, setDailyTasks] = useState<Items>([]);
@@ -45,6 +48,9 @@ const DailyTaskWrapper = () => {
     NormalizedTask[]
   >([]); // Додано для зберігання нормалізованих завдань
   const [templatedTasks, setTemplatedTasks] = useState<Items>([]);
+  const [remoteTimerState, setRemoteTimerState] =
+    useState<DailyTaskTimerSyncState | null>(null);
+  const templatedTasksRef = useRef<Items>([]);
   const {
     plannedTasks,
     updatePlannedTask,
@@ -57,32 +63,71 @@ const DailyTaskWrapper = () => {
     // 💡 Очищення попередніх даних при зміні дати
     setIsLoaded(false);
     setDailyTasks([]);
+    setRemoteTimerState(null);
+    setAnotherNormalizedTasks([]);
     currentDateRef.current = date;
     if (!date) return;
     const parsedDate = parseDate(date);
     setIsFuture(parsedDate > new Date()); // 🔄 Перевірка на майбутню дату
-    Promise.all([
-      loadDailyTasksByDate<Items>(date, FirebaseCollection.dailyTasks),
-      loadTemplateTasks(),
-    ]).then(([tasks, templateTasks]) => {
-      setTemplatedTasks(templateTasks || []);
-      const templateItems = templateTasks || [];
-      if (templateItems.length) {
-        if (tasks && tasks.length) {
-          setAnotherNormalizedTasks(
-            filterTasksByAnotherTasks(templateItems, tasks)
-          );
-        } else {
-          setAnotherNormalizedTasks(normalizeItems(templateItems));
-        }
+
+    let isMounted = true;
+    let unsubscribe: (() => void) | undefined;
+
+    const syncAnotherTasks = (templateItems: Items, tasks: Items) => {
+      if (!templateItems.length) {
+        setAnotherNormalizedTasks([]);
+        return;
       }
-      if (tasks && tasks.length) {
-        setDailyTasks(tasks);
-      } else {
-        setDailyTasks([]);
+
+      if (tasks.length > 0) {
+        setAnotherNormalizedTasks(filterTasksByAnotherTasks(templateItems, tasks));
+        return;
       }
+
+      setAnotherNormalizedTasks(normalizeItems(templateItems));
+    };
+
+    (async () => {
+      const templateItems = (await loadTemplateTasks()) || [];
+      if (!isMounted) return;
+
+      templatedTasksRef.current = templateItems;
+      setTemplatedTasks(templateItems);
+
+      if (parsedDate > new Date()) {
+        setIsLoaded(true);
+        return;
+      }
+
+      unsubscribe = await subscribeToDailyTasksByDate<Items>(
+        date,
+        FirebaseCollection.dailyTasks,
+        ({ items, timerState }) => {
+          if (!isMounted) return;
+          const nextTasks = items && items.length ? items : [];
+          setDailyTasks(nextTasks);
+          setRemoteTimerState(timerState);
+          syncAnotherTasks(templatedTasksRef.current, nextTasks);
+          setIsLoaded(true);
+        },
+      );
+
+      if (unsubscribe) return;
+
+      const fallbackTasks =
+        (await loadDailyTasksByDate<Items>(date, FirebaseCollection.dailyTasks)) ||
+        [];
+      if (!isMounted) return;
+
+      setDailyTasks(fallbackTasks);
+      syncAnotherTasks(templateItems, fallbackTasks);
       setIsLoaded(true);
-    });
+    })();
+
+    return () => {
+      isMounted = false;
+      unsubscribe?.();
+    };
   }, [date]);
 
   useEffect(() => {
@@ -134,6 +179,15 @@ const DailyTaskWrapper = () => {
       setIsLoaded(true);
     });
   }, [dailyTasks, plannedTasks, date, mergeNewPlannedTasks]);
+
+  const handleSyncTimerState = useCallback(
+    (timerState: DailyTaskTimerSyncState | null) => {
+      const currentDate = currentDateRef.current;
+      if (!currentDate) return;
+      void saveDailyTaskTimerState(currentDate, timerState);
+    },
+    [],
+  );
 
   const updatePlannedDeterminedTask = useCallback(
     (tasks: Items) => {
@@ -214,6 +268,8 @@ const DailyTaskWrapper = () => {
                 onEditPlannedTask={onUpdatePlannedTask}
                 getAnotherTasksForCategory={getAnotherTasksForCategory}
                 onAddAnotherTask={handleAddTemplateTask}
+                remoteTimerState={remoteTimerState}
+                onSyncTimerState={handleSyncTimerState}
               />
             </TaskManagerProvider>
           )}

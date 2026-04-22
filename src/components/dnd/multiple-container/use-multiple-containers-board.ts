@@ -23,6 +23,7 @@ import useCategoryHandle from "../hooks/useCategoryHandle";
 import { coordinateGetter as multipleContainersCoordinateGetter } from "../utils/multipleContainersKeyboardCoordinates";
 import { mergeOrAddTask } from "../utils/merge-task-by-title";
 import type { MultipleContainersProps } from "./multiple-containers.types";
+import type { DailyTaskTimerSyncState } from "@/types/task-timer-sync.model";
 
 type UseMultipleContainersBoardParams = Pick<
   MultipleContainersProps,
@@ -33,6 +34,8 @@ type UseMultipleContainersBoardParams = Pick<
   | "onEditPlannedTask"
   | "onTaskDone"
   | "onTaskUndone"
+  | "remoteTimerState"
+  | "onSyncTimerState"
 > & {
   coordinateGetter?: KeyboardCoordinateGetter;
 };
@@ -45,6 +48,8 @@ export function useMultipleContainersBoard({
   onEditPlannedTask,
   onTaskDone,
   onTaskUndone,
+  remoteTimerState,
+  onSyncTimerState,
   coordinateGetter = multipleContainersCoordinateGetter,
 }: UseMultipleContainersBoardParams) {
   const [items, setItems] = useState<Items>(initialItems);
@@ -57,6 +62,9 @@ export function useMultipleContainersBoard({
   }, [initialItems]);
 
   const playingTask = useTaskManager((s) => s.playingTask);
+  const startedAt = useTaskManager((s) => s.startedAt);
+  const timerSyncSource = useTaskManager((s) => s.timerSyncSource);
+  const syncTimerFromRemote = useTaskManager((s) => s.syncTimerFromRemote);
   const taskTimeDone = useTaskManager((s) => s.updatedTask);
   const setPlayingTimeDoneResolver = useTaskManager(
     (s) => s.setPlayingTimeDoneResolver,
@@ -80,6 +88,8 @@ export function useMultipleContainersBoard({
   const [activeSuggestedTask, setActiveSuggestedTask] =
     useState<ItemTask | null>(null);
   const lastAppliedUpdatedSigRef = useRef<string | null>(null);
+  const lastSyncedTimerSigRef = useRef<string | null>(null);
+  const lastAppliedRemoteTimerSigRef = useRef<string | null>(null);
 
   const mouseSensor = useSensor(MouseSensor);
   const touchSensor = useSensor(TouchSensor, {
@@ -162,6 +172,60 @@ export function useMultipleContainersBoard({
     lastAppliedUpdatedSigRef.current = sig;
     updateTaskTime(taskTimeDone.id, taskTimeDone.timeDone);
   }, [taskTimeDone, updateTaskTime]);
+
+  useEffect(() => {
+    if (!onSyncTimerState) return;
+    if (timerSyncSource !== "local") return;
+
+    const nextState: DailyTaskTimerSyncState | null =
+      playingTask && startedAt
+        ? {
+            taskId: String(playingTask.id),
+            startedAt,
+            baseTimeDone: playingTask.timeDone,
+            updatedAt: Date.now(),
+          }
+        : null;
+
+    const sig = nextState
+      ? `${nextState.taskId}:${nextState.startedAt}:${nextState.baseTimeDone}`
+      : "stopped";
+
+    if (sig === lastSyncedTimerSigRef.current) return;
+    lastSyncedTimerSigRef.current = sig;
+    onSyncTimerState(nextState);
+  }, [onSyncTimerState, timerSyncSource, playingTask, startedAt]);
+
+  useEffect(() => {
+    if (!remoteTimerState) {
+      if (lastAppliedRemoteTimerSigRef.current === "stopped") return;
+      lastAppliedRemoteTimerSigRef.current = "stopped";
+      syncTimerFromRemote(null, null);
+      return;
+    }
+
+    let remoteTask: ItemTask | null = null;
+    for (const container of items) {
+      const found = container.tasks.find(
+        (task) => String(task.id) === remoteTimerState.taskId,
+      );
+      if (found) {
+        remoteTask = found;
+        break;
+      }
+    }
+
+    if (!remoteTask) return;
+
+    const sig = `${remoteTimerState.taskId}:${remoteTimerState.startedAt}:${remoteTimerState.baseTimeDone}`;
+    if (sig === lastAppliedRemoteTimerSigRef.current) return;
+
+    lastAppliedRemoteTimerSigRef.current = sig;
+    syncTimerFromRemote(
+      { ...remoteTask, timeDone: remoteTimerState.baseTimeDone },
+      remoteTimerState.startedAt,
+    );
+  }, [items, remoteTimerState, syncTimerFromRemote]);
 
   const handleToggleTask = useCallback(
     (taskId: UniqueIdentifier, newIsDone: boolean) => {

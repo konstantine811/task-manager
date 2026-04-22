@@ -5,12 +5,17 @@ import { UniqueIdentifier } from "@dnd-kit/core";
 export interface TaskManagerState {
   playingTask: ItemTask | null;
   startedAt: number | null;
+  timerSyncSource: "local" | "remote" | null;
   updatedTask: {
     id: UniqueIdentifier;
     timeDone: number;
   } | null;
   setPlayingTask: (task: ItemTask | null) => void;
   stopPlayingTask: () => void;
+  syncTimerFromRemote: (
+    task: ItemTask | null,
+    startedAt: number | null,
+  ) => void;
   updateTaskTime: (taskId: UniqueIdentifier, timeDone: number) => void;
   /** Board registers latest `timeDone` from React state so stop/switch uses current base after props sync. */
   setPlayingTimeDoneResolver: (
@@ -26,6 +31,7 @@ export const createTaskManagerStore = () => {
   return createStore<TaskManagerState>((set, get) => ({
     playingTask: null,
     startedAt: null,
+    timerSyncSource: null,
     updatedTask: null,
 
     setPlayingTimeDoneResolver: (fn) => {
@@ -33,12 +39,16 @@ export const createTaskManagerStore = () => {
     },
 
     setPlayingTask: (task) => {
+      if (!task) {
+        set({ playingTask: null, startedAt: null, timerSyncSource: "local" });
+        return;
+      }
       const now = Date.now();
       const prev = get().playingTask;
       const startedAt = get().startedAt;
       if (prev && startedAt) {
         const elapsed = Math.floor((now - startedAt) / 1000);
-        set({ playingTask: task, startedAt: now });
+        set({ playingTask: task, startedAt: now, timerSyncSource: "local" });
 
         if (prev.id !== task?.id) {
           const base =
@@ -46,7 +56,7 @@ export const createTaskManagerStore = () => {
           get().updateTaskTime(prev.id, base + elapsed);
         }
       } else {
-        set({ playingTask: task, startedAt: now });
+        set({ playingTask: task, startedAt: now, timerSyncSource: "local" });
       }
     },
 
@@ -62,7 +72,15 @@ export const createTaskManagerStore = () => {
         get().updateTaskTime(playing.id, base + elapsed);
       }
 
-      set({ playingTask: null, startedAt: null });
+      set({ playingTask: null, startedAt: null, timerSyncSource: "local" });
+    },
+
+    syncTimerFromRemote: (task, startedAt) => {
+      set({
+        playingTask: task,
+        startedAt,
+        timerSyncSource: "remote",
+      });
     },
 
     updateTaskTime: (taskId, newTimeDone) => {

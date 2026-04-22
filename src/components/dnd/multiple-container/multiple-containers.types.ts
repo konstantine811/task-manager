@@ -14,6 +14,7 @@ import type {
   NormalizedTask,
 } from "@/types/drag-and-drop.model";
 import type { AdvisorTask } from "@/services/ai/gemini.types";
+import type { DailyTaskTimerSyncState } from "@/types/task-timer-sync.model";
 
 export interface MultipleContainersProps {
   adjustScale?: boolean;
@@ -59,4 +60,8 @@ export interface MultipleContainersProps {
   ) => NormalizedTask[];
   /** Adds one task from "not on board yet" dropdown */
   onAddAnotherTask?: (task: NormalizedTask) => void;
+  /** Synced timer state for current day from Firestore */
+  remoteTimerState?: DailyTaskTimerSyncState | null;
+  /** Push local play/stop timer changes to Firestore */
+  onSyncTimerState?: (timerState: DailyTaskTimerSyncState | null) => void;
 }

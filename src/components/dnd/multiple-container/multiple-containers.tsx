@@ -64,6 +64,8 @@ export function MultipleContainers({
   onTaskUndone,
   getAnotherTasksForCategory,
   onAddAnotherTask,
+  remoteTimerState,
+  onSyncTimerState,
 }: MultipleContainersProps) {
   const [t] = useTranslation();
   const sH = useHeaderSizeStore((s) => s.size);
@@ -112,6 +114,8 @@ export function MultipleContainers({
     onTaskDone,
     onTaskUndone,
     coordinateGetter,
+    remoteTimerState,
+    onSyncTimerState,
   });
 
   return (
