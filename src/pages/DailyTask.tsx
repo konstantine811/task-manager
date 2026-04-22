@@ -365,7 +365,7 @@ const DailyTask = () => {
               title={"task_manager.calendar.header.title"}
               description={"task_manager.calendar.header.description"}
             >
-              <DailySidePanelContent />
+              <DailySidePanelContent disableCelebrationAnimation />
             </CustomDrawer>
           ) : (
             <DailySidePanelWrapper />

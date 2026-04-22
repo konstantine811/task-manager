@@ -6,7 +6,11 @@ import { useIsAdoptive } from "@/hooks/useIsAdoptive";
 import DailyAnalytics from "./daily-analytics";
 import { BreakPoints } from "@/config/adaptive.config";
 
-const DailySidePanelContent = () => {
+const DailySidePanelContent = ({
+  disableCelebrationAnimation = false,
+}: {
+  disableCelebrationAnimation?: boolean;
+}) => {
   const { plannedTasks } = useDailyTaskContext();
   const { screenWidth } = useIsAdoptive();
   const [t] = useTranslation();
@@ -21,7 +25,9 @@ const DailySidePanelContent = () => {
           <TaskFutureTimeline tasks={plannedTasks} />
         </div>
       )}
-      {screenWidth < BreakPoints["2xl"] && <DailyAnalytics />}
+      {screenWidth < BreakPoints["2xl"] && (
+        <DailyAnalytics disableCelebrationAnimation={disableCelebrationAnimation} />
+      )}
     </div>
   );
 };

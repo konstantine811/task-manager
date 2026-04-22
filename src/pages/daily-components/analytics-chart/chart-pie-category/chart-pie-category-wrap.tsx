@@ -11,6 +11,7 @@ const ChartPieCateogoryWrap = ({
   useTimeCompletion = false,
   includeAllCategories = false,
   celebrationScopeKey,
+  enableCelebrationEffects = true,
 }: {
   data: CategoryAnalyticsNameEntity;
   className?: string;
@@ -21,6 +22,8 @@ const ChartPieCateogoryWrap = ({
   includeAllCategories?: boolean;
   /** Resets reward animation/sound baseline when key changes (e.g., selected day). */
   celebrationScopeKey?: string | null;
+  /** Enables reward animation and sound effects for coins. */
+  enableCelebrationEffects?: boolean;
 }) => {
   return (
     <>
@@ -44,6 +47,7 @@ const ChartPieCateogoryWrap = ({
             useTimeCompletion={useTimeCompletion}
             includeAllCategories={includeAllCategories}
             celebrationScopeKey={celebrationScopeKey}
+            enableCelebrationEffects={enableCelebrationEffects}
           />
         </div>
       )}

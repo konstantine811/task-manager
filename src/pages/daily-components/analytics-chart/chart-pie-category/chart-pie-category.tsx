@@ -31,6 +31,8 @@ interface ChartPieCategoryProps {
   includeAllCategories?: boolean;
   /** Resets reward animation/sound baseline when key changes (e.g., selected day). */
   celebrationScopeKey?: string | null;
+  /** Enables reward animation and coin sounds. */
+  enableCelebrationEffects?: boolean;
 }
 
 interface PieEntity {
@@ -113,6 +115,7 @@ const ChartPieCategory = ({
   useTimeCompletion = false,
   includeAllCategories = false,
   celebrationScopeKey = null,
+  enableCelebrationEffects = true,
 }: ChartPieCategoryProps) => {
   const ref = useRef<SVGSVGElement | null>(null);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
@@ -527,8 +530,9 @@ const ChartPieCategory = ({
     .join("|");
 
   useEffect(() => {
+    if (!enableCelebrationEffects) return;
     initializeSfx(Object.values(COIN_SOUND_BY_COLOR));
-  }, []);
+  }, [enableCelebrationEffects]);
 
   useEffect(() => {
     const scopeKey = celebrationScopeKey ?? "__default__";
@@ -537,6 +541,20 @@ const ChartPieCategory = ({
     );
     const currentKeys = new Set(Object.keys(currentCoinState));
     const prevCoinState = prevCoinStateRef.current;
+
+    if (!enableCelebrationEffects) {
+      rewardScopeRef.current = scopeKey;
+      prevCoinStateRef.current = currentCoinState;
+      setActiveFlyingKeys((prev) => (prev.size > 0 ? new Set() : prev));
+      setFlyingCoins((prev) => (prev.length > 0 ? [] : prev));
+      if (flightRafRef.current !== null) {
+        window.cancelAnimationFrame(flightRafRef.current);
+        flightRafRef.current = null;
+      }
+      soundTimersRef.current.forEach((timerId) => window.clearTimeout(timerId));
+      soundTimersRef.current = [];
+      return;
+    }
 
     if (rewardScopeRef.current !== scopeKey) {
       rewardScopeRef.current = scopeKey;
@@ -630,7 +648,12 @@ const ChartPieCategory = ({
       }
       flightRafRef.current = null;
     });
-  }, [coinItemsSignature, isSoundEnabled, celebrationScopeKey]);
+  }, [
+    coinItemsSignature,
+    isSoundEnabled,
+    celebrationScopeKey,
+    enableCelebrationEffects,
+  ]);
 
   const handleFlightComplete = (flight: FlyingCoin) => {
     setFlyingCoins((prev) => prev.filter((item) => item.id !== flight.id));

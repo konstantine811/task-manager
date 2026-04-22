@@ -11,7 +11,11 @@ import { getDailyTaskAnalyticsData } from "@/services/task-menager/analytics/dai
 import ChartPieCategoryWrap from "./analytics-chart/chart-pie-category/chart-pie-category-wrap";
 import DailyAnalyticsTable from "./analytics-chart/daily-analytics-table";
 
-const DailyAnalytics = () => {
+const DailyAnalytics = ({
+  disableCelebrationAnimation = false,
+}: {
+  disableCelebrationAnimation?: boolean;
+}) => {
   const { dailyTasks } = useDailyTaskContext();
   const { id: date } = useParams();
   const [dailyEntity, setDailyEntity] = useState<TaskAnalyticsIdEntity>({});
@@ -53,6 +57,7 @@ const DailyAnalytics = () => {
           subtitleKey="chart.pie_category_tracked_subtitle"
           useTimeCompletion
           celebrationScopeKey={date ?? null}
+          enableCelebrationEffects={!disableCelebrationAnimation}
         />
       )}
     </div>
