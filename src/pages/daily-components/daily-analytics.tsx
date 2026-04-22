@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useDailyTaskContext } from "../hooks/useDailyTask";
+import { useParams } from "react-router";
 import ChartTimeStackWrapper from "./analytics-chart/chart-time-stack/chart-time-stack-wrapper";
 import {
   CategoryAnalyticsNameEntity,
@@ -12,6 +13,7 @@ import DailyAnalyticsTable from "./analytics-chart/daily-analytics-table";
 
 const DailyAnalytics = () => {
   const { dailyTasks } = useDailyTaskContext();
+  const { id: date } = useParams();
   const [dailyEntity, setDailyEntity] = useState<TaskAnalyticsIdEntity>({});
   const [categoryEntity, setCategoryEntity] =
     useState<CategoryAnalyticsNameEntity>({});
@@ -50,6 +52,7 @@ const DailyAnalytics = () => {
           showCompletedOnly
           subtitleKey="chart.pie_category_tracked_subtitle"
           useTimeCompletion
+          celebrationScopeKey={date ?? null}
         />
       )}
     </div>

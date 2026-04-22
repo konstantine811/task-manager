@@ -29,6 +29,8 @@ interface ChartPieCategoryProps {
   useTimeCompletion?: boolean;
   /** When true, include all categories even with 0 tasks (like line chart shows all days) */
   includeAllCategories?: boolean;
+  /** Resets reward animation/sound baseline when key changes (e.g., selected day). */
+  celebrationScopeKey?: string | null;
 }
 
 interface PieEntity {
@@ -110,12 +112,14 @@ const ChartPieCategory = ({
   showCompletedOnly = false,
   useTimeCompletion = false,
   includeAllCategories = false,
+  celebrationScopeKey = null,
 }: ChartPieCategoryProps) => {
   const ref = useRef<SVGSVGElement | null>(null);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const coinTargetRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const prevCoinStateRef = useRef<Record<string, CoinColor>>({});
+  const rewardScopeRef = useRef<string | null>(null);
   const flightRafRef = useRef<number | null>(null);
   const soundTimersRef = useRef<number[]>([]);
   const [flyingCoins, setFlyingCoins] = useState<FlyingCoin[]>([]);
@@ -527,11 +531,32 @@ const ChartPieCategory = ({
   }, []);
 
   useEffect(() => {
+    const scopeKey = celebrationScopeKey ?? "__default__";
     const currentCoinState = Object.fromEntries(
       coinItems.map((item) => [item.coinKey, item.coinColor] as const),
     );
-    const prevCoinState = prevCoinStateRef.current;
     const currentKeys = new Set(Object.keys(currentCoinState));
+    const prevCoinState = prevCoinStateRef.current;
+
+    if (rewardScopeRef.current !== scopeKey) {
+      rewardScopeRef.current = scopeKey;
+      prevCoinStateRef.current = currentCoinState;
+      setActiveFlyingKeys((prev) => {
+        const next = new Set(
+          Array.from(prev).filter((key) => currentKeys.has(key)),
+        );
+        return areSetsEqual(prev, next) ? prev : next;
+      });
+      setFlyingCoins((prev) => (prev.length > 0 ? [] : prev));
+      if (flightRafRef.current !== null) {
+        window.cancelAnimationFrame(flightRafRef.current);
+        flightRafRef.current = null;
+      }
+      soundTimersRef.current.forEach((timerId) => window.clearTimeout(timerId));
+      soundTimersRef.current = [];
+      return;
+    }
+
     const triggeredItems = coinItems.filter((item) => {
       const prevColor = prevCoinState[item.coinKey];
       if (!prevColor) return true;
@@ -605,7 +630,7 @@ const ChartPieCategory = ({
       }
       flightRafRef.current = null;
     });
-  }, [coinItemsSignature, isSoundEnabled]);
+  }, [coinItemsSignature, isSoundEnabled, celebrationScopeKey]);
 
   const handleFlightComplete = (flight: FlyingCoin) => {
     setFlyingCoins((prev) => prev.filter((item) => item.id !== flight.id));

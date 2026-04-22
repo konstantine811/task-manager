@@ -61,6 +61,7 @@ const DailyTask = () => {
     CoinCelebrationEvent[]
   >([]);
   const prevCoinStateRef = useRef<Record<string, CoinColor>>({});
+  const coinBaselineDateRef = useRef<string | null>(null);
   const [t] = useTranslation();
 
   useDeterminedTaskReminders(date, dailyTask);
@@ -237,12 +238,22 @@ const DailyTask = () => {
   );
 
   useEffect(() => {
+    coinBaselineDateRef.current = null;
+    prevCoinStateRef.current = {};
+    setOverlayCelebrations((prev) => (prev.length > 0 ? [] : prev));
+  }, [date]);
+
+  useEffect(() => {
     if (!mdSize) {
       setOverlayCelebrations((prev) => (prev.length > 0 ? [] : prev));
       prevCoinStateRef.current = {};
+      coinBaselineDateRef.current = null;
       return;
     }
     if (!dailyTask || dailyTask.length === 0) {
+      if (date && coinBaselineDateRef.current === null) {
+        coinBaselineDateRef.current = date;
+      }
       prevCoinStateRef.current = {};
       return;
     }
@@ -250,6 +261,9 @@ const DailyTask = () => {
     const { categoryEntity } = getDailyTaskAnalyticsData(dailyTask);
     const nextCoinState: Record<string, CoinColor> = {};
     const triggered: CoinCelebrationEvent[] = [];
+    const shouldTriggerCelebrations = Boolean(
+      date && coinBaselineDateRef.current === date,
+    );
 
     Object.entries(categoryEntity).forEach(([categoryKey, categoryStats]) => {
       const countTotal = categoryStats.taskDone.length + categoryStats.taskNoDone.length;
@@ -259,6 +273,7 @@ const DailyTask = () => {
       if (!coinColor) return;
 
       nextCoinState[categoryKey] = coinColor;
+      if (!shouldTriggerCelebrations) return;
       const prevColor = prevCoinStateRef.current[categoryKey];
       const shouldTrigger =
         !prevColor ||
@@ -278,11 +293,17 @@ const DailyTask = () => {
       });
     });
 
+    if (!shouldTriggerCelebrations && date) {
+      coinBaselineDateRef.current = date;
+      prevCoinStateRef.current = nextCoinState;
+      return;
+    }
+
     prevCoinStateRef.current = nextCoinState;
     if (triggered.length > 0) {
       setOverlayCelebrations((prev) => [...prev, ...triggered]);
     }
-  }, [dailyTask, mdSize, t]);
+  }, [dailyTask, mdSize, t, date]);
 
   const handleOverlayCelebrationDone = useCallback((id: string) => {
     setOverlayCelebrations((prev) => prev.filter((item) => item.id !== id));

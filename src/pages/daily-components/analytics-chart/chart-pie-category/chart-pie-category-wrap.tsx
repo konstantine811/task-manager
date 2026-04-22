@@ -10,6 +10,7 @@ const ChartPieCateogoryWrap = ({
   subtitleKey,
   useTimeCompletion = false,
   includeAllCategories = false,
+  celebrationScopeKey,
 }: {
   data: CategoryAnalyticsNameEntity;
   className?: string;
@@ -18,6 +19,8 @@ const ChartPieCateogoryWrap = ({
   useTimeCompletion?: boolean;
   /** When true, show all categories including those with 0 tasks (like line chart with all days) */
   includeAllCategories?: boolean;
+  /** Resets reward animation/sound baseline when key changes (e.g., selected day). */
+  celebrationScopeKey?: string | null;
 }) => {
   return (
     <>
@@ -40,6 +43,7 @@ const ChartPieCateogoryWrap = ({
             showCompletedOnly={showCompletedOnly}
             useTimeCompletion={useTimeCompletion}
             includeAllCategories={includeAllCategories}
+            celebrationScopeKey={celebrationScopeKey}
           />
         </div>
       )}
