@@ -23,6 +23,7 @@ import DailySidePanelContent from "./daily-components/daily-side-panel-content";
 import DailyAnalytics from "./daily-components/daily-analytics";
 import { BreakPoints } from "@/config/adaptive.config";
 import { DailyTaskAnalytics } from "@/types/analytics/task-analytics.model";
+import { DailyJournal } from "@/types/daily-journal.model";
 import DailyJournalCard from "./daily-components/daily-journal-card";
 import CoinCelebrationOverlay, {
   type CoinCelebrationEvent,
@@ -174,19 +175,41 @@ const DailyTask = () => {
 
   useEffect(() => {
     if (!date) return;
+    let isMounted = true;
+    let unsubscribe: (() => void) | undefined;
 
     setIsJournalLoading(true);
-    loadDailyJournalByDate(date)
-      .then((journal) => {
-        setJournalContent(journal?.content ?? "");
-      })
-      .finally(() => setIsJournalLoading(false));
+
+    (async () => {
+      unsubscribe = await subscribeToDailyTasksByDate<DailyJournal>(
+        date,
+        FirebaseCollection.dailyJournal,
+        ({ items }) => {
+          if (!isMounted) return;
+          setJournalContent(items?.content ?? "");
+          setIsJournalLoading(false);
+        },
+      );
+
+      if (unsubscribe) return;
+
+      const journal = await loadDailyJournalByDate(date);
+      if (!isMounted) return;
+      setJournalContent(journal?.content ?? "");
+      setIsJournalLoading(false);
+    })();
+
+    return () => {
+      isMounted = false;
+      unsubscribe?.();
+    };
   }, [date]);
 
   const handleSaveJournal = useCallback(
     async (content: string) => {
       if (!date) return;
-
+      // Optimistic local value so user sees immediate persistence.
+      setJournalContent(content);
       await saveDailyJournal(date, { content });
     },
     [date],
