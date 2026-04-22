@@ -186,7 +186,7 @@ export const useDeterminedTaskReminders = (date?: string, dailyTasks?: Items) =>
           navigator.vibrate([80, 40, 80]);
         }
 
-        if (isSoundEnabled && audioUnlockedRef.current && dingAudioRef.current) {
+        if (isSoundEnabled && dingAudioRef.current) {
           const audio = dingAudioRef.current;
           audio.currentTime = 0;
           audio.volume = 1;
@@ -194,11 +194,9 @@ export const useDeterminedTaskReminders = (date?: string, dailyTasks?: Items) =>
         }
 
         if (
-          typeof document !== "undefined" &&
           typeof window !== "undefined" &&
           "Notification" in window &&
-          Notification.permission === "granted" &&
-          document.visibilityState !== "visible"
+          Notification.permission === "granted"
         ) {
           const notification = new Notification(
             t("task_manager.notifications.title"),
