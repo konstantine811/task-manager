@@ -8,16 +8,15 @@ import {
   getNotificationBodyOffsetKey,
   isTodayIsoDate,
 } from "@/services/notifications/reminder-sync";
-import { usePushNotificationsStore } from "@/storage/pushNotifications";
 import { useSoundEnabledStore } from "@/storage/soundEnabled";
 
 export const useDeterminedTaskReminders = (date?: string, dailyTasks?: Items) => {
   const [t] = useTranslation();
   const isSoundEnabled = useSoundEnabledStore((s) => s.isSoundEnabled);
-  const pushStatus = usePushNotificationsStore((s) => s.status);
   const scheduledTimersRef = useRef<Map<string, number>>(new Map());
   const firedRemindersRef = useRef<Set<string>>(new Set());
   const dingAudioRef = useRef<HTMLAudioElement | null>(null);
+  const audioUnlockedRef = useRef(false);
 
   const reminderTasks = useMemo(
     () => extractReminderTasks(dailyTasks, t),
@@ -35,9 +34,32 @@ export const useDeterminedTaskReminders = (date?: string, dailyTasks?: Items) =>
   useEffect(() => {
     const audio = new Audio("/sfx/ding.wav");
     audio.preload = "auto";
+    audio.setAttribute("playsinline", "true");
     dingAudioRef.current = audio;
 
+    const unlockAudio = () => {
+      if (audioUnlockedRef.current || !dingAudioRef.current) return;
+
+      const audioEl = dingAudioRef.current;
+      audioEl.muted = true;
+      void audioEl.play()
+        .then(() => {
+          audioEl.pause();
+          audioEl.currentTime = 0;
+          audioEl.muted = false;
+          audioUnlockedRef.current = true;
+        })
+        .catch(() => {
+          audioEl.muted = false;
+        });
+    };
+
+    window.addEventListener("pointerdown", unlockAudio, { passive: true });
+    window.addEventListener("keydown", unlockAudio, { passive: true });
+
     return () => {
+      window.removeEventListener("pointerdown", unlockAudio);
+      window.removeEventListener("keydown", unlockAudio);
       dingAudioRef.current?.pause();
       dingAudioRef.current = null;
     };
@@ -48,7 +70,6 @@ export const useDeterminedTaskReminders = (date?: string, dailyTasks?: Items) =>
     scheduledTimersRef.current.clear();
 
     if (!date || !isTodayIsoDate(date) || reminderTasks.length === 0) return;
-    if (pushStatus === "registered") return;
 
     const plans = buildReminderPlans(
       date,
@@ -114,5 +135,5 @@ export const useDeterminedTaskReminders = (date?: string, dailyTasks?: Items) =>
       scheduledTimersRef.current.forEach((timerId) => window.clearTimeout(timerId));
       scheduledTimersRef.current.clear();
     };
-  }, [date, reminderSignature, reminderTasks, t, isSoundEnabled, pushStatus]);
+  }, [date, reminderSignature, reminderTasks, t, isSoundEnabled]);
 };

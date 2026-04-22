@@ -4,6 +4,7 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { format } from "date-fns";
 import { DateTemplate } from "@/config/data-config";
 import { ROUTES } from "@/config/route-paths";
+import { PageLoader } from "@/components/ui/page-loader";
 
 export { ROUTES } from "@/config/route-paths";
 
@@ -16,7 +17,7 @@ const TaskManager = lazy(() => import("@/pages/TaskManager"));
 function TaskManagerLayout() {
   return (
     <ProtectedRoute>
-      <Suspense fallback={<div className="p-4">Loading…</div>}>
+      <Suspense fallback={<PageLoader />}>
         <TaskManager />
       </Suspense>
     </ProtectedRoute>
@@ -33,9 +34,7 @@ function TaskManagerIndexRedirect() {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen chrono-page-bg flex items-center justify-center">
-      <div className="text-zinc-400 text-sm">Loading…</div>
-    </div>
+    <PageLoader />
   );
 }
 
@@ -43,7 +42,7 @@ export const routes = [
   {
     path: "/",
     element: (
-      <Suspense fallback={<div className="p-4">Loading…</div>}>
+      <Suspense fallback={<PageLoader />}>
         <Landing />
       </Suspense>
     ),

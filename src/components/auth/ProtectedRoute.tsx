@@ -1,6 +1,7 @@
 import { Navigate, useLocation } from "react-router";
 import { useAuth } from "@/hooks/useAuth";
 import { ROUTES } from "@/config/routes";
+import { PageLoader } from "@/components/ui/page-loader";
 
 type ProtectedRouteProps = {
   children: React.ReactNode;
@@ -11,11 +12,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const location = useLocation();
 
   if (loading) {
-    return (
-      <div className="min-h-screen chrono-page-bg flex items-center justify-center">
-        <div className="text-zinc-400">Завантаження…</div>
-      </div>
-    );
+    return <PageLoader />;
   }
 
   if (!isAuthenticated) {

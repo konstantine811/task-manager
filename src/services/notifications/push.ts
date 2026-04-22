@@ -95,6 +95,17 @@ const getForegroundNotificationContent = (
   return { title, body };
 };
 
+const isReminderHandledOnVisibleDailyPage = (payload: MessagePayload): boolean => {
+  if (typeof document === "undefined" || typeof window === "undefined") return false;
+  if (document.visibilityState !== "visible") return false;
+
+  const payloadDate = payload.data?.date;
+  if (!payloadDate) return false;
+
+  const currentPath = window.location.pathname;
+  return currentPath.includes("/app/daily/") && currentPath.endsWith(payloadDate);
+};
+
 const getRegisterPushDeviceCallable = () =>
   httpsCallable<RegisterPushDevicePayload, { ok: boolean }>(
     getFunctions(app, firebaseFunctionsRegion),
@@ -156,6 +167,7 @@ export const PushNotificationsBootstrap = () => {
   useEffect(() => {
     const audio = new Audio("/sfx/ding.wav");
     audio.preload = "auto";
+    audio.setAttribute("playsinline", "true");
     audioRef.current = audio;
 
     return () => {
@@ -175,6 +187,7 @@ export const PushNotificationsBootstrap = () => {
       const messaging = getMessaging(app);
       unsubscribe = onMessage(messaging, (payload) => {
         if (cancelled) return;
+        if (isReminderHandledOnVisibleDailyPage(payload)) return;
 
         const { title, body } = getForegroundNotificationContent(payload);
         toast(title, { description: body });

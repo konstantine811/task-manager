@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { routes } from "./config/routes";
 import useSetTheme from "./hooks/useSetTheme";
 import { PushNotificationsBootstrap } from "./services/notifications/push";
+import { PageLoader } from "./components/ui/page-loader";
 
 function App() {
   useSetTheme();
@@ -11,13 +12,7 @@ function App() {
   return (
     <>
       <PushNotificationsBootstrap />
-      <Suspense
-        fallback={
-          <div className="flex min-h-screen items-center justify-center">
-            Loading…
-          </div>
-        }
-      >
+      <Suspense fallback={<PageLoader />}>
         <Routes>
           {routes.map(({ path, element, children }) => (
             <Route key={path} path={path} element={element}>

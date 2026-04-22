@@ -1,6 +1,3 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router";
-import { format } from "date-fns";
 import {
   LandingBackground,
   ChronoNav,
@@ -11,25 +8,13 @@ import {
   LandingFooter,
 } from "@/components/landing";
 import { useAuth } from "@/hooks/useAuth";
-import { ROUTES } from "@/config/route-paths";
-import { DateTemplate } from "@/config/data-config";
+import { PageLoader } from "@/components/ui/page-loader";
 
 export default function Landing() {
-  const { isAuthenticated, loading: authLoading } = useAuth();
-  const navigate = useNavigate();
+  const { loading: authLoading } = useAuth();
 
-  useEffect(() => {
-    if (authLoading || !isAuthenticated) return;
-    const today = format(new Date(), DateTemplate.dayMonthYear);
-    navigate(`${ROUTES.DAILY}/${today}`, { replace: true });
-  }, [authLoading, isAuthenticated, navigate]);
-
-  if (!authLoading && isAuthenticated) {
-    return (
-      <div className="min-h-screen chrono-page-bg flex items-center justify-center">
-        <div className="text-zinc-400 text-sm">Loading…</div>
-      </div>
-    );
+  if (authLoading) {
+    return <PageLoader />;
   }
 
   return (
