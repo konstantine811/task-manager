@@ -27,6 +27,11 @@ interface ReminderNotificationData {
 const NOTIFICATION_ICON = "/pwa-192x192.png";
 const NOTIFICATION_BADGE = "/pwa-192x192.png";
 
+const envOrFallback = (value: string | undefined, fallback = ""): string => {
+  const normalized = value?.trim();
+  return normalized && normalized.length > 0 ? normalized : fallback;
+};
+
 self.skipWaiting();
 clientsClaim();
 cleanupOutdatedCaches();
@@ -53,15 +58,24 @@ if (appShellUrl) {
 }
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  apiKey: envOrFallback(import.meta.env.VITE_FIREBASE_API_KEY),
+  authDomain: envOrFallback(import.meta.env.VITE_FIREBASE_AUTH_DOMAIN),
+  projectId: envOrFallback(import.meta.env.VITE_FIREBASE_PROJECT_ID),
+  storageBucket: envOrFallback(import.meta.env.VITE_FIREBASE_STORAGE_BUCKET),
+  messagingSenderId: envOrFallback(
+    import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  ),
+  appId: envOrFallback(import.meta.env.VITE_FIREBASE_APP_ID),
 };
 
-if (firebaseConfig.apiKey) {
+const hasMessagingConfig = Boolean(
+  firebaseConfig.apiKey &&
+    firebaseConfig.projectId &&
+    firebaseConfig.messagingSenderId &&
+    firebaseConfig.appId,
+);
+
+if (hasMessagingConfig) {
   const firebaseApp = initializeApp(firebaseConfig);
   const messaging = getMessaging(firebaseApp);
 

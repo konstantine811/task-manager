@@ -43,6 +43,9 @@ import "@mdxeditor/editor/style.css";
 
 type SaveState = "idle" | "saving" | "saved" | "error";
 
+const normalizeMarkdown = (value: string) =>
+  value.replace(/\r\n/g, "\n").replace(/\s+$/g, "");
+
 const saveStateTone: Record<SaveState, string> = {
   idle: "text-zinc-500 dark:text-zinc-400",
   saving: "text-amber-600 dark:text-amber-300",
@@ -98,7 +101,6 @@ const DailyJournalCard = ({
   onUploadImage,
 }: DailyJournalCardProps) => {
   const [t] = useTranslation();
-  const [editorMarkdown, setEditorMarkdown] = useState(initialContent);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const isTouch = isTouchDevice;
@@ -200,9 +202,12 @@ const DailyJournalCard = ({
     latestContentDateRef.current = date;
     lastAppliedInitialRef.current = initialContent;
 
-    setEditorMarkdown(initialContent);
     setSaveState("idle");
-    editorRef.current?.setMarkdown(initialContent);
+
+    const editorMarkdown = editorRef.current?.getMarkdown() ?? "";
+    if (normalizeMarkdown(editorMarkdown) !== normalizeMarkdown(initialContent)) {
+      editorRef.current?.setMarkdown(initialContent);
+    }
   }, [date]);
 
   useEffect(() => {
@@ -212,21 +217,30 @@ const DailyJournalCard = ({
     // Parent echoes local autosave back via props.
     // If content is already the same in editor, do not re-apply markdown
     // because that resets selection/caret to the end.
-    if (initialContent === latestContentRef.current) {
+    if (
+      normalizeMarkdown(initialContent) ===
+      normalizeMarkdown(latestContentRef.current)
+    ) {
       lastSavedRef.current = initialContent;
       return;
     }
 
     // Do not overwrite active local typing with remote updates.
-    const hasUnsavedLocal = latestContentRef.current !== lastSavedRef.current;
-    if (isEditorFocusedRef.current || hasUnsavedLocal) return;
+    if (isEditorFocusedRef.current) return;
+    const hasUnsavedLocal =
+      normalizeMarkdown(latestContentRef.current) !==
+      normalizeMarkdown(lastSavedRef.current);
+    if (hasUnsavedLocal) return;
 
     lastSavedRef.current = initialContent;
     latestContentRef.current = initialContent;
     latestContentDateRef.current = activeDateRef.current;
-    setEditorMarkdown(initialContent);
     setSaveState("idle");
-    editorRef.current?.setMarkdown(initialContent);
+
+    const editorMarkdown = editorRef.current?.getMarkdown() ?? "";
+    if (normalizeMarkdown(editorMarkdown) !== normalizeMarkdown(initialContent)) {
+      editorRef.current?.setMarkdown(initialContent);
+    }
   }, [initialContent]);
 
   useEffect(() => {
@@ -435,10 +449,14 @@ const DailyJournalCard = ({
         >
           <MDXEditor
             ref={editorRef}
-            markdown={editorMarkdown}
-            onChange={(markdown) => {
+            markdown={initialContent}
+            onChange={(markdown, initialMarkdownNormalize) => {
               latestContentRef.current = markdown;
               latestContentDateRef.current = activeDateRef.current;
+              if (initialMarkdownNormalize) {
+                lastSavedRef.current = markdown;
+                return;
+              }
               if (saveState === "error") {
                 setSaveState("idle");
               }

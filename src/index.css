@@ -1054,6 +1054,7 @@ html:not(.dark) .chrono-dialog .chrono-time-drum-colon {
   overscroll-behavior: contain;
   padding: 12px;
   padding-bottom: 24px;
+  scroll-padding-bottom: 72px;
   line-height: 1.7;
   font-size: 14px;
   color: rgb(39 39 42);
@@ -1062,6 +1063,7 @@ html:not(.dark) .chrono-dialog .chrono-time-drum-colon {
 @media (max-width: 768px) {
   .journal-mdx-content {
     max-height: min(42vh, 340px);
+    scroll-padding-bottom: 128px;
   }
 }
 
@@ -1110,7 +1112,17 @@ html:not(.dark) .chrono-dialog .chrono-time-drum-colon {
 }
 
 .journal-mdx-content p {
-  margin: 0.25rem 0;
+  margin: 0;
+}
+
+/* Normalize block spacing in editor so Enter does not look like a double blank line */
+.journal-mdx-content > * {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+.journal-mdx-content > * + * {
+  margin-top: 0.35rem !important;
 }
 
 .journal-mdx-content ul,
