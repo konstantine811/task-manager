@@ -61,7 +61,7 @@ const DailyTask = () => {
     CoinCelebrationEvent[]
   >([]);
   const prevCoinStateRef = useRef<Record<string, CoinColor>>({});
-  const coinBaselineDateRef = useRef<string | null>(null);
+  const pendingDoneCelebrationDateRef = useRef<string | null>(null);
   const [t] = useTranslation();
 
   useDeterminedTaskReminders(date, dailyTask);
@@ -237,8 +237,16 @@ const DailyTask = () => {
     [date],
   );
 
+  const handleTaskDoneCelebration = useCallback(
+    (_task: ItemTask) => {
+      if (!date) return;
+      pendingDoneCelebrationDateRef.current = date;
+    },
+    [date],
+  );
+
   useEffect(() => {
-    coinBaselineDateRef.current = null;
+    pendingDoneCelebrationDateRef.current = null;
     prevCoinStateRef.current = {};
     setOverlayCelebrations((prev) => (prev.length > 0 ? [] : prev));
   }, [date]);
@@ -247,13 +255,10 @@ const DailyTask = () => {
     if (!mdSize) {
       setOverlayCelebrations((prev) => (prev.length > 0 ? [] : prev));
       prevCoinStateRef.current = {};
-      coinBaselineDateRef.current = null;
+      pendingDoneCelebrationDateRef.current = null;
       return;
     }
     if (!dailyTask || dailyTask.length === 0) {
-      if (date && coinBaselineDateRef.current === null) {
-        coinBaselineDateRef.current = date;
-      }
       prevCoinStateRef.current = {};
       return;
     }
@@ -262,8 +267,9 @@ const DailyTask = () => {
     const nextCoinState: Record<string, CoinColor> = {};
     const triggered: CoinCelebrationEvent[] = [];
     const shouldTriggerCelebrations = Boolean(
-      date && coinBaselineDateRef.current === date,
+      date && pendingDoneCelebrationDateRef.current === date,
     );
+    pendingDoneCelebrationDateRef.current = null;
 
     Object.entries(categoryEntity).forEach(([categoryKey, categoryStats]) => {
       const countTotal = categoryStats.taskDone.length + categoryStats.taskNoDone.length;
@@ -293,8 +299,7 @@ const DailyTask = () => {
       });
     });
 
-    if (!shouldTriggerCelebrations && date) {
-      coinBaselineDateRef.current = date;
+    if (!shouldTriggerCelebrations) {
       prevCoinStateRef.current = nextCoinState;
       return;
     }
@@ -355,7 +360,7 @@ const DailyTask = () => {
             />
           )}
 
-          <DailyTaskWrapper />
+          <DailyTaskWrapper onTaskDone={handleTaskDoneCelebration} />
         </main>
 
         {/* Права колонка */}

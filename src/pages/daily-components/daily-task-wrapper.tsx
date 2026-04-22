@@ -38,7 +38,11 @@ import { normalizeItems } from "@/services/task-menager/normalize";
 import { resolveCategoryKey } from "@/utils/category.util";
 import { DailyTaskTimerSyncState } from "@/types/task-timer-sync.model";
 
-const DailyTaskWrapper = () => {
+const DailyTaskWrapper = ({
+  onTaskDone,
+}: {
+  onTaskDone?: (task: ItemTask) => void;
+}) => {
   const [dailyTasks, setDailyTasks] = useState<Items>([]);
   const { id: date } = useParams(); // ← id це твоя дата у форматі "dd.MM.yyyy"
   const currentDateRef = useRef(date);
@@ -266,6 +270,7 @@ const DailyTaskWrapper = () => {
                 onDeletePlannedTask={deletePlannedTask}
                 onChangeTasks={handleChangeTasks}
                 onEditPlannedTask={onUpdatePlannedTask}
+                onTaskDone={onTaskDone}
                 getAnotherTasksForCategory={getAnotherTasksForCategory}
                 onAddAnotherTask={handleAddTemplateTask}
                 remoteTimerState={remoteTimerState}
