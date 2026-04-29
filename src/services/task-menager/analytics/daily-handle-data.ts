@@ -243,14 +243,14 @@ export const getRangeAnalyticsData = (
 };
 
 const MIN_STREAK_DAYS = 3;
+const MAX_STREAK_GAP_DAYS = 3;
 
 type TaskDayStatus = {
   present: boolean;
   done: boolean;
 };
 
-const toIsoDateOnly = (date: string): ISODate =>
-  date.slice(0, 10) as ISODate;
+const toIsoDateOnly = (date: string): ISODate => date.slice(0, 10) as ISODate;
 
 const prevIsoDate = (date: ISODate): ISODate =>
   formatISO(subDays(new Date(`${date}T12:00:00`), 1), {
@@ -259,6 +259,9 @@ const prevIsoDate = (date: ISODate): ISODate =>
 
 const normalizeTaskTitle = (value: string) =>
   value.trim().toLowerCase().replace(/\s+/g, " ");
+
+const hasAnyTasks = (record: DailyTaskRecord): boolean =>
+  record.items.some((category) => category.tasks.length > 0);
 
 function getTaskStreaksWithoutSkips(
   rangeTasks: DailyTaskRecord[],
@@ -272,9 +275,18 @@ function getTaskStreaksWithoutSkips(
 
   const rangeFrom = range?.from ?? sortedDates[0];
   const rangeTo = range?.to ?? sortedDates[sortedDates.length - 1];
+  const datesWithAnyTasks = new Set(
+    rangeTasks
+      .filter((record) => {
+        const dateKey = toIsoDateOnly(record.date);
+        return (
+          dateKey >= rangeFrom && dateKey <= rangeTo && hasAnyTasks(record)
+        );
+      })
+      .map((record) => toIsoDateOnly(record.date)),
+  );
 
-  const anchorDate =
-    [...sortedDates].reverse().find((date) => date <= rangeTo) ?? rangeTo;
+  const anchorDate = rangeTo;
   const todayIso = formatISO(new Date(), { representation: "date" }) as ISODate;
 
   type AccTask = {
@@ -322,6 +334,7 @@ function getTaskStreaksWithoutSkips(
 
   taskMap.forEach((task) => {
     let streak = 0;
+    let gapDays = 0;
     let current = anchorDate;
 
     while (current >= rangeFrom) {
@@ -329,6 +342,7 @@ function getTaskStreaksWithoutSkips(
       const isToday = current === todayIso;
       if (status?.present && status.done) {
         streak += 1;
+        gapDays = 0;
         current = prevIsoDate(current);
         continue;
       }
@@ -341,7 +355,16 @@ function getTaskStreaksWithoutSkips(
         }
         break;
       }
-      // Date without this task is not a skip.
+      // Days with other tasks do not reset this task's streak.
+      // Only calendar days with no tasks at all count toward the gap limit.
+      if (!datesWithAnyTasks.has(current)) {
+        if (isToday) {
+          current = prevIsoDate(current);
+          continue;
+        }
+        gapDays += 1;
+        if (gapDays > MAX_STREAK_GAP_DAYS) break;
+      }
       current = prevIsoDate(current);
     }
 

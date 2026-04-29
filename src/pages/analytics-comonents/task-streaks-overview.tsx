@@ -56,13 +56,15 @@ const TaskStreaksOverview = ({ data }: { data: TaskStreakInsight[] }) => {
             return (
               <div
                 key={item.key}
-                className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-3 py-2"
+                className="flex items-start justify-between gap-3 rounded-lg border border-white/10 bg-white/5 px-3 py-2"
               >
-                <div className="flex min-w-0 items-center gap-2">
-                  <Icon className={`h-4 w-4 shrink-0 ${style.color}`} />
-                  <span className="truncate text-sm font-medium">{item.title}</span>
+                <div className="flex min-w-0 items-start gap-2">
+                  <Icon className={`mt-0.5 h-4 w-4 shrink-0 ${style.color}`} />
+                  <span className="min-w-0 whitespace-normal break-words text-sm font-medium leading-snug">
+                    {item.title}
+                  </span>
                 </div>
-                <span className="shrink-0 text-sm text-muted-foreground font-mono">
+                <span className="shrink-0 whitespace-nowrap text-sm text-muted-foreground font-mono">
                   {formatDays(item.days)}
                 </span>
               </div>

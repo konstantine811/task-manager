@@ -101,16 +101,11 @@ const Analytics = () => {
               </AnimatedItem>
               <AnimatedItem index={2}>
                 <div className="pt-10">
-                  <AreaProgressOverview data={analyticsData.areaProgress} />
-                </div>
-              </AnimatedItem>
-              <AnimatedItem index={3}>
-                <div className="pt-10">
                   <TaskStreaksOverview data={analyticsData.taskStreaks} />
                 </div>
               </AnimatedItem>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start pt-10">
-                <AnimatedItem index={4}>
+                <AnimatedItem index={3}>
                   <ChartPieCategoryWrap
                     className="w-full"
                     data={mergedCategoryEntity ?? analyticsData.categoryEntity}
@@ -119,13 +114,18 @@ const Analytics = () => {
                     includeAllCategories
                   />
                 </AnimatedItem>
-                <AnimatedItem index={5}>
+                <AnimatedItem index={4}>
                   <ChartPieTaskPlannedWrap
                     className="w-full"
                     data={analyticsData.rangeTaskEntity}
                   />
                 </AnimatedItem>
               </div>
+              <AnimatedItem index={5}>
+                <div className="pt-10">
+                  <AreaProgressOverview data={analyticsData.areaProgress} />
+                </div>
+              </AnimatedItem>
               <AnimatedItem index={6}>
                 <div className="mt-10">
                   <RangeAnalyticsTable data={analyticsData.rangeTaskEntity} />
