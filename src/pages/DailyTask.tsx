@@ -33,12 +33,35 @@ import { getDailyTaskAnalyticsData } from "@/services/task-menager/analytics/dai
 import { CATEGORY_STYLE, DEFAULT_CATEGORY_STYLE } from "@/components/dnd/config/category-style.config";
 import { type CoinColor } from "@/components/ui-abc/coin";
 import { useDeterminedTaskReminders } from "./hooks/useDeterminedTaskReminders";
+import { TaskManagerProvider } from "@/components/dnd/context/task-manager-context";
+import { useTaskManager } from "@/components/dnd/context/use-task-manger-context";
+import TaskTimer from "@/components/dnd/task-timer";
 
 const getCoinColorByTaskPercent = (taskPercent: number): CoinColor | null => {
   if (taskPercent >= 100) return "gold";
   if (taskPercent >= 65) return "silver";
   if (taskPercent > 30) return "bronze";
   return null;
+};
+
+const StickyTaskTimer = ({ top }: { top: number }) => {
+  const playingTask = useTaskManager((s) => s.playingTask);
+  const isDocked = top <= 0.5;
+
+  if (!playingTask) return null;
+
+  return (
+    <div
+      className={`pointer-events-none fixed left-0 right-0 z-40 flex justify-center px-3 pb-2 transition-[top,padding] duration-200 ease-out ${
+        isDocked ? "pt-0" : "pt-2"
+      }`}
+      style={{ top }}
+    >
+      <div className="pointer-events-auto flex min-h-0 items-center justify-center">
+        <TaskTimer />
+      </div>
+    </div>
+  );
 };
 
 const DailyTask = () => {
@@ -60,6 +83,7 @@ const DailyTask = () => {
   const [overlayCelebrations, setOverlayCelebrations] = useState<
     CoinCelebrationEvent[]
   >([]);
+  const [timerTop, setTimerTop] = useState(56);
   const prevCoinStateRef = useRef<Record<string, CoinColor>>({});
   const pendingDoneCelebrationDateRef = useRef<string | null>(null);
   const [t] = useTranslation();
@@ -314,6 +338,33 @@ const DailyTask = () => {
     setOverlayCelebrations((prev) => prev.filter((item) => item.id !== id));
   }, []);
 
+  const updateTimerTop = useCallback(() => {
+    const nav = document.querySelector<HTMLElement>("[data-chrono-app-nav]");
+    const navBottom = nav?.getBoundingClientRect().bottom ?? 0;
+    const nextTop = navBottom < 1 ? 0 : Math.max(0, navBottom);
+    setTimerTop((prev) => (prev === nextTop ? prev : nextTop));
+  }, []);
+
+  useEffect(() => {
+    let frameId: number | null = null;
+    const scheduleUpdate = () => {
+      if (frameId !== null) return;
+      frameId = window.requestAnimationFrame(() => {
+        frameId = null;
+        updateTimerTop();
+      });
+    };
+
+    updateTimerTop();
+    window.addEventListener("scroll", scheduleUpdate, true);
+    window.addEventListener("resize", scheduleUpdate);
+    return () => {
+      if (frameId !== null) window.cancelAnimationFrame(frameId);
+      window.removeEventListener("scroll", scheduleUpdate, true);
+      window.removeEventListener("resize", scheduleUpdate);
+    };
+  }, [updateTimerTop]);
+
   return (
     <DailyTaskContext.Provider
       value={{
@@ -333,7 +384,10 @@ const DailyTask = () => {
           onDone={handleOverlayCelebrationDone}
         />
       )}
-      <div className="flex h-full min-h-0 w-full justify-center overflow-y-auto">
+      <div
+        className="flex h-full min-h-0 w-full justify-center overflow-y-auto"
+        onScroll={updateTimerTop}
+      >
         {/* Ліва колонка */}
 
         {screenWidth >= BreakPoints["2xl"] && (
@@ -360,7 +414,10 @@ const DailyTask = () => {
             />
           )}
 
-          <DailyTaskWrapper onTaskDone={handleTaskDoneCelebration} />
+          <TaskManagerProvider>
+            <StickyTaskTimer top={timerTop} />
+            <DailyTaskWrapper onTaskDone={handleTaskDoneCelebration} />
+          </TaskManagerProvider>
         </main>
 
         {/* Права колонка */}

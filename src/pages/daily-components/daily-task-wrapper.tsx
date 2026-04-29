@@ -22,9 +22,6 @@ import {
   mergeItemsWithPlannedTasks,
 } from "@/services/task-menager/merge-tasks";
 import Preloader from "@/components/page-partials/preloader/preloader";
-import { TaskManagerProvider } from "@/components/dnd/context/task-manager-context";
-import TaskTimer from "@/components/dnd/task-timer";
-import { useTaskManager } from "@/components/dnd/context/use-task-manger-context";
 import { useParams } from "react-router";
 import { parseDate } from "@/utils/date.util";
 import AddFutureTask from "../future-task-components/add-future-task";
@@ -39,20 +36,6 @@ import {
 import { normalizeItems } from "@/services/task-menager/normalize";
 import { resolveCategoryKey } from "@/utils/category.util";
 import { DailyTaskTimerSyncState } from "@/types/task-timer-sync.model";
-
-const StickyTaskTimer = () => {
-  const playingTask = useTaskManager((s) => s.playingTask);
-
-  if (!playingTask) return null;
-
-  return (
-    <div className="sticky top-14 z-40 flex justify-center px-3 py-2">
-      <div className="flex min-h-0 items-center justify-center">
-        <TaskTimer />
-      </div>
-    </div>
-  );
-};
 
 const DailyTaskWrapper = ({
   onTaskDone,
@@ -276,24 +259,21 @@ const DailyTaskWrapper = ({
         <>
           {!isLoaded && <Preloader />}
           {isLoaded && (
-            <TaskManagerProvider>
-              <StickyTaskTimer />
-              <MultipleContainers
-                strategy={rectSortingStrategy}
-                vertical
-                trashable
-                templated={false}
-                items={dailyTasks}
-                onDeletePlannedTask={deletePlannedTask}
-                onChangeTasks={handleChangeTasks}
-                onEditPlannedTask={onUpdatePlannedTask}
-                onTaskDone={onTaskDone}
-                getAnotherTasksForCategory={getAnotherTasksForCategory}
-                onAddAnotherTask={handleAddTemplateTask}
-                remoteTimerState={remoteTimerState}
-                onSyncTimerState={handleSyncTimerState}
-              />
-            </TaskManagerProvider>
+            <MultipleContainers
+              strategy={rectSortingStrategy}
+              vertical
+              trashable
+              templated={false}
+              items={dailyTasks}
+              onDeletePlannedTask={deletePlannedTask}
+              onChangeTasks={handleChangeTasks}
+              onEditPlannedTask={onUpdatePlannedTask}
+              onTaskDone={onTaskDone}
+              getAnotherTasksForCategory={getAnotherTasksForCategory}
+              onAddAnotherTask={handleAddTemplateTask}
+              remoteTimerState={remoteTimerState}
+              onSyncTimerState={handleSyncTimerState}
+            />
           )}
           <div className="flex flex-col gap-3 w-full">
             {isLoaded && (

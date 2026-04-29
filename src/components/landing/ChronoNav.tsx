@@ -46,6 +46,7 @@ export function ChronoNav({ variant = "landing" }: ChronoNavProps) {
 
   return (
     <nav
+      data-chrono-app-nav
       className={cn(
         "top-0 w-full z-10 border-b border-zinc-200 dark:border-white/5 bg-white/90 dark:bg-black/50 backdrop-blur-xl",
         isDailyOrTemplatePage ? "pr-15 lg:pr-0" : "pr-0",
