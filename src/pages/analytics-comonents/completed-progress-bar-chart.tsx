@@ -8,6 +8,9 @@ import ChartTitle from "../chart/chart-title";
 import { Slider } from "@/components/ui/slider";
 import { useThemeStore } from "@/storage/themeStore";
 import { ThemePalette, ThemeType } from "@/config/theme-colors.config";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+
+type ChartDateScope = "active" | "all";
 
 function getAllDatesInRange(from: Date, to: Date): Date[] {
   const out: Date[] = [];
@@ -39,6 +42,7 @@ const CompletedProgressBarChart = ({
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [chartWidth, setChartWidth] = useState(400);
   const [blendValue, setBlendValue] = useState([50]);
+  const [dateScope, setDateScope] = useState<ChartDateScope>("active");
   const shadowId = useId().replace(/:/g, "-");
   const undoneLineGradId = useId().replace(/:/g, "-");
   const selectedTheme = useThemeStore((s) => s.selectedTheme);
@@ -53,6 +57,7 @@ const CompletedProgressBarChart = ({
         {
           timeDone: d.data.countTimeDone,
           notTimeDone: d.data.countNotTimeDone,
+          activeTaskCount: d.data.countActiveTask,
         },
       ]),
     );
@@ -68,6 +73,7 @@ const CompletedProgressBarChart = ({
         date,
         doneTime: dataByDate.get(toKey(date))?.timeDone ?? 0,
         notTimeDone: dataByDate.get(toKey(date))?.notTimeDone ?? 0,
+        activeTaskCount: dataByDate.get(toKey(date))?.activeTaskCount ?? 0,
       }));
     }
 
@@ -75,13 +81,12 @@ const CompletedProgressBarChart = ({
       date: new Date(d.date),
       doneTime: d.data.countTimeDone,
       notTimeDone: d.data.countNotTimeDone,
+      activeTaskCount: d.data.countActiveTask,
     }));
   }, [data, rangeFrom, rangeTo]);
 
   const trimmedData = useMemo(() => {
-    const firstIdx = parsedData.findIndex(
-      (d) => d.doneTime > 0 || d.notTimeDone > 0,
-    );
+    const firstIdx = parsedData.findIndex((d) => d.doneTime > 0);
     if (firstIdx < 0) {
       return parsedData;
     }
@@ -91,7 +96,7 @@ const CompletedProgressBarChart = ({
       1 -
       [...parsedData]
         .reverse()
-        .findIndex((d) => d.doneTime > 0 || d.notTimeDone > 0);
+        .findIndex((d) => d.doneTime > 0);
 
     return parsedData.slice(firstIdx, lastIdx + 1);
   }, [parsedData]);
@@ -128,7 +133,12 @@ const CompletedProgressBarChart = ({
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
 
-    const chartData = trimmedData.length > 0 ? trimmedData : parsedData;
+    const chartData =
+      dateScope === "all"
+        ? parsedData
+        : trimmedData.length > 0
+          ? trimmedData
+          : parsedData;
     const maxSeconds =
       d3.max(chartData, (d) => Math.max(d.doneTime, d.notTimeDone)) ?? 0;
     const maxHours = Math.max(1, Math.ceil(maxSeconds / 3600));
@@ -520,6 +530,7 @@ const CompletedProgressBarChart = ({
     shadowId,
     themeColors,
     blendValue,
+    dateScope,
   ]);
 
   return (
@@ -533,18 +544,46 @@ const CompletedProgressBarChart = ({
             />
           </div>
           <div className="mb-4 rounded-xl border border-zinc-200/80 dark:border-white/10 bg-white/70 dark:bg-white/5 px-4 py-3">
-            <div className="mb-2 flex items-center justify-between gap-3 text-xs font-medium text-zinc-600 dark:text-zinc-400">
-              <span>{t("chart.done_bar_legend")}</span>
-              <span>{t("chart.line_overlay_label")}</span>
+            <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
+              <div className="flex min-h-12 flex-col justify-center">
+                <div className="mb-2 flex items-center justify-between gap-3 text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                  <span>{t("chart.done_bar_legend")}</span>
+                  <span className="text-right">{t("chart.line_overlay_label")}</span>
+                </div>
+                <Slider
+                  value={blendValue}
+                  onValueChange={setBlendValue}
+                  min={0}
+                  max={100}
+                  step={1}
+                  className="**:data-[slot=slider-range]:bg-indigo-500 **:data-[slot=slider-thumb]:border-indigo-500 **:data-[slot=slider-thumb]:bg-white dark:**:data-[slot=slider-thumb]:bg-zinc-950"
+                />
+              </div>
+              <ToggleGroup
+                type="single"
+                value={dateScope}
+                onValueChange={(value) => {
+                  if (value) setDateScope(value as ChartDateScope);
+                }}
+                size="sm"
+                className="w-full justify-self-end rounded-xl border border-zinc-300/80 bg-zinc-100/80 p-1 shadow-inner dark:border-white/15 dark:bg-white/5 md:w-auto"
+              >
+                <ToggleGroupItem
+                  value="active"
+                  aria-label={t("chart.date_scope_active")}
+                  className="h-9 rounded-lg px-4 text-sm font-semibold text-zinc-600 transition-all data-[state=on]:bg-indigo-500/20 data-[state=on]:text-zinc-950 data-[state=on]:shadow-[inset_0_0_0_1px_rgba(99,102,241,0.45),0_8px_22px_rgba(99,102,241,0.18)] hover:text-zinc-900 dark:text-zinc-300 dark:data-[state=on]:bg-indigo-400/20 dark:data-[state=on]:text-white dark:data-[state=on]:shadow-[inset_0_0_0_1px_rgba(199,210,254,0.5),0_8px_22px_rgba(99,102,241,0.22)] dark:hover:text-white"
+                >
+                  {t("chart.date_scope_active")}
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  value="all"
+                  aria-label={t("chart.date_scope_all")}
+                  className="h-9 rounded-lg px-4 text-sm font-semibold text-zinc-600 transition-all data-[state=on]:bg-indigo-500/20 data-[state=on]:text-zinc-950 data-[state=on]:shadow-[inset_0_0_0_1px_rgba(99,102,241,0.45),0_8px_22px_rgba(99,102,241,0.18)] hover:text-zinc-900 dark:text-zinc-300 dark:data-[state=on]:bg-indigo-400/20 dark:data-[state=on]:text-white dark:data-[state=on]:shadow-[inset_0_0_0_1px_rgba(199,210,254,0.5),0_8px_22px_rgba(99,102,241,0.22)] dark:hover:text-white"
+                >
+                  {t("chart.date_scope_all")}
+                </ToggleGroupItem>
+              </ToggleGroup>
             </div>
-            <Slider
-              value={blendValue}
-              onValueChange={setBlendValue}
-              min={0}
-              max={100}
-              step={1}
-              className="**:data-[slot=slider-range]:bg-indigo-500 **:data-[slot=slider-thumb]:border-indigo-500 **:data-[slot=slider-thumb]:bg-white dark:**:data-[slot=slider-thumb]:bg-zinc-950"
-            />
           </div>
           <div className="relative">
             <div className="absolute inset-0 rounded-full blur-3xl bg-indigo-500/10 dark:bg-indigo-500/15 pointer-events-none" />

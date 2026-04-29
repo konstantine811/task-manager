@@ -64,8 +64,11 @@ const AreaProgressOverview = ({ data }: { data: AreaProgress[] }) => {
               : 0;
 
           return (
-            <Card key={item.areaId} className="border-white/10 bg-background/60 backdrop-blur">
-              <CardHeader className="gap-2 px-4 py-3">
+            <Card
+              key={item.areaId}
+              className="gap-3 border-white/10 bg-background/60 py-3 backdrop-blur"
+            >
+              <CardHeader className="gap-2 px-4 py-1">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-2.5">
                     <div className="rounded-lg border border-white/10 bg-white/5 p-2">
@@ -93,9 +96,9 @@ const AreaProgressOverview = ({ data }: { data: AreaProgress[] }) => {
                   </span>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-3 px-4 pb-4">
+              <CardContent className="space-y-3 px-4 pb-1">
                 <div className="grid grid-cols-2 gap-2 md:grid-cols-3 2xl:grid-cols-5">
-                  <div className="relative overflow-hidden rounded-lg border border-white/10 bg-white/5 p-2.5">
+                  <div className="relative overflow-hidden rounded-lg border border-white/10 bg-white/5 p-2">
                     <div
                       className="absolute inset-y-0 left-0 z-0 transition-all duration-300"
                       style={{
@@ -103,32 +106,37 @@ const AreaProgressOverview = ({ data }: { data: AreaProgress[] }) => {
                         background: `linear-gradient(90deg, ${categoryColor}33 0%, ${categoryColor}22 100%)`,
                       }}
                     />
-                    <p className="relative z-10 text-xs text-muted-foreground">
+                    <p
+                      className="relative z-10 text-xs text-muted-foreground"
+                      title={t(
+                        "task_manager.analytics.area_progress.consistency_hint",
+                      )}
+                    >
                       {t("task_manager.analytics.area_progress.consistency")}
                     </p>
                     <p className="relative z-10 mt-1 text-xl font-semibold leading-tight">
                       {item.consistencyScore}%
                     </p>
                   </div>
-                  <div className="rounded-lg border border-white/10 bg-white/5 p-2.5">
+                  <div className="rounded-lg border border-white/10 bg-white/5 p-2">
                     <p className="text-xs text-muted-foreground">
                       {t("task_manager.analytics.area_progress.active_days")}
                     </p>
                     <p className="mt-1 text-xl font-semibold leading-tight">{item.activeDays}</p>
                   </div>
-                  <div className="rounded-lg border border-white/10 bg-white/5 p-2.5">
+                  <div className="rounded-lg border border-white/10 bg-white/5 p-2">
                     <p className="text-xs text-muted-foreground">
                       {t("task_manager.analytics.area_progress.completed_tasks")}
                     </p>
                     <p className="mt-1 text-xl font-semibold leading-tight">{item.completedTasks}</p>
                   </div>
-                  <div className="rounded-lg border border-white/10 bg-white/5 p-2.5">
+                  <div className="rounded-lg border border-white/10 bg-white/5 p-2">
                     <p className="text-xs text-muted-foreground">
                       {t("task_manager.analytics.area_progress.skipped_tasks")}
                     </p>
                     <p className="mt-1 text-xl font-semibold leading-tight">{item.skippedTasks}</p>
                   </div>
-                  <div className="rounded-lg border border-white/10 bg-white/5 p-2.5">
+                  <div className="rounded-lg border border-white/10 bg-white/5 p-2">
                     <p className="text-xs text-muted-foreground">
                       {t("task_manager.analytics.area_progress.spent_time")}
                     </p>

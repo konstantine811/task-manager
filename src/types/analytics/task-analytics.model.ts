@@ -130,6 +130,7 @@ export interface RangeTaskAnalyticRecord {
 export interface RangeTaskAnalytics {
   countTimeDone: number;
   countNotTimeDone: number;
+  countActiveTask: number;
 }
 
 export interface TaskStreakInsight {

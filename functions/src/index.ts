@@ -22,6 +22,10 @@ const REGION = "us-central1";
 const PUSH_DEVICES_COLLECTION = "push-devices";
 const REMINDER_SCHEDULES_COLLECTION = "daily-task-reminders";
 const REMINDER_OFFSETS_SECONDS = [3600, 300, 0] as const;
+const CALLABLE_FUNCTION_OPTIONS = {
+  region: REGION,
+  cors: true,
+} as const;
 
 type ReminderOffset = (typeof REMINDER_OFFSETS_SECONDS)[number];
 
@@ -257,7 +261,7 @@ const isTaskQueueMissingError = (error: unknown): boolean => {
 };
 
 export const registerPushDevice = onCall<RegisterPushDevicePayload>(
-  { region: REGION },
+  CALLABLE_FUNCTION_OPTIONS,
   async (request) => {
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "Authentication is required.");
@@ -294,7 +298,7 @@ export const registerPushDevice = onCall<RegisterPushDevicePayload>(
 );
 
 export const removePushDevice = onCall<RemovePushDevicePayload>(
-  { region: REGION },
+  CALLABLE_FUNCTION_OPTIONS,
   async (request) => {
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "Authentication is required.");

@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { connectFunctionsEmulator, getFunctions } from "firebase/functions";
 import { getStorage } from "firebase/storage";
 
 const envOrFallback = (value: string | undefined, fallback: string): string => {
@@ -48,7 +49,22 @@ export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
+export const functions = getFunctions(app, firebaseFunctionsRegion);
 export const provider = new GoogleAuthProvider();
+
+const useFunctionsEmulator =
+  import.meta.env.DEV &&
+  import.meta.env.VITE_FIREBASE_FUNCTIONS_EMULATOR === "true";
+
+if (useFunctionsEmulator) {
+  const emulatorHost =
+    envOrFallback(import.meta.env.VITE_FIREBASE_FUNCTIONS_EMULATOR_HOST, "127.0.0.1");
+  const emulatorPort = Number(
+    envOrFallback(import.meta.env.VITE_FIREBASE_FUNCTIONS_EMULATOR_PORT, "5001"),
+  );
+
+  connectFunctionsEmulator(functions, emulatorHost, emulatorPort);
+}
 
 export enum FirebaseCollection {
   dailyTasks = "daily-tasks",

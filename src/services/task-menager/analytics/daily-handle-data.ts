@@ -162,6 +162,7 @@ export const getRangeAnalyticsData = (
 ): RangeTaskAnalytics => {
   let countTimeDone = 0;
   let countNotTimeDone = 0;
+  let countActiveTask = 0;
   const recordDateIso = toIsoDateOnly(recordDate);
   const isCurrentDay = recordDateIso === todayIso;
 
@@ -189,6 +190,9 @@ export const getRangeAnalyticsData = (
     taskList.forEach((raw) => {
       const task = raw as ItemTask;
       const { title, isDone, isDetermined, isPlanned, time, timeDone } = task;
+      if (isDone || timeDone > 0) {
+        countActiveTask += 1;
+      }
 
       if (!taskEntity[title]) {
         taskEntity[title] = {
@@ -239,6 +243,7 @@ export const getRangeAnalyticsData = (
   return {
     countTimeDone,
     countNotTimeDone,
+    countActiveTask,
   };
 };
 

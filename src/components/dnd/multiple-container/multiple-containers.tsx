@@ -22,13 +22,10 @@ import { Button } from "../../ui/button";
 import { HoverStyleElement, SoundTypeElement } from "@/types/sound";
 import { useTranslation } from "react-i18next";
 import WrapperHoverElement from "../../ui-abc/wrapper-hover-element";
-import TaskTimer from "../task-timer";
-import { useHeaderSizeStore } from "@/storage/headerSizeStore";
 import { CATEGORY_OPTIONS } from "../config/category-options";
 import DialogAgree from "../../ui-abc/dialog/dialog-agree";
 import { AddTasksWithAIDialog } from "@/components/ai/add-tasks-with-ai-dialog";
 import { AnimatedItem } from "@/components/ui/animated-item";
-import { AnimatePresence, motion } from "framer-motion";
 import { SUGGESTED_TASK_PREFIX } from "../config/dnd.config";
 import { TaskItem } from "../task-item";
 import { MultipleContainersProps } from "./multiple-containers.types";
@@ -68,12 +65,10 @@ export function MultipleContainers({
   onSyncTimerState,
 }: MultipleContainersProps) {
   const [t] = useTranslation();
-  const sH = useHeaderSizeStore((s) => s.size);
 
   const {
     items,
     containers,
-    playingTask,
     addTaskContainerId,
     setAddTaskContainerId,
     editTask,
@@ -171,29 +166,6 @@ export function MultipleContainers({
           setIsDialogOpen(status);
         }}
       />
-      {!templated && playingTask && (
-        <div className="h-[60px] shrink-0" aria-hidden />
-      )}
-      {createPortal(
-        <AnimatePresence>
-          {!templated && playingTask ? (
-            <motion.div
-              key="task-timer-fixed"
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 60 }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3 }}
-              style={{ top: `${sH}px` }}
-              className="pointer-events-auto fixed left-0 right-0 z-40 flex justify-center overflow-hidden border-b border-border/40 bg-background/90 backdrop-blur-md"
-            >
-              <div className="flex h-[60px] items-center justify-center">
-                <TaskTimer />
-              </div>
-            </motion.div>
-          ) : null}
-        </AnimatePresence>,
-        document.body,
-      )}
       <DndContext
         sensors={sensors}
         collisionDetection={collisionDetectionStrategy}

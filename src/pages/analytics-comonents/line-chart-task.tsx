@@ -44,7 +44,11 @@ const LineChartTask = ({
     const dataByDate = new Map(
       data.map((d) => [
         d.date,
-        { timeDone: d.data.countTimeDone, notTimeDone: d.data.countNotTimeDone },
+        {
+          timeDone: d.data.countTimeDone,
+          notTimeDone: d.data.countNotTimeDone,
+          activeTaskCount: d.data.countActiveTask,
+        },
       ])
     );
     if (rangeFrom && rangeTo) {
@@ -58,6 +62,7 @@ const LineChartTask = ({
           date,
           timeDone: existing?.timeDone ?? 0,
           notTimeDone: existing?.notTimeDone ?? 0,
+          activeTaskCount: existing?.activeTaskCount ?? 0,
         };
       });
     }
@@ -65,6 +70,7 @@ const LineChartTask = ({
       date: new Date(d.date),
       timeDone: d.data.countTimeDone,
       notTimeDone: d.data.countNotTimeDone,
+      activeTaskCount: d.data.countActiveTask,
     }));
   }, [data, rangeFrom, rangeTo]);
 
@@ -112,10 +118,9 @@ const LineChartTask = ({
     };
   }, [parsedData.length]);
 
-  /** Діапазон дат, де є хоч якась активність (timeDone або notTimeDone > 0) — обрізаємо нулі зліва/справа */
+  /** Діапазон дат, де є реальна активність: виконання задачі або timeDone > 0. */
   const xDomainTrimmed = useMemo(() => {
-    const hasValue = (d: { timeDone: number; notTimeDone: number }) =>
-      d.timeDone > 0 || d.notTimeDone > 0;
+    const hasValue = (d: { activeTaskCount: number }) => d.activeTaskCount > 0;
     const firstIdx = parsedData.findIndex(hasValue);
     if (firstIdx < 0) {
       return d3.extent(parsedData, (d) => d.date) as [Date, Date];

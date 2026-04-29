@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import type { User } from "firebase/auth";
-import { getFunctions, httpsCallable } from "firebase/functions";
+import { httpsCallable } from "firebase/functions";
 import {
   type MessagePayload,
   getMessaging,
@@ -11,12 +11,13 @@ import {
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { initializeSfx, playSfx } from "@/services/audio/sfx";
-import { app, firebaseFunctionsRegion } from "@/config/firebase.config";
+import { app, functions } from "@/config/firebase.config";
 import { useAuth } from "@/hooks/useAuth";
 import { usePushNotificationsStore } from "@/storage/pushNotifications";
 import { useSoundEnabledStore } from "@/storage/soundEnabled";
 
 const INSTALLATION_ID_KEY = "task-manager.push.installation-id";
+const PUSH_REGISTRATION_RETRY_DELAY_MS = 60_000;
 
 interface RegisterPushDevicePayload {
   installationId: string;
@@ -109,13 +110,13 @@ const isReminderHandledOnVisibleDailyPage = (payload: MessagePayload): boolean =
 
 const getRegisterPushDeviceCallable = () =>
   httpsCallable<RegisterPushDevicePayload, { ok: boolean }>(
-    getFunctions(app, firebaseFunctionsRegion),
+    functions,
     "registerPushDevice",
   );
 
 const getRemovePushDeviceCallable = () =>
   httpsCallable<RemovePushDevicePayload, { ok: boolean }>(
-    getFunctions(app, firebaseFunctionsRegion),
+    functions,
     "removePushDevice",
   );
 
@@ -160,6 +161,7 @@ export const PushNotificationsBootstrap = () => {
   const isSoundEnabled = useSoundEnabledStore((s) => s.isSoundEnabled);
   const setPushStatus = usePushNotificationsStore((s) => s.setStatus);
   const registrationInFlightRef = useRef(false);
+  const lastRegistrationFailureAtRef = useRef(0);
   const hintShownRef = useRef(false);
   const previousUserIdRef = useRef<string | null>(null);
 
@@ -217,6 +219,12 @@ export const PushNotificationsBootstrap = () => {
 
     const ensurePushRegistration = async (triggeredByGesture: boolean) => {
       if (!user || registrationInFlightRef.current || cancelled) return;
+      if (
+        Date.now() - lastRegistrationFailureAtRef.current <
+        PUSH_REGISTRATION_RETRY_DELAY_MS
+      ) {
+        return;
+      }
 
       registrationInFlightRef.current = true;
       try {
@@ -283,9 +291,11 @@ export const PushNotificationsBootstrap = () => {
         await registerCurrentDevice(user, token, i18n.language);
 
         if (!cancelled) {
+          lastRegistrationFailureAtRef.current = 0;
           setPushStatus("registered", token, null);
         }
       } catch (error) {
+        lastRegistrationFailureAtRef.current = Date.now();
         console.error("Failed to register push notifications:", error);
         if (!cancelled) {
           setPushStatus(

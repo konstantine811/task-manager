@@ -21,6 +21,10 @@ const REGION = "us-central1";
 const PUSH_DEVICES_COLLECTION = "push-devices";
 const REMINDER_SCHEDULES_COLLECTION = "daily-task-reminders";
 const REMINDER_OFFSETS_SECONDS = [3600, 300, 0];
+const CALLABLE_FUNCTION_OPTIONS = {
+    region: REGION,
+    cors: true,
+};
 const getReminderScheduleRef = (uid, date) => db.doc(`${REMINDER_SCHEDULES_COLLECTION}/${uid}/days/${date}`);
 const getPushDevicesCollection = (uid) => db.collection(PUSH_DEVICES_COLLECTION).doc(uid).collection("installations");
 const buildTaskQueueId = (reminderId, salt) => node_crypto_1.default
@@ -135,7 +139,7 @@ const isTaskQueueMissingError = (error) => {
         message.includes("no task") ||
         message.includes("does not exist"));
 };
-exports.registerPushDevice = (0, https_1.onCall)({ region: REGION }, async (request) => {
+exports.registerPushDevice = (0, https_1.onCall)(CALLABLE_FUNCTION_OPTIONS, async (request) => {
     if (!request.auth) {
         throw new https_1.HttpsError("unauthenticated", "Authentication is required.");
     }
@@ -160,7 +164,7 @@ exports.registerPushDevice = (0, https_1.onCall)({ region: REGION }, async (requ
     }, { merge: true });
     return { ok: true };
 });
-exports.removePushDevice = (0, https_1.onCall)({ region: REGION }, async (request) => {
+exports.removePushDevice = (0, https_1.onCall)(CALLABLE_FUNCTION_OPTIONS, async (request) => {
     if (!request.auth) {
         throw new https_1.HttpsError("unauthenticated", "Authentication is required.");
     }
