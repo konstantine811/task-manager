@@ -157,7 +157,10 @@ const DialogTask = ({
       setTime(task.time);
       setWastedTime(task.timeDone);
       setSelectedDays(task.whenDo?.length ? task.whenDo : WEEK_DAYS);
-      setIsDetermined(task.isDetermined || false);
+      const nextIsDetermined = Boolean(task.isDetermined);
+      setIsDetermined((prev) =>
+        prev === nextIsDetermined ? prev : nextIsDetermined,
+      );
       if (task.schedule) {
         if (task.schedule.type === "interval_days") {
           setScheduleType("interval_days");
@@ -227,9 +230,7 @@ const DialogTask = ({
                   >
                     <TimePicker
                       className="col-span-3"
-                      onChange={(time) => {
-                        setTime(time);
-                      }}
+                      onChange={setTime}
                       time={time}
                     />
                   </LabelTooltip>
@@ -245,9 +246,7 @@ const DialogTask = ({
                   >
                     <TimePickerInputs
                       time={wastedTime}
-                      onChange={(value) => {
-                        setWastedTime(value);
-                      }}
+                      onChange={setWastedTime}
                     />
                   </LabelTooltip>
                 </div>
@@ -260,11 +259,13 @@ const DialogTask = ({
                     label={t(
                       "task_manager.dialog_create_task.task.time.is_determined_task",
                     )}
-                    onCheckedChange={() => {
+                    onCheckedChange={(checked) => {
+                      const nextIsDetermined = checked === true;
                       setIsDetermined((prev) => {
+                        if (prev === nextIsDetermined) return prev;
                         setTime(0);
                         setWastedTime(0);
-                        return !prev;
+                        return nextIsDetermined;
                       });
                     }}
                     checked={isDetermined}
@@ -282,9 +283,7 @@ const DialogTask = ({
                         )}
                       >
                         <TimePicker
-                          onChange={(time) => {
-                            setTime(time);
-                          }}
+                          onChange={setTime}
                           time={time}
                           className="col-span-3"
                         ></TimePicker>
@@ -305,9 +304,7 @@ const DialogTask = ({
                       >
                         <TimePickerInputs
                           time={wastedTime}
-                          onChange={(value) => {
-                            setWastedTime(value);
-                          }}
+                          onChange={setWastedTime}
                         />
                       </LabelTooltip>
                     </div>
@@ -325,9 +322,7 @@ const DialogTask = ({
                     >
                       <TimePickerInputs
                         time={time}
-                        onChange={(value) => {
-                          setTime(value);
-                        }}
+                        onChange={setTime}
                       />
                     </LabelTooltip>
                   </div>
@@ -344,9 +339,7 @@ const DialogTask = ({
                     >
                       <TimePickerInputs
                         time={wastedTime}
-                        onChange={(value) => {
-                          setWastedTime(value);
-                        }}
+                        onChange={setWastedTime}
                       />
                     </LabelTooltip>
                   </div>

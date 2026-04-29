@@ -1,4 +1,4 @@
-import { ReactNode, useRef, ElementType, memo } from "react";
+import { ReactNode, useRef, ElementType, memo, useMemo } from "react";
 import { useHoverStore } from "@storage/hoverStore";
 import { HoverStyleElement, SoundTypeElement } from "@custom-types/sound";
 import { forwardRef } from "react";
@@ -51,7 +51,10 @@ const SoundHoverElement = forwardRef<HTMLElement, SoundHoverElementProps>(
     const isSoundEnabled = useSoundEnabledStore(
       (state) => state.isSoundEnabled
     );
-    const MotionTag = motion.create(Tag as ElementType);
+    const MotionTag = useMemo(
+      () => motion.create(Tag as ElementType),
+      [Tag]
+    );
     const hoverTransition = MOTION_FRAME_TRANSITION.spring;
     const handleMouseEnter = () => {
       setTimeout(() => {

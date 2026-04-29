@@ -38,7 +38,11 @@ export const useHoverStore = create<HoverState>((set) => ({
   hoverStyleElement: HoverStyleElement.circle,
   isHoveringWrapper: false,
   setHoverStyle: (hoverStyle: HoverStyleElement) =>
-    set({ hoverStyleElement: hoverStyle }),
+    set((state) =>
+      state.hoverStyleElement === hoverStyle
+        ? state
+        : { hoverStyleElement: hoverStyle }
+    ),
   setHover: (hovering, hoverType, hoverStyle, box) => {
     if (
       hovering === lastHoverState.isHovering &&
@@ -61,6 +65,12 @@ export const useHoverStore = create<HoverState>((set) => ({
       boundingBox: box ?? null,
     });
   },
-  setHoverWrapper: (hovering) => set({ isHoveringWrapper: hovering }),
-  setHoverType: (hoverType) => set({ hoverTypeElement: hoverType }),
+  setHoverWrapper: (hovering) =>
+    set((state) =>
+      state.isHoveringWrapper === hovering ? state : { isHoveringWrapper: hovering }
+    ),
+  setHoverType: (hoverType) =>
+    set((state) =>
+      state.hoverTypeElement === hoverType ? state : { hoverTypeElement: hoverType }
+    ),
 }));

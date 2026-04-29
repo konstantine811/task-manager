@@ -29,11 +29,16 @@ const ScrollColumn = ({
     const center = scrollTop + clientHeight / 2;
     const index = Math.floor(center / ITEM_HEIGHT);
     const value = values[index];
+    const isValidValue =
+      value &&
+      value !== "-1" &&
+      ((type === "minute" && value !== "60") ||
+        (type === "hour" && value !== "24"));
 
-    if (value && value !== selected) {
+    if (isValidValue && value !== selected) {
       onChange(value);
     }
-  }, [onChange, selected, values]);
+  }, [onChange, selected, type, values]);
 
   // debounce scroll
   useEffect(() => {
@@ -106,9 +111,8 @@ export const TimePickerScroll = ({
   className = "",
   time = 0,
 }: TimePickerProps) => {
-  const now = new Date();
-  const [hour, setHour] = useState(String(now.getHours()).padStart(2, "0"));
-  const [minute, setMinute] = useState("00");
+  const [hour, setHour] = useState(() => paresSecondToTime(time).hours);
+  const [minute, setMinute] = useState(() => paresSecondToTime(time).minutes);
 
   const emit = useCallback(
     (h: string, m: string) => {
@@ -118,10 +122,9 @@ export const TimePickerScroll = ({
     [onChange]
   );
   useEffect(() => {
-    if (time === 0) return;
     const { hours, minutes } = paresSecondToTime(time);
-    setHour(hours);
-    setMinute(minutes);
+    setHour((prev) => (prev === hours ? prev : hours));
+    setMinute((prev) => (prev === minutes ? prev : minutes));
   }, [time]);
 
   useEffect(() => {

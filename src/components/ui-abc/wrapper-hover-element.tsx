@@ -1,4 +1,4 @@
-import { ReactNode, useRef, ElementType } from "react";
+import { ReactNode, useRef, ElementType, useMemo } from "react";
 import { useHoverStore } from "@storage/hoverStore";
 import { forwardRef } from "react";
 import clsx from "clsx"; // опціонально
@@ -16,7 +16,10 @@ const WrapperHoverElement = forwardRef<HTMLElement, WrapperHoverElementProps>(
     const internalRef = useRef<HTMLElement>(null!);
     const ref = (forwardedRef as React.RefObject<HTMLElement>) ?? internalRef;
     const setHoverWrapper = useHoverStore((s) => s.setHoverWrapper);
-    const MotionTag = motion.create(Tag as ElementType);
+    const MotionTag = useMemo(
+      () => motion.create(Tag as ElementType),
+      [Tag]
+    );
 
     return (
       <MotionTag

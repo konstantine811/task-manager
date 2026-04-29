@@ -107,8 +107,9 @@ export function useMultipleContainersBoard({
     touchSensor,
     keyboardSensor,
   );
-  const sensorsDisabled = useSensors();
-  const sensors = isDialogOpen ? sensorsDisabled : sensorsWithTouch;
+  // Keep sensors stable between renders.
+  // Switching between empty and non-empty sensor arrays breaks dnd-kit internals.
+  const sensors = sensorsWithTouch;
 
   const collisionDetectionStrategy: CollisionDetection =
     useCollisionDectionStrategy({
@@ -174,6 +175,7 @@ export function useMultipleContainersBoard({
   }, [taskTimeDone, updateTaskTime]);
 
   useEffect(() => {
+    if (isDialogOpen) return;
     if (!onSyncTimerState) return;
     if (timerSyncSource !== "local") return;
 
@@ -194,9 +196,10 @@ export function useMultipleContainersBoard({
     if (sig === lastSyncedTimerSigRef.current) return;
     lastSyncedTimerSigRef.current = sig;
     onSyncTimerState(nextState);
-  }, [onSyncTimerState, timerSyncSource, playingTask, startedAt]);
+  }, [isDialogOpen, onSyncTimerState, timerSyncSource, playingTask, startedAt]);
 
   useEffect(() => {
+    if (isDialogOpen) return;
     if (!remoteTimerState) {
       if (lastAppliedRemoteTimerSigRef.current === "stopped") return;
       lastAppliedRemoteTimerSigRef.current = "stopped";
@@ -231,7 +234,7 @@ export function useMultipleContainersBoard({
       { ...remoteTask, timeDone: remoteTimerState.baseTimeDone },
       remoteTimerState.startedAt,
     );
-  }, [items, remoteTimerState, syncTimerFromRemote]);
+  }, [isDialogOpen, items, remoteTimerState, syncTimerFromRemote]);
 
   const handleToggleTask = useCallback(
     (taskId: UniqueIdentifier, newIsDone: boolean) => {

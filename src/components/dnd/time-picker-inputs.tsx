@@ -1,6 +1,6 @@
 import NumberInput from "@/components/ui-abc/inputs/input-number";
 import { Label } from "@/components/ui/label";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 export function TimePickerInputs({
@@ -12,6 +12,7 @@ export function TimePickerInputs({
 }) {
   const [hours, setHours] = useState(0);
   const [minutes, setMinutes] = useState(0);
+  const lastEmittedRef = useRef<number | null>(null);
   const [t] = useTranslation();
   const handleHoursChange = (value: number) => {
     if (!isNaN(value) && value >= 0 && value <= 12) {
@@ -41,6 +42,8 @@ export function TimePickerInputs({
 
   useEffect(() => {
     const totalSeconds = hours * 3600 + minutes * 60;
+    if (lastEmittedRef.current === totalSeconds) return;
+    lastEmittedRef.current = totalSeconds;
     onChange(totalSeconds);
   }, [hours, minutes, onChange]);
 
