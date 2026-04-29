@@ -1127,7 +1127,102 @@ html:not(.dark) .chrono-dialog .chrono-time-drum-colon {
 
 .journal-mdx-content ul,
 .journal-mdx-content ol {
-  padding-left: 1.25rem;
+  margin-left: 0;
+  padding-left: 1.6rem;
+}
+
+.journal-mdx-content ul {
+  list-style: disc outside;
+}
+
+.journal-mdx-content ol {
+  list-style: decimal outside;
+}
+
+.journal-mdx-content ul ul {
+  list-style-type: circle;
+}
+
+.journal-mdx-content ul ul ul {
+  list-style-type: square;
+}
+
+.journal-mdx-content ol ol {
+  list-style-type: lower-alpha;
+}
+
+.journal-mdx-content li {
+  display: list-item;
+  padding-left: 0.25rem;
+}
+
+.journal-mdx-content li::marker {
+  color: currentColor;
+  font-weight: 700;
+}
+
+.journal-mdx-content li > p {
+  display: inline;
+}
+
+.journal-mdx-content li[role="checkbox"] {
+  position: relative;
+  margin-left: 0 !important;
+  margin-inline-start: 0 !important;
+  padding-left: 1.9rem !important;
+  padding-right: 0 !important;
+  list-style: none;
+  outline: none;
+}
+
+.journal-mdx-content li[role="checkbox"]::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.38em;
+  width: 16px;
+  height: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05) !important;
+  background-image: none !important;
+  background-size: auto !important;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.journal-mdx-content li[role="checkbox"]::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: calc(0.38em + 3px);
+  width: 8px;
+  height: 8px;
+  transform: scale(0);
+  transition: 120ms transform ease-in-out;
+  box-shadow: inset 1em 1em white;
+  transform-origin: center;
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+  border: 0 !important;
+}
+
+.journal-mdx-content li[role="checkbox"][aria-checked="true"]::before {
+  border-color: #22c55e !important;
+  background: #22c55e !important;
+}
+
+.journal-mdx-content li[role="checkbox"][aria-checked="true"]::after {
+  transform: scale(1);
+}
+
+html:not(.dark) .journal-mdx-content li[role="checkbox"]::before {
+  border-color: rgba(0, 0, 0, 0.35) !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+}
+
+html:not(.dark) .journal-mdx-content li[role="checkbox"][aria-checked="true"]::before {
+  border-color: #22c55e !important;
+  background: #22c55e !important;
 }
 
 .journal-mdx-content [align="center"] {

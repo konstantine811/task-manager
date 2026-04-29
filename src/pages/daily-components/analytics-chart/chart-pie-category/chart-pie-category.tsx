@@ -786,18 +786,18 @@ const ChartPieCategory = ({
             <p className="mb-2 text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.08em] text-zinc-500 dark:text-zinc-300/80">
               {t("chart.category_completion_rewards_title")}
             </p>
-            <div className="flex flex-wrap items-stretch gap-2">
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(8.5rem,1fr))] items-stretch gap-2">
               {coinItems.map((item) => {
                 const isFlying = activeFlyingKeys.has(item.coinKey);
                 const Icon = item.Icon;
                 return (
                   <div
                     key={item.coinKey}
-                    className="coin-award-cell relative min-w-[86px] rounded-md border border-zinc-200/80 dark:border-white/10 bg-white/80 dark:bg-white/[0.04] px-2 py-1.5 flex flex-col items-center justify-between"
+                    className="coin-award-cell relative grid min-h-28 min-w-0 grid-rows-[1.8rem_1fr_1rem] rounded-md border border-zinc-200/80 bg-white/80 px-2 py-2 dark:border-white/10 dark:bg-white/[0.04]"
                     title={`${item.label} · ${item.taskPct}%`}
                   >
                     <span
-                      className={`text-[10px] leading-none font-semibold tracking-wide uppercase text-center max-w-[82px] truncate ${item.colorClass}`}
+                      className={`flex h-full w-full items-start justify-center text-center text-[10px] leading-tight font-semibold tracking-wide uppercase whitespace-normal break-words ${item.colorClass}`}
                       title={item.label}
                     >
                       {item.label}
@@ -806,7 +806,7 @@ const ChartPieCategory = ({
                       ref={(node) => {
                         coinTargetRefs.current[item.coinKey] = node;
                       }}
-                      className={`relative mt-1.5 transition-opacity duration-150 ${isFlying ? "opacity-0" : "opacity-100"}`}
+                      className={`relative flex h-full items-center justify-center transition-opacity duration-150 ${isFlying ? "opacity-0" : "opacity-100"}`}
                     >
                       <Coin
                         icon={Icon}
@@ -815,7 +815,7 @@ const ChartPieCategory = ({
                         title={`${item.label} · ${item.taskPct}%`}
                       />
                     </div>
-                    <span className="mt-1 text-[10px] leading-none font-semibold tracking-wide text-zinc-600 dark:text-zinc-300/90 uppercase">
+                    <span className="w-full text-center text-[10px] leading-none font-semibold tracking-wide text-zinc-600 uppercase dark:text-zinc-300/90">
                       {item.coinTitle}
                     </span>
                   </div>

@@ -46,6 +46,12 @@ type SaveState = "idle" | "saving" | "saved" | "error";
 const normalizeMarkdown = (value: string) =>
   value.replace(/\r\n/g, "\n").replace(/\s+$/g, "");
 
+const getImageAltFromFile = (file: File) =>
+  file.name.replace(/\.[^.]+$/, "") || "image";
+
+const buildImageMarkdown = (imageUrl: string, alt: string) =>
+  `![${alt}](${imageUrl})`;
+
 const saveStateTone: Record<SaveState, string> = {
   idle: "text-zinc-500 dark:text-zinc-400",
   saving: "text-amber-600 dark:text-amber-300",
@@ -117,6 +123,7 @@ const DailyJournalCard = ({
   const isEditorFocusedRef = useRef(false);
   const lastAppliedInitialRef = useRef(initialContent);
   const imageInputRef = useRef<HTMLInputElement | null>(null);
+  const shouldAppendPickedImageToEndRef = useRef(false);
 
   const enqueueSave = useCallback(
     async (nextContent: string, sourceDate: string) => {
@@ -267,7 +274,49 @@ const DailyJournalCard = ({
     return () => window.removeEventListener("pagehide", handlePageHide);
   }, [enqueueSave]);
 
-  const uploadImageAndInsert = useCallback(
+  const appendMarkdownToEnd = useCallback(
+    (markdownBlock: string) => {
+      const editor = editorRef.current;
+      const currentMarkdown = editor?.getMarkdown() ?? latestContentRef.current;
+      const trimmedMarkdown = currentMarkdown.replace(/\s+$/g, "");
+      const nextMarkdown = `${trimmedMarkdown}${trimmedMarkdown ? "\n\n" : ""}${markdownBlock}\n`;
+
+      latestContentRef.current = nextMarkdown;
+      latestContentDateRef.current = activeDateRef.current;
+      editor?.setMarkdown(nextMarkdown);
+      scheduleSave(nextMarkdown, activeDateRef.current);
+    },
+    [scheduleSave],
+  );
+
+  const ensureEditorInsertionPoint = useCallback(() => {
+    if (isEditorFocusedRef.current) return;
+    editorRef.current?.focus(undefined, {
+      defaultSelection: "rootEnd",
+      preventScroll: true,
+    });
+  }, []);
+
+  const insertMarkdownOnce = useCallback(
+    (markdownBlock: string) => {
+      const editor = editorRef.current;
+      if (!editor) {
+        appendMarkdownToEnd(markdownBlock);
+        return;
+      }
+
+      ensureEditorInsertionPoint();
+      try {
+        editor.insertMarkdown(`\n${markdownBlock}\n`);
+      } catch (error) {
+        console.warn("Falling back to appending journal image:", error);
+        appendMarkdownToEnd(markdownBlock);
+      }
+    },
+    [appendMarkdownToEnd, ensureEditorInsertionPoint],
+  );
+
+  const uploadJournalImage = useCallback(
     async (file: File): Promise<string> => {
       if (!onUploadImage) {
         throw new Error("Image upload is not available");
@@ -277,8 +326,7 @@ const DailyJournalCard = ({
       setSaveState("saving");
 
       try {
-        const imageUrl = await onUploadImage(file);
-        return imageUrl;
+        return await onUploadImage(file);
       } finally {
         setIsUploadingImage(false);
       }
@@ -286,7 +334,16 @@ const DailyJournalCard = ({
     [onUploadImage],
   );
 
+  const uploadImageFromMdxPlugin = useCallback(
+    async (file: File): Promise<string> => {
+      ensureEditorInsertionPoint();
+      return await uploadJournalImage(file);
+    },
+    [ensureEditorInsertionPoint, uploadJournalImage],
+  );
+
   const handlePickImageClick = useCallback(() => {
+    shouldAppendPickedImageToEndRef.current = !isEditorFocusedRef.current;
     imageInputRef.current?.click();
   }, []);
 
@@ -297,15 +354,23 @@ const DailyJournalCard = ({
       if (!file || !onUploadImage) return;
 
       try {
-        const imageUrl = await uploadImageAndInsert(file);
-        const alt = file.name.replace(/\.[^.]+$/, "") || "image";
-        editorRef.current?.insertMarkdown(`\n![${alt}](${imageUrl})\n`);
+        const imageUrl = await uploadJournalImage(file);
+        const imageMarkdown = buildImageMarkdown(imageUrl, getImageAltFromFile(file));
+
+        if (shouldAppendPickedImageToEndRef.current) {
+          shouldAppendPickedImageToEndRef.current = false;
+          appendMarkdownToEnd(imageMarkdown);
+          return;
+        }
+
+        insertMarkdownOnce(imageMarkdown);
       } catch (error) {
+        shouldAppendPickedImageToEndRef.current = false;
         console.error("Failed to upload journal image:", error);
         setSaveState("error");
       }
     },
-    [onUploadImage, uploadImageAndInsert],
+    [appendMarkdownToEnd, insertMarkdownOnce, onUploadImage, uploadJournalImage],
   );
 
   const toolbarContents = useCallback(
@@ -357,7 +422,7 @@ const DailyJournalCard = ({
       linkPlugin(),
       linkDialogPlugin(),
       imagePlugin({
-        imageUploadHandler: onUploadImage ? uploadImageAndInsert : undefined,
+        imageUploadHandler: onUploadImage ? uploadImageFromMdxPlugin : undefined,
       }),
       journalAlignmentPersistencePlugin(),
       thematicBreakPlugin(),
@@ -367,7 +432,7 @@ const DailyJournalCard = ({
         toolbarContents,
       }),
     ],
-    [onUploadImage, toolbarContents, uploadImageAndInsert],
+    [onUploadImage, toolbarContents, uploadImageFromMdxPlugin],
   );
 
   return (
@@ -437,8 +502,11 @@ const DailyJournalCard = ({
       ) : (
         <div
           className="overflow-hidden rounded-t-xl border border-zinc-200/80 bg-white/80 shadow-sm dark:border-white/10 dark:bg-white/5"
-          onFocusCapture={() => {
-            isEditorFocusedRef.current = true;
+          onFocusCapture={(event) => {
+            const target = event.target as HTMLElement | null;
+            if (target?.closest(".journal-mdx-content")) {
+              isEditorFocusedRef.current = true;
+            }
           }}
           onBlurCapture={(event) => {
             const nextTarget = event.relatedTarget as Node | null;
