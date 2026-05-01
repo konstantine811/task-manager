@@ -10,6 +10,7 @@ import {
 import { getDailyTaskAnalyticsData } from "@/services/task-menager/analytics/daily-handle-data";
 import ChartPieCategoryWrap from "./analytics-chart/chart-pie-category/chart-pie-category-wrap";
 import DailyAnalyticsTable from "./analytics-chart/daily-analytics-table";
+import DailyProgressSpeedometer from "./analytics-chart/daily-progress-speedometer";
 
 const DailyAnalytics = ({
   disableCelebrationAnimation = false,
@@ -48,6 +49,7 @@ const DailyAnalytics = ({
   return (
     <div className="flex flex-col gap-4">
       {hasTrackedTime && <ChartTimeStackWrapper data={trackedDailyEntity} />}
+      {dailyAnaltyics && <DailyProgressSpeedometer data={dailyAnaltyics} />}
       {hasTrackedTime && dailyAnaltyics && <DailyAnalyticsTable data={dailyAnaltyics} />}
       {hasTrackedTime && Object.keys(doneCategoryEntity).length > 0 && (
         <ChartPieCategoryWrap
