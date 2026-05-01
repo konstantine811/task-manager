@@ -22,6 +22,7 @@ import LabelCheckData from "../../ui-abc/dialog/task/label-check-data";
 import LabelTooltip from "../../ui-abc/dialog/task/label-tooltip";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 import {
   Select,
   SelectContent,
@@ -76,6 +77,30 @@ const DialogTask = ({
   const isPlannedTask = Boolean(task?.isPlanned);
   const showActualSpentTimeField =
     Boolean(task) && !templated && !isPlannedTask && !isDetermined;
+  const getSpentTimeBorderClass = (
+    plannedTimeSeconds: number,
+    spentTimeSeconds: number,
+  ): string => {
+    if (plannedTimeSeconds <= 0 || spentTimeSeconds < plannedTimeSeconds) {
+      return "!border-white/35 dark:!border-white/30";
+    }
+
+    const ratio = spentTimeSeconds / plannedTimeSeconds;
+    if (ratio <= 1.2) {
+      return "!border-emerald-400/85 dark:!border-emerald-400";
+    }
+    if (ratio >= 10) {
+      return "!border-red-500 dark:!border-red-400";
+    }
+    if (ratio >= 3) {
+      return "!border-blue-500 dark:!border-blue-400";
+    }
+    return "!border-blue-400/85 dark:!border-blue-300/90";
+  };
+  const spentTimeInputClassName = cn(
+    "duration-200",
+    getSpentTimeBorderClass(time, wastedTime),
+  );
 
   function toggleDay(day: DayNumber) {
     setSelectedDays((prev) =>
@@ -247,6 +272,7 @@ const DialogTask = ({
                     <TimePickerInputs
                       time={wastedTime}
                       onChange={setWastedTime}
+                      inputClassName={spentTimeInputClassName}
                     />
                   </LabelTooltip>
                 </div>
@@ -305,6 +331,7 @@ const DialogTask = ({
                         <TimePickerInputs
                           time={wastedTime}
                           onChange={setWastedTime}
+                          inputClassName={spentTimeInputClassName}
                         />
                       </LabelTooltip>
                     </div>
@@ -340,6 +367,7 @@ const DialogTask = ({
                       <TimePickerInputs
                         time={wastedTime}
                         onChange={setWastedTime}
+                        inputClassName={spentTimeInputClassName}
                       />
                     </LabelTooltip>
                   </div>

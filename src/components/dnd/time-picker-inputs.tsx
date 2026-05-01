@@ -1,14 +1,17 @@
 import NumberInput from "@/components/ui-abc/inputs/input-number";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 export function TimePickerInputs({
   onChange,
   time,
+  inputClassName,
 }: {
   onChange: (timeSeconds: number) => void;
   time?: number;
+  inputClassName?: string;
 }) {
   const [hours, setHours] = useState(0);
   const [minutes, setMinutes] = useState(0);
@@ -61,7 +64,7 @@ export function TimePickerInputs({
             onChange={(value) => {
               handleHoursChange(value);
             }}
-            className="w-full justify-between"
+            className={cn("w-full justify-between transition-colors", inputClassName)}
           />
         </div>
 
@@ -76,7 +79,7 @@ export function TimePickerInputs({
             onChange={(value) => {
               handleMinutesChange(value);
             }}
-            className="w-full justify-between"
+            className={cn("w-full justify-between transition-colors", inputClassName)}
           />
         </div>
       </div>
