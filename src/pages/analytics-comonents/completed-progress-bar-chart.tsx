@@ -100,6 +100,10 @@ const CompletedProgressBarChart = ({
 
     return parsedData.slice(firstIdx, lastIdx + 1);
   }, [parsedData]);
+  const trackedDaysCount = useMemo(
+    () => parsedData.filter((day) => day.doneTime > 0).length,
+    [parsedData],
+  );
 
   useEffect(() => {
     const wrapper = wrapperRef.current;
@@ -537,11 +541,19 @@ const CompletedProgressBarChart = ({
     <div ref={wrapperRef} className="w-full min-w-0">
       <div className="rounded-xl border border-white/10 bg-linear-to-b from-white to-zinc-50 dark:from-zinc-900/80 dark:to-zinc-950 text-zinc-900 dark:text-zinc-100 shadow-[0_25px_70px_rgba(0,0,0,0.35)] overflow-hidden chrono-chart-plot-bg">
         <div className="relative z-10 p-2 sm:p-3">
-          <div className="mb-3">
+          <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
             <ChartTitle
               title="chart.range_done_bar_title"
               subtitle="chart.range_done_bar_subtitle"
             />
+            <div className="rounded-lg border border-zinc-200/80 bg-white/70 px-3 py-2 text-right dark:border-white/10 dark:bg-white/5">
+              <div className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
+                {t("chart.tracked_days_in_period")}
+              </div>
+              <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                {trackedDaysCount} / {parsedData.length}
+              </div>
+            </div>
           </div>
           <div className="mb-4 rounded-xl border border-zinc-200/80 dark:border-white/10 bg-white/70 dark:bg-white/5 px-4 py-3">
             <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">

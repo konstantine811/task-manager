@@ -438,6 +438,7 @@
     "range_done_bar_subtitle": "Completed tasks only for the selected period",
     "done_bar_legend": "Completion bars",
     "line_overlay_label": "Line chart",
+    "tracked_days_in_period": "Tracked days",
     "date_scope_active": "Active days",
     "date_scope_all": "All days",
     "period": "Period",

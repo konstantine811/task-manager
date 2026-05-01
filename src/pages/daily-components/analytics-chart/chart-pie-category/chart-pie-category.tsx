@@ -89,7 +89,7 @@ const getCoinColorByTaskPercent = (taskPercent: number): CoinColor | null => {
 };
 
 const getCoinSoundVolume = (coinColor: CoinColor): number => {
-  if (coinColor === "gold") return 1;
+  if (coinColor === "gold") return 0.55;
   if (coinColor === "silver") return 0.7;
   return 0.5;
 };
