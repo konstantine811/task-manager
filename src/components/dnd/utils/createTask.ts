@@ -1,5 +1,6 @@
 import type { ItemTask, Priority } from "@/types/drag-and-drop.model";
 import type { DayNumber } from "@/types/task-template.model";
+import type { GoalTaskLink } from "@/types/progress.model";
 
 export const createTask = (
   title: string,
@@ -9,6 +10,7 @@ export const createTask = (
   wastedTime = 0,
   whenDo: DayNumber[] = [],
   isDetermined = false,
+  goalTaskLinks: GoalTaskLink[] = [],
 ) => {
   const newTask: ItemTask = {
     id: `${title}-${Date.now()}`,
@@ -20,6 +22,7 @@ export const createTask = (
     priority,
     whenDo, // Дні тижня, коли потрібно виконати завдання
     isDetermined,
+    goalTaskLinks,
   };
   return newTask;
 };

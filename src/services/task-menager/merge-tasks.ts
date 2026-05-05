@@ -106,6 +106,7 @@ export function mergeItemsWithPlannedTasks(
         whenDo: task.whenDo || [],
         isDetermined: task.isDetermined || false,
         schedule: task.schedule,
+        goalTaskLinks: task.goalTaskLinks,
       });
     }
   });

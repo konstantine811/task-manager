@@ -72,11 +72,15 @@ export const saveTemplateTasks = async (items: Items) => {
 
   try {
     const cleanItems = stripUndefined(items);
-    await setDoc(ref, {
-      updatedAt: new Date().toISOString(),
-      email: user.email,
-      items: cleanItems,
-    });
+    await setDoc(
+      ref,
+      {
+        updatedAt: new Date().toISOString(),
+        email: user.email,
+        items: cleanItems,
+      },
+      { merge: true },
+    );
     return;
   } catch (error) {
     console.error("🔥 Error saving tasks:", error);

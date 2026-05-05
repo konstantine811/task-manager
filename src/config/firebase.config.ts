@@ -73,6 +73,8 @@ export enum FirebaseCollection {
   dailyAnalytics = "daily-analytics",
   dailyJournal = "daily-journal",
   taskInstances = "task-instances",
+  goals = "goals",
+  goalProgressEvents = "goal-progress-events",
 }
 
 export const FirebaseCollectionProps = {
@@ -81,4 +83,6 @@ export const FirebaseCollectionProps = {
   [FirebaseCollection.dailyAnalytics]: { days: "days" },
   [FirebaseCollection.dailyJournal]: { days: "days" },
   [FirebaseCollection.taskInstances]: { days: "days" },
+  [FirebaseCollection.goals]: { items: "items" },
+  [FirebaseCollection.goalProgressEvents]: { events: "events" },
 };

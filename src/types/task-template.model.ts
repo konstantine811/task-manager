@@ -1,5 +1,6 @@
 import type { UniqueIdentifier } from "@dnd-kit/core";
 import type { Priority } from "./drag-and-drop.model";
+import type { GoalTaskLink } from "./progress.model";
 
 /** ISO date string "YYYY-MM-DD" */
 export type ISODate = string;
@@ -58,6 +59,7 @@ export interface TaskTemplate {
   isPlanned?: boolean;
   isDetermined?: boolean;
   goalLinks?: GoalLink[];
+  goalTaskLinks?: GoalTaskLink[];
 }
 
 /**

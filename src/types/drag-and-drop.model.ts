@@ -1,5 +1,6 @@
 import { UniqueIdentifier } from "@dnd-kit/core";
 import type { DayNumber, ScheduleRule } from "./task-template.model";
+import type { GoalTaskLink } from "./progress.model";
 
 export interface TaskCategory {
   id: UniqueIdentifier;
@@ -24,6 +25,7 @@ export interface ItemTask {
    * Дозволяє: interval_days (кожні N днів), times_per_week (N раз на тиждень), once.
    */
   schedule?: ScheduleRule;
+  goalTaskLinks?: GoalTaskLink[];
 }
 
 export interface NormalizedTask extends ItemTask {

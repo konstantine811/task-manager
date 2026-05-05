@@ -36,11 +36,17 @@ import {
 import { normalizeItems } from "@/services/task-menager/normalize";
 import { resolveCategoryKey } from "@/utils/category.util";
 import { DailyTaskTimerSyncState } from "@/types/task-timer-sync.model";
+import {
+  applyGoalProgressFromTaskChange,
+  ReachedGoalInfo,
+} from "@/services/firebase/goalsData";
 
 const DailyTaskWrapper = ({
   onTaskDone,
+  onGoalsCompleted,
 }: {
   onTaskDone?: (task: ItemTask) => void;
+  onGoalsCompleted?: (reached: ReachedGoalInfo[]) => void;
 }) => {
   const [dailyTasks, setDailyTasks] = useState<Items>([]);
   const { id: date } = useParams(); // ← id це твоя дата у форматі "dd.MM.yyyy"
@@ -208,6 +214,7 @@ const DailyTaskWrapper = ({
           isDetermined: task.isDetermined || false,
           categoryName: task.categoryName,
           schedule: task.schedule,
+          goalTaskLinks: task.goalTaskLinks,
         } as ItemTaskCategory;
       });
       addPlannedTask(plannedTasks);
@@ -218,6 +225,15 @@ const DailyTaskWrapper = ({
   const handleChangeTasks = useCallback(
     (tasks: Items) => {
       if (!isLoaded) return;
+      const prevNormalized = normalizeItems(dailyTasks);
+      const nextNormalized = normalizeItems(tasks);
+      const prevById = new Map(prevNormalized.map((task) => [String(task.id), task]));
+      const nextById = new Map(nextNormalized.map((task) => [String(task.id), task]));
+      const changedTaskIds = new Set<string>([
+        ...Array.from(prevById.keys()),
+        ...Array.from(nextById.keys()),
+      ]);
+
       setTimeout(() => {
         setDailyTasks(tasks);
         setAnotherNormalizedTasks(
@@ -230,8 +246,49 @@ const DailyTaskWrapper = ({
         currentDateRef.current || "",
         FirebaseCollection.dailyTasks
       );
+      const currentDate = currentDateRef.current || "";
+      void Promise.all(
+        Array.from(changedTaskIds).map(async (taskId) => {
+          const before = prevById.get(taskId) ?? null;
+          const after = nextById.get(taskId) ?? null;
+          const empty = { reachedGoalIds: [] as string[], reachedGoals: [] as ReachedGoalInfo[] };
+          if (!before && !after) return empty;
+          const beforeDone = before?.isDone ?? false;
+          const afterDone = after?.isDone ?? false;
+          const beforeTimeDone = before?.timeDone ?? 0;
+          const afterTimeDone = after?.timeDone ?? 0;
+          const beforeLinks = JSON.stringify(before?.goalTaskLinks ?? []);
+          const afterLinks = JSON.stringify(after?.goalTaskLinks ?? []);
+          const changed =
+            beforeDone !== afterDone ||
+            beforeTimeDone !== afterTimeDone ||
+            beforeLinks !== afterLinks;
+          if (!changed) return empty;
+          return applyGoalProgressFromTaskChange(
+            before,
+            after,
+            nextNormalized,
+            currentDate,
+          );
+        }),
+      ).then((results) => {
+        if (!onGoalsCompleted) return;
+        const seenGoalIds = new Set<string>();
+        const reachedGoals: ReachedGoalInfo[] = [];
+        results.forEach((result) => {
+          result.reachedGoals.forEach((info) => {
+            if (!seenGoalIds.has(info.goalId)) {
+              seenGoalIds.add(info.goalId);
+              reachedGoals.push(info);
+            }
+          });
+        });
+        if (reachedGoals.length > 0) {
+          onGoalsCompleted(reachedGoals);
+        }
+      });
     },
-    [isLoaded, updatePlannedDeterminedTask, templatedTasks]
+    [isLoaded, updatePlannedDeterminedTask, templatedTasks, dailyTasks, onGoalsCompleted]
   );
 
   const handleAddTemplateTask = useCallback(

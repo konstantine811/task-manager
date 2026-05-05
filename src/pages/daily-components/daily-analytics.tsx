@@ -11,6 +11,10 @@ import { getDailyTaskAnalyticsData } from "@/services/task-menager/analytics/dai
 import ChartPieCategoryWrap from "./analytics-chart/chart-pie-category/chart-pie-category-wrap";
 import DailyAnalyticsTable from "./analytics-chart/daily-analytics-table";
 import DailyProgressSpeedometer from "./analytics-chart/daily-progress-speedometer";
+import DailyGoalsProgress from "./analytics-chart/daily-goals-progress";
+import { subscribeGoals } from "@/services/firebase/goalsData";
+import { Goal } from "@/types/progress.model";
+import { normalizeItems } from "@/services/task-menager/normalize";
 
 const DailyAnalytics = ({
   disableCelebrationAnimation = false,
@@ -23,6 +27,7 @@ const DailyAnalytics = ({
   const [categoryEntity, setCategoryEntity] =
     useState<CategoryAnalyticsNameEntity>({});
   const [dailyAnaltyics, setDailyAnaltyics] = useState<DailyAnalyticsData>();
+  const [goals, setGoals] = useState<Goal[]>([]);
   const trackedDailyEntity = Object.fromEntries(
     Object.entries(dailyEntity).filter(([, task]) => task.time > 0),
   );
@@ -46,10 +51,29 @@ const DailyAnalytics = ({
     setCategoryEntity(categoryEntity);
     setDailyAnaltyics(dailyAnalytics);
   }, [dailyTasks]);
+
+  useEffect(() => {
+    let isMounted = true;
+    let unsubscribe: (() => void) | undefined;
+    void (async () => {
+      unsubscribe = await subscribeGoals((items) => {
+        if (!isMounted) return;
+        setGoals(items);
+      });
+    })();
+    return () => {
+      isMounted = false;
+      unsubscribe?.();
+    };
+  }, []);
+
   return (
     <div className="flex flex-col gap-4">
       {hasTrackedTime && <ChartTimeStackWrapper data={trackedDailyEntity} />}
       {dailyAnaltyics && <DailyProgressSpeedometer data={dailyAnaltyics} />}
+      {dailyTasks.length > 0 && (
+        <DailyGoalsProgress goals={goals} tasks={normalizeItems(dailyTasks)} />
+      )}
       {hasTrackedTime && dailyAnaltyics && <DailyAnalyticsTable data={dailyAnaltyics} />}
       {hasTrackedTime && Object.keys(doneCategoryEntity).length > 0 && (
         <ChartPieCategoryWrap

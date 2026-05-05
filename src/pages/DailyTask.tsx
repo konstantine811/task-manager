@@ -36,6 +36,12 @@ import { useDeterminedTaskReminders } from "./hooks/useDeterminedTaskReminders";
 import { TaskManagerProvider } from "@/components/dnd/context/task-manager-context";
 import { useTaskManager } from "@/components/dnd/context/use-task-manger-context";
 import TaskTimer from "@/components/dnd/task-timer";
+import {
+  ReachedGoalInfo,
+  extendGoalTarget,
+} from "@/services/firebase/goalsData";
+import { formatGoalProgressValue } from "@/utils/goal.util";
+import { toast } from "sonner";
 
 const getCoinColorByTaskPercent = (taskPercent: number): CoinColor | null => {
   if (taskPercent >= 100) return "gold";
@@ -85,6 +91,7 @@ const DailyTask = () => {
   >([]);
   const [timerTop, setTimerTop] = useState(56);
   const prevCoinStateRef = useRef<Record<string, CoinColor>>({});
+  const completedGoalsCelebrationRef = useRef<Set<string>>(new Set());
   const pendingDoneCelebrationDateRef = useRef<string | null>(null);
   const [t] = useTranslation();
 
@@ -269,6 +276,38 @@ const DailyTask = () => {
     [date],
   );
 
+  const handleGoalsCompleted = useCallback((reachedGoals: ReachedGoalInfo[]) => {
+    if (!reachedGoals.length) return;
+    const newlyReached = reachedGoals.filter((info) => {
+      if (completedGoalsCelebrationRef.current.has(info.goalId)) return false;
+      completedGoalsCelebrationRef.current.add(info.goalId);
+      return true;
+    });
+    if (!newlyReached.length) return;
+    const events: CoinCelebrationEvent[] = newlyReached.map((info) => ({
+      id: `goal-overlay-${info.goalId}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      coinColor: "gold",
+      label: info.title,
+      Icon: DEFAULT_CATEGORY_STYLE.icon,
+    }));
+    setOverlayCelebrations((prev) => [...prev, ...events]);
+    newlyReached.forEach((info) => {
+      toast.success(t("goals.completion_title"), {
+        description: `${info.title}: ${formatGoalProgressValue(
+          info.currentValue,
+          info.targetValue,
+          info.unitType,
+        )}`,
+        action: {
+          label: t("goals.completion_extend"),
+          onClick: () => {
+            void extendGoalTarget(info.goalId);
+          },
+        },
+      });
+    });
+  }, [t]);
+
   useEffect(() => {
     pendingDoneCelebrationDateRef.current = null;
     prevCoinStateRef.current = {};
@@ -416,7 +455,10 @@ const DailyTask = () => {
 
           <TaskManagerProvider>
             <StickyTaskTimer top={timerTop} />
-            <DailyTaskWrapper onTaskDone={handleTaskDoneCelebration} />
+            <DailyTaskWrapper
+              onTaskDone={handleTaskDoneCelebration}
+              onGoalsCompleted={handleGoalsCompleted}
+            />
           </TaskManagerProvider>
         </main>
 

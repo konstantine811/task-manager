@@ -15,6 +15,7 @@ import type {
 } from "@/types/drag-and-drop.model";
 import type { AdvisorTask } from "@/services/ai/gemini.types";
 import type { DailyTaskTimerSyncState } from "@/types/task-timer-sync.model";
+import type { Goal } from "@/types/progress.model";
 
 export interface MultipleContainersProps {
   adjustScale?: boolean;
@@ -64,4 +65,6 @@ export interface MultipleContainersProps {
   remoteTimerState?: DailyTaskTimerSyncState | null;
   /** Push local play/stop timer changes to Firestore */
   onSyncTimerState?: (timerState: DailyTaskTimerSyncState | null) => void;
+  /** Goals available for linking template tasks */
+  goals?: Goal[];
 }

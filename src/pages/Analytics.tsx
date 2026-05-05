@@ -20,6 +20,9 @@ import CompletedProgressBarChart from "./analytics-comonents/completed-progress-
 import AreaProgressOverview from "./analytics-comonents/area-progress-overview";
 import { formatISO } from "date-fns";
 import TaskStreaksOverview from "./analytics-comonents/task-streaks-overview";
+import GoalsCompletedList from "./analytics-comonents/goals-completed-list";
+import { subscribeGoals } from "@/services/firebase/goalsData";
+import { Goal } from "@/types/progress.model";
 
 const Analytics = () => {
   const [t] = useTranslation();
@@ -29,6 +32,7 @@ const Analytics = () => {
   });
   const [rangeTasks, setRangeTasks] = useState<DailyTaskRecord[]>([]);
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData>();
+  const [goals, setGoals] = useState<Goal[]>([]);
   useEffect(() => {
     loadDailyTasksByRange(range.from, range.to).then((rangeTasks) => {
       setRangeTasks(rangeTasks);
@@ -50,6 +54,21 @@ const Analytics = () => {
       worker.terminate();
     };
   }, [range.from, range.to, rangeTasks]);
+
+  useEffect(() => {
+    let isMounted = true;
+    let unsubscribe: (() => void) | undefined;
+    void (async () => {
+      unsubscribe = await subscribeGoals((items) => {
+        if (!isMounted) return;
+        setGoals(items);
+      });
+    })();
+    return () => {
+      isMounted = false;
+      unsubscribe?.();
+    };
+  }, []);
 
   const mergedCategoryEntity = useMemo(() => {
     if (!analyticsData) return undefined;
@@ -129,6 +148,15 @@ const Analytics = () => {
               <AnimatedItem index={6}>
                 <div className="mt-10">
                   <RangeAnalyticsTable data={analyticsData.rangeTaskEntity} />
+                </div>
+              </AnimatedItem>
+              <AnimatedItem index={7}>
+                <div className="mt-10">
+                  <GoalsCompletedList
+                    goals={goals}
+                    from={range.from}
+                    to={range.to}
+                  />
                 </div>
               </AnimatedItem>
             </>

@@ -3,6 +3,8 @@ import { CATEGORY_OPTIONS } from "@/components/dnd/config/category-options";
 export type AreaId = (typeof CATEGORY_OPTIONS)[number];
 
 export type ProgressTrend = "up" | "flat" | "down";
+export type GoalUnitType = "time" | "distance" | "count";
+export type GoalContributionType = "time" | "distance" | "count";
 export type ProgressGoalKind = "consistency" | "time" | "count" | "milestone";
 export type ProgressGoalPeriod = "week" | "month" | "custom";
 export type ProgressGoalStatus = "active" | "completed" | "paused";
@@ -47,6 +49,54 @@ export interface ProgressGoal {
   status: ProgressGoalStatus;
   createdAt: string;
   completedAt?: string;
+}
+
+export interface GoalTaskLink {
+  goalId: string;
+  stageId: string;
+  taskId?: string;
+  templateTaskId?: string;
+  contributionType: GoalContributionType;
+  contributionValue: number;
+}
+
+export interface GoalStage {
+  id: string;
+  title: string;
+  order: number;
+  isActive: boolean;
+  linkedTaskIds?: string[];
+  linkedTemplateIds?: string[];
+  requiredCount?: number;
+  requiredTimeSeconds?: number;
+  requiredDistance?: number;
+  links?: GoalTaskLink[];
+}
+
+export interface Goal {
+  id: string;
+  title: string;
+  unitType: GoalUnitType;
+  targetValue: number;
+  currentValue: number;
+  status: ProgressGoalStatus;
+  createdAt: string;
+  completedAt?: string;
+  period: ProgressGoalPeriod;
+  areaId?: AreaId;
+  stages: GoalStage[];
+  sortOrder?: number;
+}
+
+export interface GoalProgressEvent {
+  id: string;
+  goalId: string;
+  taskId: string;
+  date: string;
+  beforeValue: number;
+  afterValue: number;
+  reachedNow: boolean;
+  createdAt: string;
 }
 
 export interface AchievementSourcePeriod {

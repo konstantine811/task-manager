@@ -63,6 +63,7 @@ export function MultipleContainers({
   onAddAnotherTask,
   remoteTimerState,
   onSyncTimerState,
+  goals = [],
 }: MultipleContainersProps) {
   const [t] = useTranslation();
 
@@ -146,6 +147,7 @@ export function MultipleContainers({
         containerId={addTaskContainerId}
         task={editTask}
         templated={templated}
+        goals={goals}
         onChangeTask={(task, containerId, isEdit) => {
           if (!containerId) {
             console.error("Container ID is required for task operations.");

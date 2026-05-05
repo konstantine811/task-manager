@@ -2,6 +2,7 @@ import SoundHoverElement from "@/components/ui-abc/sound-hover-element";
 import { Button } from "@/components/ui/button";
 import { useHoverStore } from "@/storage/hoverStore";
 import { ItemTask, Priority } from "@/types/drag-and-drop.model";
+import type { Goal, GoalTaskLink } from "@/types/progress.model";
 import type {
   DayNumber,
   ISODate,
@@ -30,10 +31,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
 import { WEEK_DAYS } from "@/config/data-config";
 import DialogTaskHeader from "./dialog-task-header";
 import DialogTaskIntro from "./dialog-task-intro";
+import { ChevronDown } from "lucide-react";
 
 type ScheduleType = "weekdays" | "interval_days" | "times_per_week";
 
@@ -48,6 +56,7 @@ const DialogTask = ({
   task,
   containerId,
   templated,
+  goals = [],
 }: {
   isOpen: boolean;
   onChangeTask: (
@@ -59,6 +68,7 @@ const DialogTask = ({
   task?: ItemTask | null;
   containerId: UniqueIdentifier | null;
   templated: boolean;
+  goals?: Goal[];
 }) => {
   const [t] = useTranslation();
   const setHover = useHoverStore((s) => s.setHover);
@@ -74,6 +84,7 @@ const DialogTask = ({
   const [time, setTime] = useState<number>(0);
   const [wastedTime, setWastedTime] = useState<number>(0);
   const [isDetermined, setIsDetermined] = useState<boolean>(false);
+  const [selectedGoalIds, setSelectedGoalIds] = useState<string[]>([]);
   const isPlannedTask = Boolean(task?.isPlanned);
   const showActualSpentTimeField =
     Boolean(task) && !templated && !isPlannedTask && !isDetermined;
@@ -101,6 +112,35 @@ const DialogTask = ({
     "duration-200",
     getSpentTimeBorderClass(time, wastedTime),
   );
+  const selectedGoalTitles = goals
+    .filter((goal) => selectedGoalIds.includes(goal.id))
+    .map((goal) => goal.title);
+
+  const toggleGoal = (goalId: string, checked: boolean) => {
+    setSelectedGoalIds((prev) =>
+      checked
+        ? prev.includes(goalId) ? prev : [...prev, goalId]
+        : prev.filter((id) => id !== goalId),
+    );
+  };
+
+  const buildGoalLinks = (templateTaskId?: string): GoalTaskLink[] => {
+    if (!templated) return task?.goalTaskLinks ?? [];
+
+    const currentTaskId =
+      templateTaskId ?? (task?.id ? String(task.id) : undefined);
+    return selectedGoalIds.map((goalId) => {
+      const goal = goals.find((item) => item.id === goalId);
+      const defaultStage = goal?.stages?.[0];
+      return {
+        goalId,
+        stageId: defaultStage?.id ?? `${goalId}-stage-default`,
+        ...(currentTaskId ? { templateTaskId: currentTaskId } : {}),
+        contributionType: "count",
+        contributionValue: 1,
+      };
+    });
+  };
 
   function toggleDay(day: DayNumber) {
     setSelectedDays((prev) =>
@@ -142,6 +182,7 @@ const DialogTask = ({
           whenDo,
           isDetermined,
           schedule,
+          goalTaskLinks: buildGoalLinks(String(task.id)),
         },
         containerId,
         true,
@@ -156,7 +197,15 @@ const DialogTask = ({
         whenDo,
         isDetermined,
       );
-      onChangeTask({ ...newTask, schedule }, containerId, false);
+      onChangeTask(
+        {
+          ...newTask,
+          schedule,
+          goalTaskLinks: buildGoalLinks(String(newTask.id)),
+        },
+        containerId,
+        false,
+      );
     }
     reset();
     setHover(false, null, HoverStyleElement.circle);
@@ -173,6 +222,7 @@ const DialogTask = ({
     setIntervalAnchorDate(toISODate(new Date()));
     setTimesPerWeek(2);
     setIsDetermined(false);
+    setSelectedGoalIds([]);
   }, []);
 
   useEffect(() => {
@@ -181,6 +231,11 @@ const DialogTask = ({
       setPriority(task.priority);
       setTime(task.time);
       setWastedTime(task.timeDone);
+      setSelectedGoalIds(
+        Array.from(
+          new Set((task.goalTaskLinks ?? []).map((link) => link.goalId)),
+        ),
+      );
       setSelectedDays(task.whenDo?.length ? task.whenDo : WEEK_DAYS);
       const nextIsDetermined = Boolean(task.isDetermined);
       setIsDetermined((prev) =>
@@ -203,6 +258,8 @@ const DialogTask = ({
       } else {
         setScheduleType("weekdays");
       }
+    } else {
+      setSelectedGoalIds([]);
     }
   }, [task]);
 
@@ -377,6 +434,49 @@ const DialogTask = ({
           </div>
           {templated && (
             <div className="grid grid-cols-1 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2">
+                <Label>
+                  {t("task_manager.dialog_create_task.task.goal_link.label")}
+                </Label>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="col-span-3 justify-between"
+                      disabled={goals.length === 0}
+                    >
+                      <span className="truncate">
+                        {selectedGoalTitles.length > 0
+                          ? selectedGoalTitles.join(", ")
+                          : t(
+                              goals.length > 0
+                                ? "goals.select_goals"
+                                : "goals.no_goals_hint",
+                            )}
+                      </span>
+                      <ChevronDown className="size-4 opacity-70" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="start"
+                    className="w-[var(--radix-dropdown-menu-trigger-width)] max-w-[calc(100vw-2rem)] border-zinc-200 bg-white text-zinc-950 dark:border-white/15 dark:bg-zinc-950 dark:text-zinc-100"
+                  >
+                    {goals.map((goal) => (
+                      <DropdownMenuCheckboxItem
+                        key={goal.id}
+                        checked={selectedGoalIds.includes(goal.id)}
+                        onCheckedChange={(checked) =>
+                          toggleGoal(goal.id, checked === true)
+                        }
+                        onSelect={(event) => event.preventDefault()}
+                      >
+                        {goal.title}
+                      </DropdownMenuCheckboxItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2">
                 <Label>
                   {t(
