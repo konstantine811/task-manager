@@ -32,6 +32,7 @@ function stripUndefined<T>(val: T): T {
 }
 import {
   DailyTaskRecord,
+  ItemTask,
   Items,
   ItemTaskCategory,
 } from "@/types/drag-and-drop.model";
@@ -53,6 +54,7 @@ import {
   Unsubscribe,
   where,
 } from "firebase/firestore";
+import { UniqueIdentifier } from "@dnd-kit/core";
 import {
   deleteObject,
   getDownloadURL,
@@ -187,6 +189,24 @@ export const saveDailyTaskTimerState = async (
   } catch (error) {
     console.error("🔥 Error syncing timer state:", error);
   }
+};
+
+/** Write `timeDone` for one task on a historic daily doc (cross-day timer stop). */
+export const persistTaskTimeDoneForDay = async (
+  dateIso: string,
+  taskId: UniqueIdentifier,
+  timeDone: number,
+) => {
+  const items = await loadDailyTasksByDate<ItemTask[]>(
+    dateIso,
+    FirebaseCollection.dailyTasks,
+  );
+  if (!items?.length) return;
+  const next = items.map((t) =>
+    t.id === taskId ? { ...t, timeDone } : t,
+  );
+  await saveDailyTasks(next, dateIso, FirebaseCollection.dailyTasks);
+  await saveDailyTaskTimerState(dateIso, null);
 };
 
 export const subscribeToDailyTasksByDate = async <T>(

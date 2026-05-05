@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import TaskLocalTimeStatic from "./task-local-time-static";
 import { useCallback, useEffect, useRef } from "react";
 import { useTaskManager } from "./context/use-task-manger-context";
+import { useDailyTimerDayId } from "./context/daily-timer-day-context";
 import { initializeSfx, playSfx } from "@/services/audio/sfx";
 import { useSoundEnabledStore } from "@/storage/soundEnabled";
 
@@ -24,6 +25,7 @@ const TaskPlay = ({
   const startedAt = useTaskManager((s) => s.startedAt);
   const setPlayingTask = useTaskManager((s) => s.setPlayingTask);
   const stopPlayingTask = useTaskManager((s) => s.stopPlayingTask);
+  const activeDayId = useDailyTimerDayId();
   const isSoundEnabled = useSoundEnabledStore((s) => s.isSoundEnabled);
   const [t] = useTranslation();
   const dingIntervalRef = useRef<number | null>(null);
@@ -39,6 +41,8 @@ const TaskPlay = ({
   const handleClick = () => {
     if (isPlaying) {
       stopPlayingTask();
+    } else if (!templated && activeDayId) {
+      setPlayingTask(task, { dayId: activeDayId });
     } else {
       setPlayingTask(task);
     }

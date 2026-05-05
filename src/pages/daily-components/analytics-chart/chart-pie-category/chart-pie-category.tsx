@@ -106,6 +106,13 @@ const COIN_SOUND_START_OFFSET_SECONDS_BY_COLOR: Record<CoinColor, number> = {
   gold: 0.7,
 };
 
+/**
+ * Diameter (px) of award coins in the legend and in the fly animation.
+ * The flight target ref is on a flex cell that spans the full grid column — using
+ * `rect.width` there made the flying coin scale to the whole tile (hundreds of px).
+ */
+const CHART_LEGEND_COIN_SIZE_PX = 34;
+
 const ChartPieCategory = ({
   data,
   width = 320,
@@ -617,7 +624,7 @@ const ChartPieCategory = ({
         if (!target) return;
 
         const rect = target.getBoundingClientRect();
-        const size = Math.max(34, Math.round(rect.width) || 34);
+        const size = CHART_LEGEND_COIN_SIZE_PX;
         const startLeft = window.innerWidth / 2 - size / 2;
         const startTop = window.innerHeight / 2 - size / 2;
         const endLeft = rect.left + rect.width / 2 - size / 2;
@@ -811,7 +818,7 @@ const ChartPieCategory = ({
                       <Coin
                         icon={Icon}
                         color={item.coinColor}
-                        size={34}
+                        size={CHART_LEGEND_COIN_SIZE_PX}
                         title={`${item.label} · ${item.taskPct}%`}
                       />
                     </div>

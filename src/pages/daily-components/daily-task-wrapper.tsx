@@ -190,10 +190,13 @@ const DailyTaskWrapper = ({
   }, [dailyTasks, plannedTasks, date, mergeNewPlannedTasks]);
 
   const handleSyncTimerState = useCallback(
-    (timerState: DailyTaskTimerSyncState | null) => {
-      const currentDate = currentDateRef.current;
-      if (!currentDate) return;
-      void saveDailyTaskTimerState(currentDate, timerState);
+    (
+      timerState: DailyTaskTimerSyncState | null,
+      meta?: { targetDayId: string | null },
+    ) => {
+      const target = meta?.targetDayId ?? currentDateRef.current;
+      if (!target) return;
+      void saveDailyTaskTimerState(target, timerState);
     },
     [],
   );

@@ -33,6 +33,7 @@ import { getDailyTaskAnalyticsData } from "@/services/task-menager/analytics/dai
 import { CATEGORY_STYLE, DEFAULT_CATEGORY_STYLE } from "@/components/dnd/config/category-style.config";
 import { type CoinColor } from "@/components/ui-abc/coin";
 import { useDeterminedTaskReminders } from "./hooks/useDeterminedTaskReminders";
+import { DailyTimerDayContext } from "@/components/dnd/context/daily-timer-day-context";
 import { TaskManagerProvider } from "@/components/dnd/context/task-manager-context";
 import { useTaskManager } from "@/components/dnd/context/use-task-manger-context";
 import TaskTimer from "@/components/dnd/task-timer";
@@ -454,11 +455,13 @@ const DailyTask = () => {
           )}
 
           <TaskManagerProvider>
-            <StickyTaskTimer top={timerTop} />
-            <DailyTaskWrapper
-              onTaskDone={handleTaskDoneCelebration}
-              onGoalsCompleted={handleGoalsCompleted}
-            />
+            <DailyTimerDayContext.Provider value={date ?? null}>
+              <StickyTaskTimer top={timerTop} />
+              <DailyTaskWrapper
+                onTaskDone={handleTaskDoneCelebration}
+                onGoalsCompleted={handleGoalsCompleted}
+              />
+            </DailyTimerDayContext.Provider>
           </TaskManagerProvider>
         </main>
 

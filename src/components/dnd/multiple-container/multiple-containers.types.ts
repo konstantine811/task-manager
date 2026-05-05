@@ -63,8 +63,11 @@ export interface MultipleContainersProps {
   onAddAnotherTask?: (task: NormalizedTask) => void;
   /** Synced timer state for current day from Firestore */
   remoteTimerState?: DailyTaskTimerSyncState | null;
-  /** Push local play/stop timer changes to Firestore */
-  onSyncTimerState?: (timerState: DailyTaskTimerSyncState | null) => void;
+  /** Push local play/stop timer changes to Firestore (`targetDayId` = daily doc id, usually ISO yyyy-MM-dd) */
+  onSyncTimerState?: (
+    timerState: DailyTaskTimerSyncState | null,
+    meta?: { targetDayId: string | null },
+  ) => void;
   /** Goals available for linking template tasks */
   goals?: Goal[];
 }

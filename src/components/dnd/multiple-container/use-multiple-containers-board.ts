@@ -1,5 +1,6 @@
 import {
   useCallback,
+  useContext,
   useEffect,
   useLayoutEffect,
   useRef,
@@ -24,6 +25,9 @@ import { coordinateGetter as multipleContainersCoordinateGetter } from "../utils
 import { mergeOrAddTask } from "../utils/merge-task-by-title";
 import type { MultipleContainersProps } from "./multiple-containers.types";
 import type { DailyTaskTimerSyncState } from "@/types/task-timer-sync.model";
+import { persistTaskTimeDoneForDay } from "@/services/firebase/taskManagerData";
+import { DailyTimerDayContext } from "@/components/dnd/context/daily-timer-day-context";
+import { TaskManagerContext } from "@/components/dnd/context/create-context";
 
 type UseMultipleContainersBoardParams = Pick<
   MultipleContainersProps,
@@ -52,6 +56,9 @@ export function useMultipleContainersBoard({
   onSyncTimerState,
   coordinateGetter = multipleContainersCoordinateGetter,
 }: UseMultipleContainersBoardParams) {
+  const taskManagerStore = useContext(TaskManagerContext);
+  const activeTimerDayId = useContext(DailyTimerDayContext);
+
   const [items, setItems] = useState<Items>(initialItems);
   const [containers, setContainers] = useState<UniqueIdentifier[]>(() =>
     initialItems.map((cat) => cat.id),
@@ -66,6 +73,9 @@ export function useMultipleContainersBoard({
   const timerSyncSource = useTaskManager((s) => s.timerSyncSource);
   const syncTimerFromRemote = useTaskManager((s) => s.syncTimerFromRemote);
   const taskTimeDone = useTaskManager((s) => s.updatedTask);
+  const stopPlayingTask = useTaskManager((s) => s.stopPlayingTask);
+  const clearPlayingSession = useTaskManager((s) => s.clearPlayingSession);
+  const playingDayId = useTaskManager((s) => s.playingDayId);
   const setPlayingTimeDoneResolver = useTaskManager(
     (s) => s.setPlayingTimeDoneResolver,
   );
@@ -90,6 +100,7 @@ export function useMultipleContainersBoard({
   const lastAppliedUpdatedSigRef = useRef<string | null>(null);
   const lastSyncedTimerSigRef = useRef<string | null>(null);
   const lastAppliedRemoteTimerSigRef = useRef<string | null>(null);
+  const lastPlayingDayForSyncRef = useRef<string | null>(null);
 
   const mouseSensor = useSensor(MouseSensor);
   const touchSensor = useSensor(TouchSensor, {
@@ -167,12 +178,32 @@ export function useMultipleContainersBoard({
   }, [items, setPlayingTimeDoneResolver]);
 
   useEffect(() => {
+    if (playingTask && startedAt && playingDayId) {
+      lastPlayingDayForSyncRef.current = playingDayId;
+    }
+  }, [playingTask, startedAt, playingDayId]);
+
+  useEffect(() => {
     if (!taskTimeDone) return;
-    const sig = `${String(taskTimeDone.id)}:${taskTimeDone.timeDone}`;
+    const sig = `${String(taskTimeDone.id)}:${taskTimeDone.timeDone}:${taskTimeDone.dayId ?? ""}`;
     if (sig === lastAppliedUpdatedSigRef.current) return;
     lastAppliedUpdatedSigRef.current = sig;
+
+    const flushDay = taskTimeDone.dayId;
+    if (
+      flushDay != null &&
+      activeTimerDayId != null &&
+      flushDay !== activeTimerDayId
+    ) {
+      void persistTaskTimeDoneForDay(
+        flushDay,
+        taskTimeDone.id,
+        taskTimeDone.timeDone,
+      );
+      return;
+    }
     updateTaskTime(taskTimeDone.id, taskTimeDone.timeDone);
-  }, [taskTimeDone, updateTaskTime]);
+  }, [taskTimeDone, updateTaskTime, activeTimerDayId]);
 
   useEffect(() => {
     if (isDialogOpen) return;
@@ -195,16 +226,35 @@ export function useMultipleContainersBoard({
 
     if (sig === lastSyncedTimerSigRef.current) return;
     lastSyncedTimerSigRef.current = sig;
-    onSyncTimerState(nextState);
-  }, [isDialogOpen, onSyncTimerState, timerSyncSource, playingTask, startedAt]);
+
+    const targetDayId = nextState
+      ? (playingDayId ?? activeTimerDayId ?? null)
+      : (lastPlayingDayForSyncRef.current ?? activeTimerDayId ?? null);
+
+    onSyncTimerState(nextState, { targetDayId });
+  }, [
+    isDialogOpen,
+    onSyncTimerState,
+    timerSyncSource,
+    playingTask,
+    startedAt,
+    playingDayId,
+    activeTimerDayId,
+  ]);
 
   useEffect(() => {
     if (isDialogOpen) return;
     if (!remoteTimerState) {
+      if (
+        playingTask &&
+        playingDayId != null &&
+        activeTimerDayId != null &&
+        playingDayId !== activeTimerDayId
+      ) {
+        return;
+      }
       if (lastAppliedRemoteTimerSigRef.current === "stopped") return;
       lastAppliedRemoteTimerSigRef.current = "stopped";
-      // Keep local sync dedupe in sync with remote state.
-      // This prevents false "already stopped" skips after remote/local handover.
       lastSyncedTimerSigRef.current = "stopped";
       syncTimerFromRemote(null, null);
       return;
@@ -227,41 +277,78 @@ export function useMultipleContainersBoard({
     if (sig === lastAppliedRemoteTimerSigRef.current) return;
 
     lastAppliedRemoteTimerSigRef.current = sig;
-    // Mirror applied remote state in local sync dedupe marker,
-    // so a local stop always flushes correctly.
     lastSyncedTimerSigRef.current = sig;
     syncTimerFromRemote(
       { ...remoteTask, timeDone: remoteTimerState.baseTimeDone },
       remoteTimerState.startedAt,
+      activeTimerDayId,
     );
-  }, [isDialogOpen, items, remoteTimerState, syncTimerFromRemote]);
+  }, [
+    isDialogOpen,
+    items,
+    remoteTimerState,
+    syncTimerFromRemote,
+    playingTask,
+    playingDayId,
+    activeTimerDayId,
+  ]);
 
   const handleToggleTask = useCallback(
     (taskId: UniqueIdentifier, newIsDone: boolean) => {
+      if (!taskManagerStore) return;
+
+      const { playingTask: pt, startedAt: st, playingDayId: pDay } =
+        taskManagerStore.getState();
+
+      const samePlaying = pt != null && String(pt.id) === String(taskId);
+      const flushTimer = newIsDone && samePlaying && st != null;
+      let crossDayMismatch = false;
+
+      if (flushTimer) {
+        crossDayMismatch =
+          pDay != null &&
+          activeTimerDayId != null &&
+          pDay !== activeTimerDayId;
+        if (crossDayMismatch) {
+          stopPlayingTask();
+        } else {
+          clearPlayingSession();
+        }
+      }
+
       setItems((prevItems) => {
         let doneTask: ItemTask | null = null;
         let undoneTask: ItemTask | null = null;
         const updated = prevItems.map((container) => ({
           ...container,
           tasks: container.tasks.map((t) => {
-            if (t.id === taskId) {
-              let updatedTask: ItemTask = { ...t, isDone: newIsDone };
-              if (newIsDone && !(t.timeDone && t.timeDone > 0)) {
-                // For determined/planned tasks `time` can mean clock time (e.g. 23:00),
-                // not duration. Never copy it into spent time automatically.
+            if (t.id !== taskId) return t;
+
+            let updatedTask: ItemTask = { ...t, isDone: newIsDone };
+
+            if (newIsDone) {
+              if (flushTimer && !crossDayMismatch && st != null) {
+                const elapsed = Math.floor((Date.now() - st) / 1000);
+                const base = t.timeDone > 0 ? t.timeDone : 0;
+                updatedTask = {
+                  ...updatedTask,
+                  timeDone: Math.max(0, base + elapsed),
+                };
+              } else if (!(t.timeDone && t.timeDone > 0)) {
                 updatedTask = {
                   ...updatedTask,
                   timeDone: t.isDetermined || t.isPlanned ? t.timeDone : t.time,
                 };
               }
-              if (newIsDone) doneTask = updatedTask;
-              else if (t.isDone) undoneTask = t;
-              if (updatedTask.isPlanned || updatedTask.isDetermined) {
-                onEditPlannedTask?.(updatedTask);
-              }
-              return updatedTask;
+              doneTask = updatedTask;
+            } else if (t.isDone) {
+              undoneTask = t;
             }
-            return t;
+
+            if (updatedTask.isPlanned || updatedTask.isDetermined) {
+              onEditPlannedTask?.(updatedTask);
+            }
+            return updatedTask;
           }),
         }));
         queueMicrotask(() => {
@@ -272,7 +359,16 @@ export function useMultipleContainersBoard({
         return updated;
       });
     },
-    [onChangeTasks, onEditPlannedTask, onTaskDone, onTaskUndone],
+    [
+      taskManagerStore,
+      activeTimerDayId,
+      onChangeTasks,
+      onEditPlannedTask,
+      onTaskDone,
+      onTaskUndone,
+      stopPlayingTask,
+      clearPlayingSession,
+    ],
   );
 
   const handleAddTask = useCallback(
