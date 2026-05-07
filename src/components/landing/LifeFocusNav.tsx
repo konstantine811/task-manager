@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router";
-import { Infinity, ArrowRight, LogOut, Moon, Sun } from "lucide-react";
+import { Infinity, ArrowRight, LogOut, Moon, Sun, CreditCard } from "lucide-react";
 import { useThemeStore } from "@/storage/themeStore";
 import { ThemeType } from "@/config/theme-colors.config";
 import { ROUTES, getTodayDailyRoute } from "@/config/routes";
@@ -7,12 +7,12 @@ import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
-type ChronoNavProps = {
+type LifeFocusNavProps = {
   /** Right side: landing = Login/Register or Tasks/Logout; app = minimal (logo = home) */
   variant?: "landing" | "app";
 };
 
-export function ChronoNav({ variant = "landing" }: ChronoNavProps) {
+export function LifeFocusNav({ variant = "landing" }: LifeFocusNavProps) {
   const { isAuthenticated, logout, loginWithGoogle } = useAuth();
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -24,6 +24,7 @@ export function ChronoNav({ variant = "landing" }: ChronoNavProps) {
     { to: ROUTES.TEMPLATE, key: "template" },
     { to: ROUTES.DAILY, key: "daily" },
     { to: ROUTES.ANALYTICS, key: "analytics" },
+    { to: ROUTES.BILLING, key: "billing" },
   ];
   const isDailyOrTemplatePage =
     pathname.startsWith(ROUTES.DAILY) || pathname.startsWith(ROUTES.TEMPLATE);
@@ -46,7 +47,7 @@ export function ChronoNav({ variant = "landing" }: ChronoNavProps) {
 
   return (
     <nav
-      data-chrono-app-nav
+      data-life-focus-app-nav
       className={cn(
         "top-0 w-full z-10 border-b border-zinc-200 dark:border-white/5 bg-white/90 dark:bg-black/50 backdrop-blur-xl",
         isDailyOrTemplatePage ? "pr-15 lg:pr-0" : "pr-0",
@@ -58,7 +59,7 @@ export function ChronoNav({ variant = "landing" }: ChronoNavProps) {
             <Infinity className="w-4 h-4" />
           </div>
           <span className="font-semibold text-zinc-900 dark:text-white tracking-tight text-sm group-hover:opacity-80 transition-opacity">
-            Chrono
+            Life Focus
           </span>
         </Link>
 
@@ -73,12 +74,13 @@ export function ChronoNav({ variant = "landing" }: ChronoNavProps) {
                     item.key === "daily" ? getTodayDailyRoute() : item.to
                   }
                   className={cn(
-                    "rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
+                    "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
                     isActive
                       ? "bg-indigo-500/15 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-200"
                       : "text-zinc-600 hover:bg-zinc-200/80 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-white/5 dark:hover:text-white",
                   )}
                 >
+                  {item.key === "billing" && <CreditCard className="h-3.5 w-3.5" />}
                   {t(`pages.task.${item.key}`)}
                 </Link>
               );
@@ -87,6 +89,20 @@ export function ChronoNav({ variant = "landing" }: ChronoNavProps) {
         )}
 
         <div className="flex items-center gap-4 min-w-0">
+          {variant === "app" && isAuthenticated && (
+            <Link
+              to={ROUTES.BILLING}
+              className={cn(
+                "flex h-8 w-8 items-center justify-center rounded-lg text-zinc-600 transition-colors hover:bg-zinc-200 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-white md:hidden",
+                pathname.startsWith(ROUTES.BILLING) &&
+                  "bg-indigo-500/15 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-200",
+              )}
+              aria-label={t("pages.task.billing")}
+              title={t("pages.task.billing")}
+            >
+              <CreditCard className="h-4 w-4" />
+            </Link>
+          )}
           <button
             type="button"
             onClick={toggleTheme}

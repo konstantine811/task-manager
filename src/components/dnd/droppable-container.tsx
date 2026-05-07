@@ -168,7 +168,7 @@ function DroppableContainer({
                   </WrapperHoverElement>
                 </div>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-72 chrono-dropdown-content relative pt-0">
+              <DropdownMenuContent className="w-72 life-focus-dropdown-content relative pt-0">
                 <div className="sticky top-0 bg-background z-10 pt-2">
                   <DropdownMenuLabel className="text-muted-foreground whitespace-normal">
                     {t("task_manager.add_all_tasks.by_category.description")}

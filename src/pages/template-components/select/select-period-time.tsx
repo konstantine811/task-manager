@@ -56,7 +56,7 @@ const SelectPeriodTime = ({
           </SoundHoverElement>
         </div>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56 chrono-dropdown-content">
+      <DropdownMenuContent className="w-56 life-focus-dropdown-content">
         <DropdownMenuLabel>{t("chart.period")}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuRadioGroup

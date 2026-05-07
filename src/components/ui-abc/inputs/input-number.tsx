@@ -36,7 +36,7 @@ export default function NumberInput({
   return (
     <div
       className={cn(
-        "chrono-time-input flex items-center justify-between rounded-md px-3 py-2 w-fit",
+        "life-focus-time-input flex items-center justify-between rounded-md px-3 py-2 w-fit",
         className
       )}
     >

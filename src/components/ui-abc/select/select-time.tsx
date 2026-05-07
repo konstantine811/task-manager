@@ -76,7 +76,7 @@ const ScrollColumn = ({
   return (
     <div
       ref={ref}
-      className="chrono-time-drum h-[84px] w-16 overflow-y-auto snap-y snap-mandatory scroll-smooth"
+      className="life-focus-time-drum h-[84px] w-16 overflow-y-auto snap-y snap-mandatory scroll-smooth"
     >
       {values.map((val) => {
         const isValidValue =
@@ -88,7 +88,7 @@ const ScrollColumn = ({
           <div
             key={val}
             className={`snap-center flex items-center justify-center transition-colors ${
-              val === selected ? "chrono-time-drum-selected" : "chrono-time-drum-unselected"
+              val === selected ? "life-focus-time-drum-selected" : "life-focus-time-drum-unselected"
             }`}
             style={{ height: `${ITEM_HEIGHT}px` }}
           >
@@ -137,14 +137,14 @@ export const TimePickerScroll = ({
     >
       <div className="relative flex justify-center items-center space-x-2">
         {/* selection window with sharp white lines */}
-        <div className="chrono-time-drum-window absolute inset-x-0 top-1/2 -translate-y-1/2 h-7 pointer-events-none" />
+        <div className="life-focus-time-drum-window absolute inset-x-0 top-1/2 -translate-y-1/2 h-7 pointer-events-none" />
         <ScrollColumn
           type="hour"
           values={range(26)}
           selected={hour}
           onChange={(val) => setHour(val)}
         />
-        <span className="chrono-time-drum-colon flex items-center">:</span>
+        <span className="life-focus-time-drum-colon flex items-center">:</span>
         <ScrollColumn
           type="minute"
           values={range(62)}

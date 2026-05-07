@@ -42,7 +42,7 @@ const DailyAddAnotherTask = ({
           </WrapperHoverElement>
         </div>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-64 chrono-dropdown-content relative pt-0">
+      <DropdownMenuContent className="w-64 life-focus-dropdown-content relative pt-0">
         <div className="sticky top-0 bg-background z-10 pt-2">
           <DropdownMenuLabel className="text-muted-foreground">
             {t("task_manager.add_all_tasks.header.description")}

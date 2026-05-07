@@ -7,6 +7,7 @@ import {
   extractReminderTasks,
   getNotificationBodyOffsetKey,
   isTodayIsoDate,
+  REMINDER_SFX_SRC,
 } from "@/services/notifications/reminder-sync";
 import { initializeSfx, playSfx } from "@/services/audio/sfx";
 import { useSoundEnabledStore } from "@/storage/soundEnabled";
@@ -31,7 +32,7 @@ export const useDeterminedTaskReminders = (date?: string, dailyTasks?: Items) =>
   );
 
   useEffect(() => {
-    initializeSfx(["/sfx/ding.wav"]);
+    initializeSfx([REMINDER_SFX_SRC]);
   }, []);
 
   useEffect(() => {
@@ -69,7 +70,7 @@ export const useDeterminedTaskReminders = (date?: string, dailyTasks?: Items) =>
         }
 
         if (isSoundEnabled) {
-          void playSfx("/sfx/ding.wav").catch(() => undefined);
+          void playSfx(REMINDER_SFX_SRC).catch(() => undefined);
         }
 
         if (

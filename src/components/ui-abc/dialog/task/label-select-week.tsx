@@ -31,8 +31,8 @@ const LabelSelectWeek = ({
             onClick={() => toggleDay(day)}
             className={`w-7 h-8 rounded-full transition-all duration-200 ${
               selectedDays.includes(day)
-                ? "chrono-day-badge selected"
-                : "chrono-day-badge hover:border-white/10 hover:bg-white/5"
+                ? "life-focus-day-badge selected"
+                : "life-focus-day-badge hover:border-white/10 hover:bg-white/5"
             }`}
           >
             {t(`${prefixWeedDay}.${day}`)}

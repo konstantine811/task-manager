@@ -31,7 +31,7 @@ const DailyAnalyticsTable = ({ data }: { data: DailyAnalyticsData }) => {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="chrono-table">
+      <div className="life-focus-table">
         <Table className="text-sm [&_tr]:border-0">
           <TableHeader>
             <TableRow>

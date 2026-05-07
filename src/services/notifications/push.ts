@@ -11,6 +11,7 @@ import {
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { initializeSfx, playSfx } from "@/services/audio/sfx";
+import { REMINDER_SFX_SRC } from "@/services/notifications/reminder-sync";
 import { app, functions } from "@/config/firebase.config";
 import { useAuth } from "@/hooks/useAuth";
 import { usePushNotificationsStore } from "@/storage/pushNotifications";
@@ -166,7 +167,7 @@ export const PushNotificationsBootstrap = () => {
   const previousUserIdRef = useRef<string | null>(null);
 
   useEffect(() => {
-    initializeSfx(["/sfx/ding.wav"]);
+    initializeSfx([REMINDER_SFX_SRC]);
   }, []);
 
   useEffect(() => {
@@ -190,7 +191,7 @@ export const PushNotificationsBootstrap = () => {
         }
 
         if (isSoundEnabled) {
-          void playSfx("/sfx/ding.wav").catch(() => undefined);
+          void playSfx(REMINDER_SFX_SRC).catch(() => undefined);
         }
       });
     })();

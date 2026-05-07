@@ -487,10 +487,10 @@ const DialogTask = ({
                   value={scheduleType}
                   onValueChange={(v) => setScheduleType(v as ScheduleType)}
                 >
-                  <SelectTrigger className="col-span-3 chrono-select-trigger">
+                  <SelectTrigger className="col-span-3 life-focus-select-trigger">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="chrono-select-content">
+                  <SelectContent className="life-focus-select-content">
                     <SelectItem value="weekdays">
                       {t(
                         "task_manager.dialog_create_task.task.time.schedule_type.weekdays",
@@ -601,7 +601,7 @@ const DialogTask = ({
                 }}
                 disabled={title === ""}
                 variant="outline"
-                className="chrono-dialog-submit cursor-pointer"
+                className="life-focus-dialog-submit cursor-pointer"
               >
                 {task ? t("task_manager.edit") : t("task_manager.add")}
               </Button>

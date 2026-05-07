@@ -42,11 +42,11 @@ const LabelSelectOption = <T extends string>({
       <Select name={id} value={value} onValueChange={onChange}>
         <SelectTrigger
           name="prioriy"
-          className="w-full col-span-3 chrono-select-trigger"
+          className="w-full col-span-3 life-focus-select-trigger"
         >
           <SelectValue placeholder={t(placeholder)} />
         </SelectTrigger>
-        <SelectContent className="chrono-select-content bg-background">
+        <SelectContent className="life-focus-select-content bg-background">
           <SelectGroup className="bg-background">
             <SelectLabel>{t(selectLabel)}</SelectLabel>
             {Object.values(options).map((p) => (

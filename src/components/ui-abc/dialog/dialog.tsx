@@ -37,7 +37,7 @@ const DialogTask = ({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.25, ease: "easeOut" }}
-          className="fixed inset-0 z-80 flex h-dvh w-full justify-center overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] chrono-dialog-overlay px-3 md:px-4 items-start md:items-center"
+          className="fixed inset-0 z-80 flex h-dvh w-full justify-center overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] life-focus-dialog-overlay px-3 md:px-4 items-start md:items-center"
           style={{
             paddingTop: `${headerSize + 12}px`,
             paddingBottom: "12px",
@@ -47,7 +47,7 @@ const DialogTask = ({
           <motion.div
             onClick={(e) => e.stopPropagation()}
             className={cn(
-              "relative z-81 flex w-full max-w-lg min-h-0 flex-col overflow-visible rounded-xl chrono-dialog bg-transparent",
+              "relative z-81 flex w-full max-w-lg min-h-0 flex-col overflow-visible rounded-xl life-focus-dialog bg-transparent",
               contentClassName,
               className
             )}

@@ -24,7 +24,7 @@ export function CTAFooter() {
         Побудуйте свої шаблони і перейдіть до реального дня
       </h2>
       <p className="mb-10 text-zinc-600 dark:text-zinc-400">
-        У поточній версії Chrono ви вже можете зібрати структуру задач, працювати з днем і
+        У поточній версії Life Focus ви вже можете зібрати структуру задач, працювати з днем і
         дивитися аналітику без зайвих екранів та складного онбордингу.
       </p>
       <div className="max-w-lg mx-auto flex flex-col sm:flex-row gap-3 justify-center">

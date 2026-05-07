@@ -63,7 +63,7 @@ export function AppMockup() {
           ].map((item) => (
             <div
               key={item.task}
-              className="p-4 rounded-lg chrono-task-card group-hover/item:border-zinc-700 group-hover/item:bg-zinc-800 flex justify-between items-start"
+              className="p-4 rounded-lg life-focus-task-card group-hover/item:border-zinc-700 group-hover/item:bg-zinc-800 flex justify-between items-start"
             >
               <div>
                 <div className="text-[10px] uppercase tracking-[0.2em] text-zinc-500 mb-2">
@@ -100,7 +100,7 @@ export function AppMockup() {
         <div className="absolute top-0 bottom-0 left-3 w-px bg-zinc-200 dark:bg-zinc-800" />
         <div className="relative pl-10 group/item cursor-pointer">
           <div className="absolute left-[9px] top-3 h-1.5 w-1.5 rounded-full bg-emerald-500 ring-4 ring-white dark:ring-[#09090b]" />
-          <div className="p-4 rounded-lg chrono-task-card chrono-task-card-done flex justify-between items-center">
+          <div className="p-4 rounded-lg life-focus-task-card life-focus-task-card-done flex justify-between items-center">
             <div>
               <div className="text-sm font-medium text-emerald-800 dark:text-emerald-200">Deep work block</div>
               <div className="mt-1 text-xs font-mono text-emerald-700/80 dark:text-emerald-400/70">09:00 - 11:00</div>
@@ -112,7 +112,7 @@ export function AppMockup() {
         </div>
         <div className="relative pl-10 cursor-pointer group/item">
           <div className="absolute left-[9px] top-3 h-1.5 w-1.5 rounded-full bg-zinc-400 ring-4 ring-white transition-colors group-hover/item:bg-zinc-500 dark:bg-zinc-700 dark:ring-[#09090b]" />
-          <div className="p-4 rounded-lg chrono-task-card group-hover/item:border-zinc-700 group-hover/item:bg-zinc-800 flex justify-between items-center">
+          <div className="p-4 rounded-lg life-focus-task-card group-hover/item:border-zinc-700 group-hover/item:bg-zinc-800 flex justify-between items-center">
             <div>
               <div className="text-sm font-medium text-zinc-800 dark:text-zinc-300">Workout</div>
               <div className="mt-1 text-xs font-mono text-zinc-500 dark:text-zinc-600">12:30 - 13:15</div>
@@ -121,7 +121,7 @@ export function AppMockup() {
         </div>
         <div className="relative pl-10 cursor-pointer group/item">
           <div className="absolute left-[9px] top-3 h-1.5 w-1.5 rounded-full bg-zinc-400 ring-4 ring-white transition-colors group-hover/item:bg-zinc-500 dark:bg-zinc-700 dark:ring-[#09090b]" />
-          <div className="p-4 rounded-lg chrono-task-card group-hover/item:border-zinc-700 group-hover/item:bg-zinc-800 flex justify-between items-center">
+          <div className="p-4 rounded-lg life-focus-task-card group-hover/item:border-zinc-700 group-hover/item:bg-zinc-800 flex justify-between items-center">
             <div>
               <div className="text-sm font-medium text-zinc-800 dark:text-zinc-300">Inbox cleanup</div>
               <div className="mt-1 text-xs font-mono text-zinc-500 dark:text-zinc-600">17:30 - 18:00</div>
@@ -139,18 +139,18 @@ export function AppMockup() {
           <div className="text-xs text-zinc-500 mb-1">Обраний діапазон дат</div>
           <div className="text-2xl font-medium text-zinc-900 dark:text-white">Аналітика</div>
         </div>
-        <button type="button" className="px-3 py-1 rounded-full chrono-btn-secondary">
+        <button type="button" className="px-3 py-1 rounded-full life-focus-btn-secondary">
           Фільтр
         </button>
       </div>
       <div className="grid grid-cols-2 gap-4 mb-6 animate-fade-in">
-        <div className="p-4 rounded-xl chrono-card">
+        <div className="p-4 rounded-xl life-focus-card">
           <div className="text-zinc-500 text-xs mb-2">Запланований час</div>
           <div className="flex items-center gap-2 text-xl font-medium text-zinc-900 dark:text-white">
             22.5 год
           </div>
         </div>
-        <div className="p-4 rounded-xl chrono-card">
+        <div className="p-4 rounded-xl life-focus-card">
           <div className="text-zinc-500 text-xs mb-2">Виконано</div>
           <div className="text-xl font-medium text-zinc-900 dark:text-white">14 задач</div>
         </div>
@@ -188,7 +188,7 @@ export function AppMockup() {
             <div className="w-3 h-3 rounded-full bg-yellow-500/20 border border-yellow-500/50" />
             <div className="w-3 h-3 rounded-full bg-green-500/20 border border-green-500/50" />
           </div>
-          <div className="flex-1 text-center font-mono text-[10px] text-zinc-500 dark:text-zinc-600">chrono_dashboard.exe</div>
+          <div className="flex-1 text-center font-mono text-[10px] text-zinc-500 dark:text-zinc-600">life-focus_dashboard.exe</div>
         </div>
         <div className="grid grid-cols-12 h-[500px] text-left">
           <div className="z-20 col-span-2 hidden flex-col items-center gap-6 border-r border-zinc-200 bg-zinc-50/80 py-6 dark:border-white/5 dark:bg-zinc-900/20 sm:col-span-1 md:flex">
@@ -234,15 +234,15 @@ export function AppMockup() {
               </div>
             </div>
             <div className="text-xs font-medium text-zinc-500 uppercase tracking-widest mb-3">Зараз у продукті</div>
-            <div className="p-3 rounded chrono-card mb-2 cursor-pointer">
+            <div className="p-3 rounded life-focus-card mb-2 cursor-pointer">
               <div className="mb-1 text-xs text-zinc-900 dark:text-white">Template categories</div>
               <div className="text-[10px] text-zinc-500">Career, Health, Relationships, Life</div>
             </div>
-            <div className="p-3 rounded chrono-card mb-2 cursor-pointer">
+            <div className="p-3 rounded life-focus-card mb-2 cursor-pointer">
               <div className="mb-1 text-xs text-zinc-900 dark:text-white">Daily execution</div>
               <div className="text-[10px] text-zinc-500">done, planned, determined tasks</div>
             </div>
-            <div className="p-3 rounded chrono-card cursor-pointer">
+            <div className="p-3 rounded life-focus-card cursor-pointer">
               <div className="mb-1 text-xs text-zinc-900 dark:text-white">Analytics + AI</div>
               <div className="text-[10px] text-zinc-500">range insights and quick setup</div>
             </div>

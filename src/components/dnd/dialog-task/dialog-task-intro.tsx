@@ -15,7 +15,7 @@ function DialogTaskIntro() {
         <h3 className="text-2xl font-semibold wrap-break-word">
           {t(`task_manager.dialog_create_task.${translateRandom}.title`)}
         </h3>
-        <p className="chrono-dialog-description font-mono text-sm">
+        <p className="life-focus-dialog-description font-mono text-sm">
           {t(`task_manager.dialog_create_task.${translateRandom}.description`)}
         </p>
       </div>

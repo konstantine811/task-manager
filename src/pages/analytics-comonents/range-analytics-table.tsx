@@ -107,7 +107,7 @@ const RangeAnalyticsTable = ({ data }: Props) => {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="chrono-table overflow-auto">
+      <div className="life-focus-table overflow-auto">
         <Table className="text-sm min-w-[700px] [&_tr]:border-0">
           <TableHeader>
             <TableRow>

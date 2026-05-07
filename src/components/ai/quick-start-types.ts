@@ -8,7 +8,7 @@ export interface QuickStartData {
   barrier: string;
 }
 
-export const QUICK_START_STORAGE_KEY = "chrono-quick-start-data";
+export const QUICK_START_STORAGE_KEY = "life-focus-quick-start-data";
 
 export const FOCUS_OPTIONS = [
   "health",

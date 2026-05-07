@@ -37,7 +37,7 @@ const DialogAgree = ({
             >
               <Button
                 variant="destructive"
-                className="w-full chrono-dialog-destructive bg-red-600 hover:bg-red-700 text-white"
+                className="w-full life-focus-dialog-destructive bg-red-600 hover:bg-red-700 text-white"
                 onClick={() => {
                   onAgree(true);
                   setIsOpen(false);

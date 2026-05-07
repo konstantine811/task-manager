@@ -10,6 +10,7 @@ const Landing = lazy(() => import("@/pages/Landing"));
 const TemplateTask = lazy(() => import("@/pages/TemplateTask"));
 const DailyTask = lazy(() => import("@/pages/DailyTask"));
 const Analytics = lazy(() => import("@/pages/Analytics"));
+const Billing = lazy(() => import("@/pages/Billing"));
 const TaskManager = lazy(() => import("@/pages/TaskManager"));
 
 function TaskManagerLayout() {
@@ -52,6 +53,7 @@ export const routes = [
       { path: "template", element: <TemplateTask /> },
       { path: "daily/:id", element: <DailyTask /> },
       { path: "analytics", element: <Analytics /> },
+      { path: "billing", element: <Billing /> },
     ],
   },
 ];

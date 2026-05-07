@@ -1,6 +1,6 @@
 {
   "nav":{"sign_in":"Sign in with Google","to_tasks":"To Tasks","logout":"Log out"},"common": {
-    "chrono": "Chrono",
+    "life-focus": "Life Focus",
     "cancel": "Cancel"
   },
   "ai_assistant": {
@@ -209,6 +209,7 @@
       "template": "Task Template",
       "daily": "Daily Tasks",
       "analytics": "Analytics",
+      "billing": "Plan",
       "goals": "Goals",
       "home": "Home"
     }

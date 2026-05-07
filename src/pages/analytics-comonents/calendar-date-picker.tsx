@@ -129,7 +129,7 @@ export const CalendarDatePicker = React.forwardRef<
 
     const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const selectContentClassName =
-      "chrono-select-content bg-white/98 text-zinc-900 border-zinc-200 shadow-xl dark:bg-zinc-950/98 dark:text-zinc-100 dark:border-white/10";
+      "life-focus-select-content bg-white/98 text-zinc-900 border-zinc-200 shadow-xl dark:bg-zinc-950/98 dark:text-zinc-100 dark:border-white/10";
 
     const handleClose = () => setIsPopoverOpen(false);
 

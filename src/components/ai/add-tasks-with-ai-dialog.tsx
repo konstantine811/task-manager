@@ -127,14 +127,14 @@ export function AddTasksWithAIDialog({
             {t("common.cancel")}
           </Button>
           {parsed ? (
-            <Button onClick={handleConfirm} className="chrono-dialog-submit">
+            <Button onClick={handleConfirm} className="life-focus-dialog-submit">
               {t("ai.add_tasks")} ({parsed.length})
             </Button>
           ) : (
             <Button
               onClick={handleParse}
               disabled={!input.trim() || loading}
-              className="chrono-dialog-submit"
+              className="life-focus-dialog-submit"
             >
               {loading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />

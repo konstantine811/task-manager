@@ -379,7 +379,7 @@ const DailyTask = () => {
   }, []);
 
   const updateTimerTop = useCallback(() => {
-    const nav = document.querySelector<HTMLElement>("[data-chrono-app-nav]");
+    const nav = document.querySelector<HTMLElement>("[data-life-focus-app-nav]");
     const navBottom = nav?.getBoundingClientRect().bottom ?? 0;
     const nextTop = navBottom < 1 ? 0 : Math.max(0, navBottom);
     setTimerTop((prev) => (prev === nextTop ? prev : nextTop));

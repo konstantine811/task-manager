@@ -181,7 +181,7 @@ const DialogFeatureTask = ({
                   )}
                 />
               </SelectTrigger>
-              <SelectContent className="chrono-select-content">
+              <SelectContent className="life-focus-select-content">
                 <SelectGroup>
                   <SelectLabel>
                     {t(

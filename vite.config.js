@@ -20,8 +20,8 @@ export default defineConfig({
                 "pwa-512x512.png",
             ],
             manifest: {
-                name: "Chrono Task Manager",
-                short_name: "Chrono",
+                name: "Life Focus Task Manager",
+                short_name: "Life Focus",
                 description: "Daily tasks, analytics, and reminders in one focused planner.",
                 theme_color: "#000000",
                 background_color: "#000000",

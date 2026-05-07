@@ -227,32 +227,32 @@ html:not(.dark) .text-glow {
   }
 }
 
-/* Chrono design system - shared with Landing & Tasks */
+/* Life Focus design system - shared with Landing & Tasks */
 /* Subtle borders like Landing: border-white/5, minimal visibility */
-.chrono-task-card {
+.life-focus-task-card {
   background: rgba(24, 24, 27, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.05);
   transition:
     border-color 0.2s,
     background-color 0.2s;
 }
-.chrono-task-card:hover {
+.life-focus-task-card:hover {
   border-color: rgba(255, 255, 255, 0.08);
   background: rgba(39, 39, 42, 0.9);
 }
-.chrono-task-card-done {
+.life-focus-task-card-done {
   background: rgba(16, 185, 129, 0.14);
   transition: background-color 0.25s ease;
 }
-html:not(.dark) .chrono-task-card {
+html:not(.dark) .life-focus-task-card {
   background: rgba(255, 255, 255, 0.88);
   border: 1px solid rgba(0, 0, 0, 0.08);
 }
-html:not(.dark) .chrono-task-card:hover {
+html:not(.dark) .life-focus-task-card:hover {
   border-color: rgba(0, 0, 0, 0.14);
   background: rgba(244, 244, 245, 0.98);
 }
-html:not(.dark) .chrono-task-card-done {
+html:not(.dark) .life-focus-task-card-done {
   background: rgba(16, 185, 129, 0.12);
 }
 
@@ -384,22 +384,22 @@ html:not(.dark) .task-neon-shell-medium > [data-task-card] {
   box-shadow: inset 3px 0 0 0 rgb(202, 138, 4);
 }
 
-.chrono-card {
+.life-focus-card {
   background: rgba(24, 24, 27, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.05);
   transition: background-color 0.2s;
 }
-.chrono-card:hover {
+.life-focus-card:hover {
   background: rgba(39, 39, 42, 0.6);
 }
-html:not(.dark) .chrono-card {
+html:not(.dark) .life-focus-card {
   background: rgba(255, 255, 255, 0.88);
   border: 1px solid rgba(0, 0, 0, 0.08);
 }
-html:not(.dark) .chrono-card:hover {
+html:not(.dark) .life-focus-card:hover {
   background: rgba(244, 244, 245, 0.98);
 }
-.chrono-btn-icon {
+.life-focus-btn-icon {
   background: rgba(24, 24, 27, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.05);
   display: flex;
@@ -409,19 +409,19 @@ html:not(.dark) .chrono-card:hover {
     background-color 0.2s,
     border-color 0.2s;
 }
-.chrono-btn-icon:hover {
+.life-focus-btn-icon:hover {
   background: rgba(39, 39, 42, 0.9);
   border-color: rgba(255, 255, 255, 0.08);
 }
-html:not(.dark) .chrono-btn-icon {
+html:not(.dark) .life-focus-btn-icon {
   background: rgba(255, 255, 255, 0.92);
   border: 1px solid rgba(0, 0, 0, 0.08);
 }
-html:not(.dark) .chrono-btn-icon:hover {
+html:not(.dark) .life-focus-btn-icon:hover {
   background: rgba(244, 244, 245, 0.98);
   border-color: rgba(0, 0, 0, 0.14);
 }
-.chrono-btn-secondary {
+.life-focus-btn-secondary {
   background: rgba(24, 24, 27, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.05);
   color: #a1a1aa;
@@ -431,60 +431,60 @@ html:not(.dark) .chrono-btn-icon:hover {
     background-color 0.2s,
     border-color 0.2s;
 }
-.chrono-btn-secondary:hover {
+.life-focus-btn-secondary:hover {
   color: white;
   border-color: rgba(255, 255, 255, 0.08);
 }
-html:not(.dark) .chrono-btn-secondary {
+html:not(.dark) .life-focus-btn-secondary {
   background: rgba(255, 255, 255, 0.92);
   border: 1px solid rgba(0, 0, 0, 0.08);
   color: #52525b;
 }
-html:not(.dark) .chrono-btn-secondary:hover {
+html:not(.dark) .life-focus-btn-secondary:hover {
   color: #18181b;
   border-color: rgba(0, 0, 0, 0.14);
   background: rgba(244, 244, 245, 0.98);
 }
-/* Chrono day badge - subtle border */
-.chrono-day-badge {
+/* Life Focus day badge - subtle border */
+.life-focus-day-badge {
   background: rgba(24, 24, 27, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.05);
   color: #a1a1aa;
   transition: all 0.2s;
 }
-.chrono-day-badge.selected {
+.life-focus-day-badge.selected {
   background: rgba(99, 102, 241, 0.15);
   border-color: rgba(99, 102, 241, 0.25);
   color: #c7d2fe;
 }
-/* Chrono chart toggle - checkbox row */
-.chrono-chart-toggle {
+/* Life Focus chart toggle - checkbox row */
+.life-focus-chart-toggle {
   background: rgba(24, 24, 27, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.05);
   transition: all 0.2s;
 }
-.chrono-chart-toggle.selected {
+.life-focus-chart-toggle.selected {
   background: rgba(99, 102, 241, 0.1);
   border-color: rgba(99, 102, 241, 0.2);
 }
-html:not(.dark) .chrono-chart-toggle {
+html:not(.dark) .life-focus-chart-toggle {
   background: rgba(228, 228, 231, 0.9);
   border: 1px solid rgba(113, 113, 122, 0.3);
   color: #3f3f46;
 }
-html:not(.dark) .chrono-chart-toggle.selected {
+html:not(.dark) .life-focus-chart-toggle.selected {
   background: rgba(99, 102, 241, 0.15);
   border-color: rgba(99, 102, 241, 0.35);
   color: #3730a3;
 }
-.chrono-page-bg {
+.life-focus-page-bg {
   background-color: var(--background);
 }
 /* Light theme: gradient like chart cards (from-white to-zinc-50) */
-html:not(.dark) .chrono-page-bg {
+html:not(.dark) .life-focus-page-bg {
   background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
 }
-.chrono-page-bg::before {
+.life-focus-page-bg::before {
   content: "";
   position: fixed;
   inset: 0;
@@ -506,16 +506,16 @@ html:not(.dark) .chrono-page-bg {
   z-index: 0;
 }
 /* Light theme: darker grid lines on light background */
-html:not(.dark) .chrono-page-bg::before {
+html:not(.dark) .life-focus-page-bg::before {
   background-image:
     linear-gradient(to right, rgba(0, 0, 0, 0.04) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
 }
 /* Chart plot area: light grey + grid (like bar chart) for light theme */
-.chrono-chart-plot-bg {
+.life-focus-chart-plot-bg {
   position: relative;
 }
-html:not(.dark) .chrono-chart-plot-bg::before {
+html:not(.dark) .life-focus-chart-plot-bg::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -528,95 +528,95 @@ html:not(.dark) .chrono-chart-plot-bg::before {
   pointer-events: none;
   z-index: 0;
 }
-/* Softer checkboxes in Chrono context */
-.chrono-page-bg [data-slot="checkbox"] {
+/* Softer checkboxes in Life Focus context */
+.life-focus-page-bg [data-slot="checkbox"] {
   border-color: rgba(255, 255, 255, 0.1);
 }
-.chrono-page-bg [data-slot="checkbox"][data-state="checked"] {
+.life-focus-page-bg [data-slot="checkbox"][data-state="checked"] {
   border-color: rgba(34, 197, 94, 0.65);
   background: rgba(34, 197, 94, 0.35);
 }
 /* Custom checkbox (task list) - light theme visibility */
-html:not(.dark) .chrono-page-bg .custom-checkbox {
+html:not(.dark) .life-focus-page-bg .custom-checkbox {
   border-color: rgba(0, 0, 0, 0.35);
   background: rgba(255, 255, 255, 0.9);
 }
-html:not(.dark) .chrono-page-bg .custom-checkbox:hover {
+html:not(.dark) .life-focus-page-bg .custom-checkbox:hover {
   border-color: rgba(0, 0, 0, 0.5);
   background: rgba(255, 255, 255, 1);
 }
-html:not(.dark) .chrono-page-bg .custom-checkbox:checked {
+html:not(.dark) .life-focus-page-bg .custom-checkbox:checked {
   border-color: #22c55e;
   background: #22c55e;
 }
 
-/* Chrono table - subtle borders, soft header */
-.chrono-table {
+/* Life Focus table - subtle borders, soft header */
+.life-focus-table {
   background: rgba(24, 24, 27, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 12px;
   overflow: hidden;
 }
-.chrono-table table {
+.life-focus-table table {
   border-collapse: separate;
   border-spacing: 0;
 }
-.chrono-table thead tr {
+.life-focus-table thead tr {
   background: rgba(255, 255, 255, 0.03);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
-.chrono-table thead th {
+.life-focus-table thead th {
   color: #a1a1aa;
   font-weight: 500;
   padding: 12px 16px;
   border-right: 1px solid rgba(255, 255, 255, 0.05);
 }
-.chrono-table thead th:last-child {
+.life-focus-table thead th:last-child {
   border-right: none;
 }
-.chrono-table tbody tr {
+.life-focus-table tbody tr {
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   transition: background-color 0.15s;
 }
-.chrono-table tbody tr:hover {
+.life-focus-table tbody tr:hover {
   background: rgba(255, 255, 255, 0.03);
 }
-.chrono-table tbody tr:last-child {
+.life-focus-table tbody tr:last-child {
   border-bottom: none;
 }
-.chrono-table tbody td {
+.life-focus-table tbody td {
   color: #d4d4d8;
   padding: 12px 16px;
   border-right: 1px solid rgba(255, 255, 255, 0.05);
 }
-.chrono-table tbody td:last-child {
+.life-focus-table tbody td:last-child {
   border-right: none;
 }
-html:not(.dark) .chrono-table {
+html:not(.dark) .life-focus-table {
   background: rgba(255, 255, 255, 0.8);
   border: 1px solid rgba(0, 0, 0, 0.1);
 }
-html:not(.dark) .chrono-table thead tr {
+html:not(.dark) .life-focus-table thead tr {
   background: rgba(0, 0, 0, 0.04);
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
-html:not(.dark) .chrono-table thead th {
+html:not(.dark) .life-focus-table thead th {
   color: #52525b;
   border-right: 1px solid rgba(0, 0, 0, 0.08);
 }
-html:not(.dark) .chrono-table tbody tr {
+html:not(.dark) .life-focus-table tbody tr {
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
-html:not(.dark) .chrono-table tbody tr:hover {
+html:not(.dark) .life-focus-table tbody tr:hover {
   background: rgba(0, 0, 0, 0.04);
 }
-html:not(.dark) .chrono-table tbody td {
+html:not(.dark) .life-focus-table tbody td {
   color: #27272a;
   border-right: 1px solid rgba(0, 0, 0, 0.06);
 }
 
-/* Chrono Select & Dropdown - soft borders, glass background */
-.chrono-select-trigger {
+/* Life Focus Select & Dropdown - soft borders, glass background */
+.life-focus-select-trigger {
   background: rgba(24, 24, 27, 0.8) !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
   color: #d4d4d8;
@@ -624,59 +624,59 @@ html:not(.dark) .chrono-table tbody td {
     border-color 0.2s,
     background-color 0.2s;
 }
-.chrono-select-trigger:hover {
+.life-focus-select-trigger:hover {
   background: rgba(39, 39, 42, 0.9) !important;
   border-color: rgba(255, 255, 255, 0.12) !important;
 }
-.chrono-select-content,
-.chrono-dropdown-content {
+.life-focus-select-content,
+.life-focus-dropdown-content {
   background: rgba(18, 18, 21, 0.98) !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
   backdrop-filter: blur(16px);
   box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
 }
-html:not(.dark) .chrono-select-trigger {
+html:not(.dark) .life-focus-select-trigger {
   background: rgba(255, 255, 255, 0.95) !important;
   border: 1px solid rgba(0, 0, 0, 0.12) !important;
   color: #27272a;
 }
-html:not(.dark) .chrono-select-trigger:hover {
+html:not(.dark) .life-focus-select-trigger:hover {
   background: rgba(244, 244, 245, 0.98) !important;
   border-color: rgba(0, 0, 0, 0.18) !important;
 }
-html:not(.dark) .chrono-select-content,
-html:not(.dark) .chrono-dropdown-content {
+html:not(.dark) .life-focus-select-content,
+html:not(.dark) .life-focus-dropdown-content {
   background: rgba(255, 255, 255, 0.98) !important;
   border: 1px solid rgba(0, 0, 0, 0.1) !important;
   box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.2);
 }
-html:not(.dark) .chrono-select-content [data-slot="select-label"],
-html:not(.dark) .chrono-dropdown-content [data-slot="dropdown-menu-label"] {
+html:not(.dark) .life-focus-select-content [data-slot="select-label"],
+html:not(.dark) .life-focus-dropdown-content [data-slot="dropdown-menu-label"] {
   color: #52525b;
 }
-html:not(.dark) .chrono-select-content [data-slot="select-item"],
-html:not(.dark) .chrono-dropdown-content [data-slot="dropdown-menu-item"],
-html:not(.dark) .chrono-dropdown-content [data-slot="dropdown-menu-radio-item"],
+html:not(.dark) .life-focus-select-content [data-slot="select-item"],
+html:not(.dark) .life-focus-dropdown-content [data-slot="dropdown-menu-item"],
+html:not(.dark) .life-focus-dropdown-content [data-slot="dropdown-menu-radio-item"],
 html:not(.dark)
-  .chrono-dropdown-content
+  .life-focus-dropdown-content
   [data-slot="dropdown-menu-checkbox-item"] {
   color: #27272a;
 }
-html:not(.dark) .chrono-select-content [data-slot="select-item"]:hover,
+html:not(.dark) .life-focus-select-content [data-slot="select-item"]:hover,
 html:not(.dark)
-  .chrono-select-content
+  .life-focus-select-content
   [data-slot="select-item"][data-highlighted],
-html:not(.dark) .chrono-dropdown-content [data-slot="dropdown-menu-item"]:hover,
+html:not(.dark) .life-focus-dropdown-content [data-slot="dropdown-menu-item"]:hover,
 html:not(.dark)
-  .chrono-dropdown-content
+  .life-focus-dropdown-content
   [data-slot="dropdown-menu-radio-item"][data-highlighted],
 html:not(.dark)
-  .chrono-dropdown-content
+  .life-focus-dropdown-content
   [data-slot="dropdown-menu-checkbox-item"][data-highlighted] {
   background: rgba(0, 0, 0, 0.05) !important;
 }
-html:not(.dark) .chrono-select-content [data-slot="select-separator"],
-html:not(.dark) .chrono-dropdown-content [data-slot="dropdown-menu-separator"] {
+html:not(.dark) .life-focus-select-content [data-slot="select-separator"],
+html:not(.dark) .life-focus-dropdown-content [data-slot="dropdown-menu-separator"] {
   background: rgba(0, 0, 0, 0.08) !important;
 }
 
@@ -718,186 +718,186 @@ html:not(.dark) .chart-tooltip .chart-tooltip-time {
   border: 1px solid rgba(99, 102, 241, 0.35);
   color: #3730a3;
 }
-.chrono-popover-content {
+.life-focus-popover-content {
   background: rgba(30, 30, 35, 0.98) !important;
   border: 1px solid rgba(255, 255, 255, 0.12) !important;
   backdrop-filter: blur(16px);
   box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
 }
-.chrono-select-content [data-slot="select-label"],
-.chrono-dropdown-content [data-slot="dropdown-menu-label"] {
+.life-focus-select-content [data-slot="select-label"],
+.life-focus-dropdown-content [data-slot="dropdown-menu-label"] {
   color: #a1a1aa;
 }
-.chrono-select-content [data-slot="select-item"],
-.chrono-dropdown-content [data-slot="dropdown-menu-item"],
-.chrono-dropdown-content [data-slot="dropdown-menu-radio-item"],
-.chrono-dropdown-content [data-slot="dropdown-menu-checkbox-item"] {
+.life-focus-select-content [data-slot="select-item"],
+.life-focus-dropdown-content [data-slot="dropdown-menu-item"],
+.life-focus-dropdown-content [data-slot="dropdown-menu-radio-item"],
+.life-focus-dropdown-content [data-slot="dropdown-menu-checkbox-item"] {
   color: #d4d4d8;
 }
-.chrono-select-content [data-slot="select-item"]:hover,
-.chrono-select-content [data-slot="select-item"][data-highlighted],
-.chrono-dropdown-content [data-slot="dropdown-menu-item"]:hover,
-.chrono-dropdown-content
+.life-focus-select-content [data-slot="select-item"]:hover,
+.life-focus-select-content [data-slot="select-item"][data-highlighted],
+.life-focus-dropdown-content [data-slot="dropdown-menu-item"]:hover,
+.life-focus-dropdown-content
   [data-slot="dropdown-menu-radio-item"][data-highlighted],
-.chrono-dropdown-content
+.life-focus-dropdown-content
   [data-slot="dropdown-menu-checkbox-item"][data-highlighted] {
   background: rgba(255, 255, 255, 0.05) !important;
 }
-.chrono-select-content [data-slot="select-separator"],
-.chrono-dropdown-content [data-slot="dropdown-menu-separator"] {
+.life-focus-select-content [data-slot="select-separator"],
+.life-focus-dropdown-content [data-slot="dropdown-menu-separator"] {
   background: rgba(255, 255, 255, 0.08) !important;
 }
 
-/* Chrono dialog - task create/edit modal */
-.chrono-dialog {
+/* Life Focus dialog - task create/edit modal */
+.life-focus-dialog {
   background: rgba(18, 18, 21, 0.98) !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
   backdrop-filter: blur(16px);
   box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.6);
 }
-.chrono-dialog-overlay {
+.life-focus-dialog-overlay {
   background: rgba(0, 0, 0, 0.7) !important;
   backdrop-filter: blur(4px);
 }
-.chrono-dialog h3 {
+.life-focus-dialog h3 {
   color: #e4e4e7;
   font-weight: 600;
 }
-.chrono-dialog .chrono-dialog-description {
+.life-focus-dialog .life-focus-dialog-description {
   color: #a1a1aa;
 }
-.chrono-dialog [data-slot="label"],
-.chrono-dialog label {
+.life-focus-dialog [data-slot="label"],
+.life-focus-dialog label {
   color: #a1a1aa;
 }
-.chrono-dialog [data-slot="textarea"],
-.chrono-dialog [data-slot="input"] {
+.life-focus-dialog [data-slot="textarea"],
+.life-focus-dialog [data-slot="input"] {
   background: rgba(24, 24, 27, 0.8) !important;
   border-color: rgba(255, 255, 255, 0.08) !important;
   color: #d4d4d8;
 }
-.chrono-dialog [data-slot="textarea"]:focus,
-.chrono-dialog [data-slot="input"]:focus {
+.life-focus-dialog [data-slot="textarea"]:focus,
+.life-focus-dialog [data-slot="input"]:focus {
   border-color: rgba(255, 255, 255, 0.15) !important;
   box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05);
 }
-.chrono-dialog .chrono-dialog-submit {
+.life-focus-dialog .life-focus-dialog-submit {
   background: rgba(24, 24, 27, 0.9) !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
   color: #d4d4d8;
   transition: all 0.2s;
 }
-.chrono-dialog .chrono-dialog-submit:hover:not(:disabled) {
+.life-focus-dialog .life-focus-dialog-submit:hover:not(:disabled) {
   background: rgba(39, 39, 42, 0.95) !important;
   border-color: rgba(255, 255, 255, 0.12) !important;
   color: white;
 }
-.chrono-dialog .chrono-time-input {
+.life-focus-dialog .life-focus-time-input {
   background: rgba(24, 24, 27, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 8px;
 }
-.chrono-dialog .chrono-time-input button {
+.life-focus-dialog .life-focus-time-input button {
   color: #a1a1aa;
 }
-.chrono-dialog .chrono-time-input button:hover:not(:disabled) {
+.life-focus-dialog .life-focus-time-input button:hover:not(:disabled) {
   color: #d4d4d8;
   background: rgba(255, 255, 255, 0.05);
 }
 
-/* Chrono dialog - light theme */
-html:not(.dark) .chrono-dialog-overlay {
+/* Life Focus dialog - light theme */
+html:not(.dark) .life-focus-dialog-overlay {
   background: rgba(0, 0, 0, 0.35) !important;
 }
-html:not(.dark) .chrono-dialog {
+html:not(.dark) .life-focus-dialog {
   background: rgba(255, 255, 255, 0.98) !important;
   border: 1px solid rgba(0, 0, 0, 0.08) !important;
   box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.2);
 }
-html:not(.dark) .chrono-dialog h3 {
+html:not(.dark) .life-focus-dialog h3 {
   color: #18181b;
 }
-html:not(.dark) .chrono-dialog .chrono-dialog-description {
+html:not(.dark) .life-focus-dialog .life-focus-dialog-description {
   color: #52525b;
 }
-html:not(.dark) .chrono-dialog [data-slot="label"],
-html:not(.dark) .chrono-dialog label {
+html:not(.dark) .life-focus-dialog [data-slot="label"],
+html:not(.dark) .life-focus-dialog label {
   color: #52525b;
 }
-html:not(.dark) .chrono-dialog [data-slot="textarea"],
-html:not(.dark) .chrono-dialog [data-slot="input"] {
+html:not(.dark) .life-focus-dialog [data-slot="textarea"],
+html:not(.dark) .life-focus-dialog [data-slot="input"] {
   background: #fafafa !important;
   border-color: rgba(0, 0, 0, 0.1) !important;
   color: #18181b;
 }
-html:not(.dark) .chrono-dialog [data-slot="textarea"]:focus,
-html:not(.dark) .chrono-dialog [data-slot="input"]:focus {
+html:not(.dark) .life-focus-dialog [data-slot="textarea"]:focus,
+html:not(.dark) .life-focus-dialog [data-slot="input"]:focus {
   border-color: rgba(99, 102, 241, 0.4) !important;
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
-html:not(.dark) .chrono-dialog .chrono-dialog-submit {
+html:not(.dark) .life-focus-dialog .life-focus-dialog-submit {
   background: #f4f4f5 !important;
   border: 1px solid rgba(0, 0, 0, 0.1) !important;
   color: #18181b;
 }
-html:not(.dark) .chrono-dialog .chrono-dialog-submit:hover:not(:disabled) {
+html:not(.dark) .life-focus-dialog .life-focus-dialog-submit:hover:not(:disabled) {
   background: #e4e4e7 !important;
   border-color: rgba(0, 0, 0, 0.15) !important;
   color: #09090b;
 }
-html:not(.dark) .chrono-dialog .chrono-time-input {
+html:not(.dark) .life-focus-dialog .life-focus-time-input {
   background: #fafafa;
   border: 1px solid rgba(0, 0, 0, 0.1);
 }
-html:not(.dark) .chrono-dialog .chrono-time-input button {
+html:not(.dark) .life-focus-dialog .life-focus-time-input button {
   color: #52525b;
 }
-html:not(.dark) .chrono-dialog .chrono-time-input button:hover:not(:disabled) {
+html:not(.dark) .life-focus-dialog .life-focus-time-input button:hover:not(:disabled) {
   color: #18181b;
   background: rgba(0, 0, 0, 0.05);
 }
-/* Chrono day badge - light theme (used in dialog) */
-html:not(.dark) .chrono-dialog .chrono-day-badge {
+/* Life Focus day badge - light theme (used in dialog) */
+html:not(.dark) .life-focus-dialog .life-focus-day-badge {
   background: #f4f4f5;
   border: 1px solid rgba(0, 0, 0, 0.08);
   color: #52525b;
 }
-html:not(.dark) .chrono-dialog .chrono-day-badge.selected {
+html:not(.dark) .life-focus-dialog .life-focus-day-badge.selected {
   background: rgba(99, 102, 241, 0.15);
   border-color: rgba(99, 102, 241, 0.3);
   color: #3730a3;
 }
 /* Select/dropdown inside dialog - light theme */
-html:not(.dark) .chrono-dialog .chrono-select-trigger {
+html:not(.dark) .life-focus-dialog .life-focus-select-trigger {
   background: #fafafa !important;
   border-color: rgba(0, 0, 0, 0.1) !important;
   color: #18181b;
 }
 /* Custom checkbox in dialog - light theme */
-html:not(.dark) .chrono-dialog .custom-checkbox {
+html:not(.dark) .life-focus-dialog .custom-checkbox {
   border-color: rgba(0, 0, 0, 0.2);
   background: rgba(255, 255, 255, 0.8);
 }
-html:not(.dark) .chrono-dialog .custom-checkbox::before {
+html:not(.dark) .life-focus-dialog .custom-checkbox::before {
   box-shadow: inset 1em 1em white;
 }
 /* Radix checkbox in dialog - light theme */
-html:not(.dark) .chrono-dialog [data-slot="checkbox"] {
+html:not(.dark) .life-focus-dialog [data-slot="checkbox"] {
   border-color: rgba(0, 0, 0, 0.2);
   background: #fafafa;
 }
-html:not(.dark) .chrono-dialog [data-slot="checkbox"][data-state="checked"] {
+html:not(.dark) .life-focus-dialog [data-slot="checkbox"][data-state="checked"] {
   border-color: rgba(34, 197, 94, 0.55);
   background: rgba(34, 197, 94, 0.22);
 }
 
 /* Destructive button in dialogs — завжди помітний (світла і темна тема) */
-.chrono-dialog .chrono-dialog-destructive {
+.life-focus-dialog .life-focus-dialog-destructive {
   background: #dc2626 !important;
   color: white !important;
   border-color: #dc2626 !important;
 }
-.chrono-dialog .chrono-dialog-destructive:hover {
+.life-focus-dialog .life-focus-dialog-destructive:hover {
   background: #b91c1c !important;
 }
 
@@ -946,44 +946,44 @@ html:not(.dark) .chrono-dialog [data-slot="checkbox"][data-state="checked"] {
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* Chrono time drum picker - clean scroll selector */
-.chrono-time-drum {
+/* Life Focus time drum picker - clean scroll selector */
+.life-focus-time-drum {
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
-.chrono-time-drum::-webkit-scrollbar {
+.life-focus-time-drum::-webkit-scrollbar {
   display: none;
 }
-.chrono-time-drum-selected {
+.life-focus-time-drum-selected {
   color: white !important;
   font-weight: 700;
   font-size: 1.5rem;
 }
-.chrono-time-drum-unselected {
+.life-focus-time-drum-unselected {
   color: #71717a !important;
   font-weight: 400;
   font-size: 0.95rem;
 }
-.chrono-time-drum-window {
+.life-focus-time-drum-window {
   border-top: 1px solid rgba(255, 255, 255, 0.2);
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
-.chrono-time-drum-colon {
+.life-focus-time-drum-colon {
   color: white;
   font-weight: 700;
   font-size: 1.5rem;
 }
 /* Time drum in light-theme dialog */
-html:not(.dark) .chrono-dialog .chrono-time-drum-selected {
+html:not(.dark) .life-focus-dialog .life-focus-time-drum-selected {
   color: #18181b !important;
 }
-html:not(.dark) .chrono-dialog .chrono-time-drum-unselected {
+html:not(.dark) .life-focus-dialog .life-focus-time-drum-unselected {
   color: #a1a1aa !important;
 }
-html:not(.dark) .chrono-dialog .chrono-time-drum-window {
+html:not(.dark) .life-focus-dialog .life-focus-time-drum-window {
   border-color: rgba(0, 0, 0, 0.15);
 }
-html:not(.dark) .chrono-dialog .chrono-time-drum-colon {
+html:not(.dark) .life-focus-dialog .life-focus-time-drum-colon {
   color: #18181b;
 }
 

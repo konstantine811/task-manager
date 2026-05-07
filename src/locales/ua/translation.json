@@ -1,6 +1,6 @@
 {
   "common": {
-    "chrono": "Chrono",
+    "life-focus": "Life Focus",
     "cancel": "Скасувати"
   },
   "nav": {
@@ -218,6 +218,7 @@
       "template": "Шаблон задачі",
       "daily": "Щоденні завдання",
       "analytics": "Аналітика",
+      "billing": "Тариф",
       "goals": "Цілі",
       "home": "Додому"
     }

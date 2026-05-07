@@ -85,7 +85,7 @@ function InputCombobox({
           </div>
         </PopoverTrigger>
         {open && (
-          <PopoverContent className="chrono-popover-content w-64 p-2 z-9999999 mr-4">
+          <PopoverContent className="life-focus-popover-content w-64 p-2 z-9999999 mr-4">
             <Command className="bg-background">
               <CommandGroup>
                 {options.map((option, i) => (

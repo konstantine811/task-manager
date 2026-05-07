@@ -473,7 +473,7 @@ export async function loadDailyTasksByRange(
   return results;
 }
 
-const DAILY_JOURNAL_STORAGE_ROOT = "task-manager-chrono";
+const DAILY_JOURNAL_STORAGE_ROOT = "task-manager-life-focus";
 
 const guessImageExtByMimeType = (contentType: string): string => {
   const normalized = contentType.toLowerCase();

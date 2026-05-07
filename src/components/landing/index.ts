@@ -1,5 +1,5 @@
 export { LandingBackground } from "./LandingBackground";
-export { ChronoNav } from "./ChronoNav";
+export { LifeFocusNav } from "./LifeFocusNav";
 export { HeroSection } from "./HeroSection";
 export { AppMockup } from "./AppMockup";
 export { FeaturesGrid } from "./FeaturesGrid";

@@ -7,7 +7,7 @@
 - **UI**: React + TypeScript + Tailwind
 - **Drag & Drop / списки**: `@dnd-kit/*`
 - **Стан**:
-  - **Goals**: Zustand store з persist у `localStorage` (ключ `chrono-goals`)
+  - **Goals**: Zustand store з persist у `localStorage` (ключ `life-focus-goals`)
   - **Tasks (template/daily/planned)**: Firebase Firestore (через сервіси у `src/services/firebase/`)
 - **Локалізація**: i18next
 
@@ -18,7 +18,7 @@
 - **Заплановані задачі (timeline/preset)**: Firestore → `planned-tasks`
 - **Цілі (Goals)**: **Zustand + localStorage** (не Firebase)
 
-> Важливо: якщо в UI “бачиш старі цілі”, це зазвичай означає, що в `localStorage` залишився попередній state (`chrono-goals`).
+> Важливо: якщо в UI “бачиш старі цілі”, це зазвичай означає, що в `localStorage` залишився попередній state (`life-focus-goals`).
 
 ## Основні сутності (спрощено)
 
@@ -133,7 +133,7 @@
 
 Цілі не приходять з Firebase. Якщо стан виглядає “зламаним”:
 
-- DevTools → Application → Local Storage → **`chrono-goals`** → видалити → reload.
+- DevTools → Application → Local Storage → **`life-focus-goals`** → видалити → reload.
 
 ## Діаграма (check → progress)
 

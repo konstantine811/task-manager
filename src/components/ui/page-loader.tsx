@@ -7,7 +7,7 @@ interface PageLoaderProps {
 export function PageLoader({ className }: PageLoaderProps) {
   return (
     <div
-      className={`min-h-screen chrono-page-bg flex items-center justify-center ${className ?? ""}`.trim()}
+      className={`min-h-screen life-focus-page-bg flex items-center justify-center ${className ?? ""}`.trim()}
     >
       <Spinner className="size-8 text-zinc-400" />
     </div>

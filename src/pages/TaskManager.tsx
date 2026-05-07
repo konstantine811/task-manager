@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router";
-import { ChronoNav } from "@/components/landing";
+import { LifeFocusNav } from "@/components/landing";
 import { markEnteredAppThisSession } from "@/config/app-session";
 import TaskNavMenu from "./TaskNavMenu";
 import { ROUTES } from "@/config/route-paths";
@@ -42,8 +42,8 @@ const TaskManager = () => {
   }, [pathname]);
 
   return (
-    <div className="box-border min-h-dvh flex flex-col chrono-page-bg text-foreground relative h-full">
-      <ChronoNav variant="app" />
+    <div className="box-border min-h-dvh flex flex-col life-focus-page-bg text-foreground relative h-full">
+      <LifeFocusNav variant="app" />
       <div className="relative z-10 flex min-h-0 flex-1 flex-col grow pb-20">
         <Outlet context={outletConext} />
       </div>

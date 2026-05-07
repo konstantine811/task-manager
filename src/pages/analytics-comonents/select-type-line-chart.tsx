@@ -51,10 +51,10 @@ const SelectTypeLineChart = ({
 
   return (
     <Select value={value} onValueChange={onChange}>
-      <SelectTrigger className="w-[220px] chrono-select-trigger">
+      <SelectTrigger className="w-[220px] life-focus-select-trigger">
         <SelectValue placeholder={t("chart.line_chart_type.title")} />
       </SelectTrigger>
-      <SelectContent className="chrono-select-content">
+      <SelectContent className="life-focus-select-content">
         <SelectGroup>
           <SelectLabel>{t("chart.line_chart_type.title")}</SelectLabel>
           {curveOptions.map((opt) => (

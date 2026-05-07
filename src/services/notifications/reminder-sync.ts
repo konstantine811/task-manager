@@ -3,6 +3,7 @@ import type { Items } from "@/types/drag-and-drop.model";
 import { parseDate } from "@/utils/date.util";
 
 export const REMINDER_OFFSETS_SECONDS = [3600, 300, 0] as const;
+export const REMINDER_SFX_SRC = "/sfx/ding-clock.wav";
 
 export type ReminderOffset = (typeof REMINDER_OFFSETS_SECONDS)[number];
 

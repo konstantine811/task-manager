@@ -1,5 +1,5 @@
 /** Після першого відвідування /app у цій вкладці — лендінг не редіректить автоматично. */
-const ENTERED_APP_SESSION_KEY = "chrono_entered_app_session";
+const ENTERED_APP_SESSION_KEY = "life-focus_entered_app_session";
 
 export function hasEnteredAppThisSession(): boolean {
   try {

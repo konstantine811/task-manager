@@ -27,7 +27,7 @@ import { SuggestedTasksPreview } from "./suggested-tasks-preview";
 import { QuickStartOnboarding } from "./quick-start-onboarding";
 import { DayNumber } from "@/types/task-template.model";
 
-const AI_HISTORY_KEY = "chrono-ai-assistant-history";
+const AI_HISTORY_KEY = "life-focus-ai-assistant-history";
 const MAX_HISTORY_ITEMS = 50;
 const DEFAULT_CATEGORY: TaskCategoryKey = "leisure";
 

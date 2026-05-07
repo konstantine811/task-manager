@@ -277,7 +277,7 @@ const ChartPieItem = ({
   return (
     <div className="relative">
       {type === ItemTimeMapKeys.task && TooltipElement}
-      <div className="rounded-xl border border-white/10 bg-gradient-to-b from-white to-zinc-50 dark:from-zinc-900/80 dark:to-zinc-950 text-zinc-900 dark:text-zinc-100 shadow-[0_25px_70px_rgba(0,0,0,0.35)] overflow-visible chrono-chart-plot-bg">
+      <div className="rounded-xl border border-white/10 bg-gradient-to-b from-white to-zinc-50 dark:from-zinc-900/80 dark:to-zinc-950 text-zinc-900 dark:text-zinc-100 shadow-[0_25px_70px_rgba(0,0,0,0.35)] overflow-visible life-focus-chart-plot-bg">
         <div className="relative z-10 p-4 sm:p-5">
           {titleKey && (
             <div className="mb-3">
