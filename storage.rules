@@ -1,0 +1,91 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function billingDoc(uid) {
+      return firestore.get(/databases/(default)/documents/billingUsers/$(uid));
+    }
+
+    function hasTimestampField(doc, field) {
+      return field in doc.data && doc.data[field] is timestamp;
+    }
+
+    function hasActiveTrial(uid) {
+      return firestore.exists(/databases/(default)/documents/billingUsers/$(uid)) &&
+        hasTimestampField(billingDoc(uid), "trialEndsAt") &&
+        billingDoc(uid).data.trialEndsAt > request.time;
+    }
+
+    function hasActivePaidAccess(uid) {
+      return firestore.exists(/databases/(default)/documents/billingUsers/$(uid)) &&
+        hasTimestampField(billingDoc(uid), "accessEndsAt") &&
+        billingDoc(uid).data.accessEndsAt > request.time;
+    }
+
+    function hasAppAccess(uid) {
+      return isOwner(uid) && (hasActiveTrial(uid) || hasActivePaidAccess(uid));
+    }
+
+    function planStorageLimitBytes(planId) {
+      return planId == "pro"
+        ? 5 * 1024 * 1024 * 1024
+        : planId == "starter"
+          ? 1024 * 1024 * 1024
+          : 100 * 1024 * 1024;
+    }
+
+    function billingPlanId(uid) {
+      return "planId" in billingDoc(uid).data
+        ? billingDoc(uid).data.planId
+        : "plan" in billingDoc(uid).data &&
+        billingDoc(uid).data.plan is map &&
+        "id" in billingDoc(uid).data.plan
+        ? billingDoc(uid).data.plan.id
+        : "id" in billingDoc(uid).data
+          ? billingDoc(uid).data.id
+          : "free";
+    }
+
+    function currentStorageBytes(uid) {
+      return "storageBytes" in billingDoc(uid).data &&
+        billingDoc(uid).data.storageBytes is number
+        ? billingDoc(uid).data.storageBytes
+        : 0;
+    }
+
+    function hasStorageCapacity(uid) {
+      return currentStorageBytes(uid) + request.resource.size <=
+        planStorageLimitBytes(billingPlanId(uid));
+    }
+
+    function isImageUpload() {
+      return request.resource != null &&
+        request.resource.size <= 10 * 1024 * 1024 &&
+        request.resource.contentType.matches("image/.*");
+    }
+
+    match /task-manager-life-focus/{uid}/daily-journal-images/{date}/{fileName} {
+      allow read: if hasAppAccess(uid);
+      allow create, update: if hasAppAccess(uid) && isImageUpload() && hasStorageCapacity(uid);
+      allow delete: if isOwner(uid);
+    }
+
+    match /{uid}/daily-journal-images/{date}/{fileName} {
+      allow read: if hasAppAccess(uid);
+      allow create, update: if hasAppAccess(uid) && isImageUpload() && hasStorageCapacity(uid);
+      allow delete: if isOwner(uid);
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -39,6 +39,13 @@ export type LiqPayCheckoutResponse = {
   orderId: string;
 };
 
+export type StorageCapacityResponse = {
+  allowed: boolean;
+  plan: BillingPlan;
+  storageBytes: number;
+  projectedBytes: number;
+};
+
 const getProxyUrl = () => {
   const url = import.meta.env.VITE_AI_PROXY_URL?.trim();
   if (!url) {
@@ -91,3 +98,14 @@ export async function createBillingCheckout(
   return readJsonOrThrow<LiqPayCheckoutResponse>(response);
 }
 
+export async function checkStorageCapacity(
+  user: User,
+  additionalBytes: number,
+): Promise<StorageCapacityResponse> {
+  const response = await fetch(`${getProxyUrl()}/api/storage/check-capacity`, {
+    method: "POST",
+    headers: await getAuthHeaders(user),
+    body: JSON.stringify({ additionalBytes }),
+  });
+  return readJsonOrThrow<StorageCapacityResponse>(response);
+}

@@ -5,6 +5,7 @@ import {
   FirebaseCollectionProps,
   storage,
 } from "@/config/firebase.config";
+import { checkStorageCapacity } from "@/services/billing/proxy-client";
 
 /** Firestore rejects undefined. Recursively strip undefined from objects/arrays. */
 function stripUndefined<T>(val: T): T {
@@ -638,6 +639,11 @@ export const uploadDailyJournalImage = async (
   const user = await waitForUserAuth();
   if (!user) {
     throw new Error("User not authenticated");
+  }
+
+  const capacity = await checkStorageCapacity(user, file.size);
+  if (!capacity.allowed) {
+    throw new Error("Storage limit exceeded for the current plan.");
   }
 
   const safeName = file.name
