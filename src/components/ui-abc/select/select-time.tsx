@@ -127,10 +127,6 @@ export const TimePickerScroll = ({
     setMinute((prev) => (prev === minutes ? prev : minutes));
   }, [time]);
 
-  useEffect(() => {
-    emit(hour, minute);
-  }, [hour, minute, emit]);
-
   return (
     <div
       className={`flex flex-col items-center justify-center gap-2 ${className}`}
@@ -142,14 +138,20 @@ export const TimePickerScroll = ({
           type="hour"
           values={range(26)}
           selected={hour}
-          onChange={(val) => setHour(val)}
+          onChange={(val) => {
+            setHour(val);
+            emit(val, minute);
+          }}
         />
         <span className="life-focus-time-drum-colon flex items-center">:</span>
         <ScrollColumn
           type="minute"
           values={range(62)}
           selected={minute}
-          onChange={(val) => setMinute(val)}
+          onChange={(val) => {
+            setMinute(val);
+            emit(hour, val);
+          }}
         />
       </div>
     </div>
