@@ -47,6 +47,22 @@ export type StorageCapacityResponse = {
   projectedBytes: number;
 };
 
+export type AdminTrialRequest =
+  | {
+      email: string;
+      expired: true;
+    }
+  | {
+      email: string;
+      trialDaysFromNow: number;
+    }
+  | {
+      email: string;
+      trialEndsAt: string;
+    };
+
+export type AdminTrialResponse = BillingMeResponse;
+
 const getProxyUrl = () => {
   const url = import.meta.env.VITE_AI_PROXY_URL?.trim();
   if (!url) {
@@ -109,4 +125,16 @@ export async function checkStorageCapacity(
     body: JSON.stringify({ additionalBytes }),
   });
   return readJsonOrThrow<StorageCapacityResponse>(response);
+}
+
+export async function updateUserTrial(
+  user: User,
+  payload: AdminTrialRequest,
+): Promise<AdminTrialResponse> {
+  const response = await fetch(`${getProxyUrl()}/api/admin/users/trial`, {
+    method: "POST",
+    headers: await getAuthHeaders(user),
+    body: JSON.stringify(payload),
+  });
+  return readJsonOrThrow<AdminTrialResponse>(response);
 }

@@ -24,8 +24,13 @@ const REMINDER_SCHEDULES_COLLECTION = "daily-task-reminders";
 const REMINDER_OFFSETS_SECONDS = [3600, 300, 0] as const;
 const CALLABLE_FUNCTION_OPTIONS = {
   region: REGION,
-  cors: true,
-} as const;
+  cors: [
+    "https://lifefocus.online",
+    "https://www.lifefocus.online",
+    "http://localhost:5173",
+    "http://localhost:5174",
+  ],
+};
 
 type ReminderOffset = (typeof REMINDER_OFFSETS_SECONDS)[number];
 

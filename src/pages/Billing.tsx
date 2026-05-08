@@ -1,9 +1,13 @@
 import { Button } from "@/components/ui/button";
-import { fetchBillingMe } from "@/services/billing/proxy-client";
+import {
+  fetchBillingMe,
+  updateUserTrial,
+} from "@/services/billing/proxy-client";
 import type { BillingMeResponse } from "@/services/billing/proxy-client";
 import { useAuth } from "@/hooks/useAuth";
-import { ExternalLink, Loader2, RefreshCw, Sparkles } from "lucide-react";
+import { ExternalLink, Loader2, RefreshCw, ShieldCheck, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 
 const WAYFORPAY_SUBSCRIPTION_URL =
   "https://secure.wayforpay.com/sub/s1a4266d903dc";
@@ -28,6 +32,11 @@ export default function Billing() {
   const [billing, setBilling] = useState<BillingMeResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [adminEmail, setAdminEmail] = useState("");
+  const [adminMode, setAdminMode] = useState<"expired" | "hours" | "days">("expired");
+  const [adminAmount, setAdminAmount] = useState("1");
+  const [adminSaving, setAdminSaving] = useState(false);
+  const [adminResult, setAdminResult] = useState<BillingMeResponse | null>(null);
   const wayforpayUrl =
     import.meta.env.VITE_WAYFORPAY_SUBSCRIPTION_URL?.trim() ||
     WAYFORPAY_SUBSCRIPTION_URL;
@@ -57,6 +66,37 @@ export default function Billing() {
   useEffect(() => {
     void loadBilling();
   }, [user]);
+
+  const handleAdminTrialUpdate = async () => {
+    if (!user || !adminEmail.trim()) return;
+
+    const amount = Number(adminAmount);
+    if (adminMode !== "expired" && (!Number.isFinite(amount) || amount <= 0)) {
+      toast.error("Enter a positive duration.");
+      return;
+    }
+
+    setAdminSaving(true);
+    setAdminResult(null);
+
+    try {
+      const result = await updateUserTrial(
+        user,
+        adminMode === "expired"
+          ? { email: adminEmail.trim(), expired: true }
+          : {
+              email: adminEmail.trim(),
+              trialDaysFromNow: adminMode === "hours" ? amount / 24 : amount,
+            },
+      );
+      setAdminResult(result);
+      toast.success("Trial updated.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not update trial.");
+    } finally {
+      setAdminSaving(false);
+    }
+  };
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-6 md:px-6 md:py-8">
@@ -105,6 +145,66 @@ export default function Billing() {
           <p className="mt-2 text-xs leading-5 text-indigo-900/70 dark:text-indigo-100/60">
             After payment, access is activated automatically when WayForPay sends the callback with the same email.
           </p>
+        </section>
+      )}
+
+      {isAdmin && (
+        <section className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-white/10 dark:bg-white/[0.03]">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="h-4 w-4 text-emerald-500" />
+            <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
+              Admin trial controls
+            </h2>
+          </div>
+
+          <div className="mt-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_160px_140px_auto]">
+            <input
+              value={adminEmail}
+              onChange={(event) => setAdminEmail(event.target.value)}
+              placeholder="user@email.com"
+              type="email"
+              className="h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none focus:border-indigo-500 dark:border-white/10 dark:bg-white/[0.04] dark:text-white"
+            />
+            <select
+              value={adminMode}
+              onChange={(event) =>
+                setAdminMode(event.target.value as "expired" | "hours" | "days")
+              }
+              className="h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none focus:border-indigo-500 dark:border-white/10 dark:bg-white/[0.04] dark:text-white"
+            >
+              <option value="expired">Expire now</option>
+              <option value="hours">Add hours</option>
+              <option value="days">Add days</option>
+            </select>
+            <input
+              value={adminAmount}
+              onChange={(event) => setAdminAmount(event.target.value)}
+              type="number"
+              min="0.1"
+              step="0.1"
+              disabled={adminMode === "expired"}
+              className="h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none focus:border-indigo-500 disabled:opacity-50 dark:border-white/10 dark:bg-white/[0.04] dark:text-white"
+            />
+            <Button
+              onClick={handleAdminTrialUpdate}
+              disabled={adminSaving || !adminEmail.trim()}
+            >
+              {adminSaving ? <Loader2 className="animate-spin" /> : <ShieldCheck />}
+              Apply
+            </Button>
+          </div>
+
+          {adminResult && (
+            <div className="mt-4 rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-zinc-700 dark:border-white/10 dark:bg-white/[0.04] dark:text-zinc-300">
+              <span className="font-medium text-zinc-950 dark:text-white">
+                {adminResult.email ?? adminEmail}
+              </span>
+              {" · "}
+              {adminResult.plan.paymentRequired ? "Trial ended" : "Trial active"}
+              {" · ends "}
+              {formatDate(adminResult.plan.trialEndsAt)}
+            </div>
+          )}
         </section>
       )}
 

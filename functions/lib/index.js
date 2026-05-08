@@ -23,7 +23,12 @@ const REMINDER_SCHEDULES_COLLECTION = "daily-task-reminders";
 const REMINDER_OFFSETS_SECONDS = [3600, 300, 0];
 const CALLABLE_FUNCTION_OPTIONS = {
     region: REGION,
-    cors: true,
+    cors: [
+        "https://lifefocus.online",
+        "https://www.lifefocus.online",
+        "http://localhost:5173",
+        "http://localhost:5174",
+    ],
 };
 const getReminderScheduleRef = (uid, date) => db.doc(`${REMINDER_SCHEDULES_COLLECTION}/${uid}/days/${date}`);
 const getPushDevicesCollection = (uid) => db.collection(PUSH_DEVICES_COLLECTION).doc(uid).collection("installations");
