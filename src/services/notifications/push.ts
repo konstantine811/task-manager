@@ -69,6 +69,21 @@ const isStandalonePwa = (): boolean => {
   );
 };
 
+const shouldSkipRemotePushBackendInLocalDev = (): boolean => {
+  if (typeof window === "undefined") return false;
+  const hostname = window.location.hostname;
+  const isLocalHost =
+    hostname === "localhost" ||
+    hostname === "127.0.0.1" ||
+    hostname === "::1";
+
+  return (
+    import.meta.env.DEV &&
+    isLocalHost &&
+    import.meta.env.VITE_FIREBASE_FUNCTIONS_EMULATOR !== "true"
+  );
+};
+
 const getInstallationId = (): string => {
   if (typeof localStorage === "undefined") return crypto.randomUUID();
 
@@ -122,6 +137,13 @@ const getRemovePushDeviceCallable = () =>
   );
 
 const registerCurrentDevice = async (user: User, token: string, language: string) => {
+  if (shouldSkipRemotePushBackendInLocalDev()) {
+    return {
+      token,
+      userId: user.uid,
+    };
+  }
+
   const registerPushDevice = getRegisterPushDeviceCallable();
   await registerPushDevice({
     installationId: getInstallationId(),
@@ -141,6 +163,7 @@ const registerCurrentDevice = async (user: User, token: string, language: string
 
 const unregisterCurrentDevice = async () => {
   if (typeof window === "undefined") return;
+  if (shouldSkipRemotePushBackendInLocalDev()) return;
 
   const removePushDevice = getRemovePushDeviceCallable();
   await removePushDevice({
