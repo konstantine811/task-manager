@@ -10,6 +10,14 @@ service cloud.firestore {
       return signedIn() && request.auth.uid == uid;
     }
 
+    function isAdminEmail() {
+      return signedIn() &&
+        request.auth.token.email in [
+          "constainabrams@gmail.com",
+          "constainabrams@gmial.com"
+        ];
+    }
+
     function billingDoc(uid) {
       return get(/databases/$(database)/documents/billingUsers/$(uid));
     }
@@ -31,9 +39,12 @@ service cloud.firestore {
     }
 
     function hasAdminAccess(uid) {
-      return exists(/databases/$(database)/documents/billingUsers/$(uid)) &&
-        "adminAccess" in billingDoc(uid).data &&
-        billingDoc(uid).data.adminAccess == true;
+      return isAdminEmail() ||
+        (
+          exists(/databases/$(database)/documents/billingUsers/$(uid)) &&
+          "adminAccess" in billingDoc(uid).data &&
+          billingDoc(uid).data.adminAccess == true
+        );
     }
 
     function hasAppAccess(uid) {
