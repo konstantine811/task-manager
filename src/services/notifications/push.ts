@@ -30,10 +30,6 @@ interface RegisterPushDevicePayload {
   displayMode: string;
 }
 
-interface RemovePushDevicePayload {
-  installationId: string;
-}
-
 interface ForegroundNotificationContent {
   title: string;
   body: string;
@@ -130,12 +126,6 @@ const getRegisterPushDeviceCallable = () =>
     "registerPushDevice",
   );
 
-const getRemovePushDeviceCallable = () =>
-  httpsCallable<RemovePushDevicePayload, { ok: boolean }>(
-    functions,
-    "removePushDevice",
-  );
-
 const registerCurrentDevice = async (user: User, token: string, language: string) => {
   if (shouldSkipRemotePushBackendInLocalDev()) {
     return {
@@ -159,16 +149,6 @@ const registerCurrentDevice = async (user: User, token: string, language: string
     token,
     userId: user.uid,
   };
-};
-
-const unregisterCurrentDevice = async () => {
-  if (typeof window === "undefined") return;
-  if (shouldSkipRemotePushBackendInLocalDev()) return;
-
-  const removePushDevice = getRemovePushDeviceCallable();
-  await removePushDevice({
-    installationId: getInstallationId(),
-  });
 };
 
 const isPushRuntimeSupported = async (): Promise<boolean> => {
@@ -228,9 +208,6 @@ export const PushNotificationsBootstrap = () => {
   useEffect(() => {
     if (!user) {
       setPushStatus("idle", null, null);
-      if (previousUserIdRef.current) {
-        void unregisterCurrentDevice().catch(() => undefined);
-      }
       previousUserIdRef.current = null;
       return;
     }
