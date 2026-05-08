@@ -30,8 +30,15 @@ service firebase.storage {
         billingDoc(uid).data.accessEndsAt > request.time;
     }
 
+    function hasAdminAccess(uid) {
+      return firestore.exists(/databases/(default)/documents/billingUsers/$(uid)) &&
+        "adminAccess" in billingDoc(uid).data &&
+        billingDoc(uid).data.adminAccess == true;
+    }
+
     function hasAppAccess(uid) {
-      return isOwner(uid) && (hasActiveTrial(uid) || hasActivePaidAccess(uid));
+      return isOwner(uid) &&
+        (hasAdminAccess(uid) || hasActiveTrial(uid) || hasActivePaidAccess(uid));
     }
 
     function planStorageLimitBytes(planId) {
@@ -62,7 +69,8 @@ service firebase.storage {
     }
 
     function hasStorageCapacity(uid) {
-      return currentStorageBytes(uid) + request.resource.size <=
+      return hasAdminAccess(uid) ||
+        currentStorageBytes(uid) + request.resource.size <=
         planStorageLimitBytes(billingPlanId(uid));
     }
 

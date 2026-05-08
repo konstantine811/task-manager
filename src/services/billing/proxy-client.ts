@@ -12,6 +12,7 @@ export type BillingPlan = {
   trialActive: boolean;
   accessEndsAt: string | null;
   paymentRequired: boolean;
+  adminAccess: boolean;
 };
 
 export type BillingUsage = {

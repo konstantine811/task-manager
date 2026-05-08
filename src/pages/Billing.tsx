@@ -31,9 +31,11 @@ export default function Billing() {
   const wayforpayUrl =
     import.meta.env.VITE_WAYFORPAY_SUBSCRIPTION_URL?.trim() ||
     WAYFORPAY_SUBSCRIPTION_URL;
+  const isAdmin = Boolean(billing?.plan.adminAccess);
 
   const statusLabel = useMemo(() => {
     if (!billing) return "Loading";
+    if (billing.plan.adminAccess) return "Admin access";
     if (billing.plan.paymentRequired) return "Trial ended";
     if (billing.plan.id === "free") return "Trial active";
     return `${billing.plan.id[0].toUpperCase()}${billing.plan.id.slice(1)} active`;
@@ -83,17 +85,28 @@ export default function Billing() {
         </div>
       )}
 
-      <section className="rounded-lg border border-indigo-300/70 bg-indigo-50 p-4 dark:border-indigo-400/30 dark:bg-indigo-500/10">
-        <p className="text-sm font-medium text-indigo-950 dark:text-indigo-100">
-          Use this email on the WayForPay payment page
-        </p>
-        <p className="mt-1 text-sm text-indigo-900/80 dark:text-indigo-100/75">
-          Email: <span className="font-semibold">{billing?.email ?? user?.email ?? "—"}</span>
-        </p>
-        <p className="mt-2 text-xs leading-5 text-indigo-900/70 dark:text-indigo-100/60">
-          After payment, access is activated automatically when WayForPay sends the callback with the same email.
-        </p>
-      </section>
+      {isAdmin ? (
+        <section className="rounded-lg border border-emerald-400/50 bg-emerald-50 p-4 dark:border-emerald-400/40 dark:bg-emerald-500/10">
+          <p className="text-sm font-medium text-emerald-950 dark:text-emerald-100">
+            Admin access enabled
+          </p>
+          <p className="mt-1 text-sm text-emerald-900/75 dark:text-emerald-100/70">
+            This account has full access without subscription.
+          </p>
+        </section>
+      ) : (
+        <section className="rounded-lg border border-indigo-300/70 bg-indigo-50 p-4 dark:border-indigo-400/30 dark:bg-indigo-500/10">
+          <p className="text-sm font-medium text-indigo-950 dark:text-indigo-100">
+            Use this email on the WayForPay payment page
+          </p>
+          <p className="mt-1 text-sm text-indigo-900/80 dark:text-indigo-100/75">
+            Email: <span className="font-semibold">{billing?.email ?? user?.email ?? "—"}</span>
+          </p>
+          <p className="mt-2 text-xs leading-5 text-indigo-900/70 dark:text-indigo-100/60">
+            After payment, access is activated automatically when WayForPay sends the callback with the same email.
+          </p>
+        </section>
+      )}
 
       <section className="grid gap-4 md:grid-cols-3">
         <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-white/10 dark:bg-white/[0.03]">
@@ -116,7 +129,8 @@ export default function Billing() {
             AI usage
           </p>
           <p className="mt-2 text-xl font-semibold text-zinc-950 dark:text-white">
-            {billing?.usage.aiRequests ?? 0} / {billing?.plan.aiRequestsPerMonth ?? 0}
+            {billing?.usage.aiRequests ?? 0} /{" "}
+            {isAdmin ? "Unlimited" : billing?.plan.aiRequestsPerMonth ?? 0}
           </p>
           <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
             Current month: {billing?.usage.month ?? "—"}
@@ -131,36 +145,38 @@ export default function Billing() {
             {formatBytes(billing?.usage.storageBytes ?? 0)}
           </p>
           <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-            Limit: {formatBytes(billing?.plan.storageBytes ?? 0)}
+            Limit: {isAdmin ? "Unlimited" : formatBytes(billing?.plan.storageBytes ?? 0)}
           </p>
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-white/10 dark:bg-white/[0.03]">
-        <div className="flex flex-col gap-3 border-b border-zinc-200 p-4 dark:border-white/10 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
-              WayForPay subscription
-            </h2>
-            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-              Choose Starter or Pro in the embedded payment page below.
-            </p>
+      {!isAdmin && (
+        <section className="overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-white/10 dark:bg-white/[0.03]">
+          <div className="flex flex-col gap-3 border-b border-zinc-200 p-4 dark:border-white/10 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
+                WayForPay subscription
+              </h2>
+              <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                Choose Starter or Pro in the embedded payment page below.
+              </p>
+            </div>
+            <Button variant="outline" asChild>
+              <a href={wayforpayUrl} target="_blank" rel="noreferrer">
+                <ExternalLink />
+                Open page
+              </a>
+            </Button>
           </div>
-          <Button variant="outline" asChild>
-            <a href={wayforpayUrl} target="_blank" rel="noreferrer">
-              <ExternalLink />
-              Open page
-            </a>
-          </Button>
-        </div>
-        <iframe
-          title="WayForPay subscription payment"
-          src={wayforpayUrl}
-          className="h-[760px] w-full bg-white"
-          loading="lazy"
-          referrerPolicy="strict-origin-when-cross-origin"
-        />
-      </section>
+          <iframe
+            title="WayForPay subscription payment"
+            src={wayforpayUrl}
+            className="h-[760px] w-full bg-white"
+            loading="lazy"
+            referrerPolicy="strict-origin-when-cross-origin"
+          />
+        </section>
+      )}
     </div>
   );
 }

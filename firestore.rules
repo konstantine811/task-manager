@@ -30,8 +30,15 @@ service cloud.firestore {
         billingDoc(uid).data.accessEndsAt > request.time;
     }
 
+    function hasAdminAccess(uid) {
+      return exists(/databases/$(database)/documents/billingUsers/$(uid)) &&
+        "adminAccess" in billingDoc(uid).data &&
+        billingDoc(uid).data.adminAccess == true;
+    }
+
     function hasAppAccess(uid) {
-      return isOwner(uid) && (hasActiveTrial(uid) || hasActivePaidAccess(uid));
+      return isOwner(uid) &&
+        (hasAdminAccess(uid) || hasActiveTrial(uid) || hasActivePaidAccess(uid));
     }
 
     function validDayId(date) {

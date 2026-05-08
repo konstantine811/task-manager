@@ -29,7 +29,9 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     fetchBillingMe(user)
       .then((billing) => {
         if (cancelled) return;
-        setPaymentRequired(billing.plan.paymentRequired);
+        setPaymentRequired(
+          billing.plan.paymentRequired && !billing.plan.adminAccess,
+        );
       })
       .catch(() => {
         if (cancelled) return;
