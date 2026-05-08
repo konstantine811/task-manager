@@ -1,38 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { fetchBillingMe } from "@/services/billing/proxy-client";
-import type { BillingMeResponse, BillingPlanId } from "@/services/billing/proxy-client";
+import type { BillingMeResponse } from "@/services/billing/proxy-client";
 import { useAuth } from "@/hooks/useAuth";
-import { cn } from "@/lib/utils";
-import { Check, CreditCard, ExternalLink, Loader2, RefreshCw, Sparkles } from "lucide-react";
+import { ExternalLink, Loader2, RefreshCw, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
-type PaidPlan = {
-  id: Exclude<BillingPlanId, "free">;
-  name: string;
-  price: string;
-  aiRequests: string;
-  storage: string;
-  description: string;
-};
-
-const PAID_PLANS: PaidPlan[] = [
-  {
-    id: "starter",
-    name: "Starter",
-    price: "$3",
-    aiRequests: "250 AI requests / month",
-    storage: "1 GB storage",
-    description: "For light personal planning with AI support.",
-  },
-  {
-    id: "pro",
-    name: "Pro",
-    price: "$5",
-    aiRequests: "800 AI requests / month",
-    storage: "5 GB storage",
-    description: "For frequent planning, journaling, and heavier AI use.",
-  },
-];
+const WAYFORPAY_SUBSCRIPTION_URL =
+  "https://secure.wayforpay.com/sub/s1a4266d903dc";
 
 const formatDate = (value: string | null) => {
   if (!value) return "—";
@@ -54,9 +28,10 @@ export default function Billing() {
   const [billing, setBilling] = useState<BillingMeResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const wayforpayUrl = import.meta.env.VITE_WAYFORPAY_SUBSCRIPTION_URL?.trim();
+  const wayforpayUrl =
+    import.meta.env.VITE_WAYFORPAY_SUBSCRIPTION_URL?.trim() ||
+    WAYFORPAY_SUBSCRIPTION_URL;
 
-  const currentPlanId = billing?.plan.id ?? "free";
   const statusLabel = useMemo(() => {
     if (!billing) return "Loading";
     if (billing.plan.paymentRequired) return "Trial ended";
@@ -110,13 +85,13 @@ export default function Billing() {
 
       <section className="rounded-lg border border-indigo-300/70 bg-indigo-50 p-4 dark:border-indigo-400/30 dark:bg-indigo-500/10">
         <p className="text-sm font-medium text-indigo-950 dark:text-indigo-100">
-          Use your Life Focus account email on the payment page
+          Use this email on the WayForPay payment page
         </p>
         <p className="mt-1 text-sm text-indigo-900/80 dark:text-indigo-100/75">
           Email: <span className="font-semibold">{billing?.email ?? user?.email ?? "—"}</span>
         </p>
         <p className="mt-2 text-xs leading-5 text-indigo-900/70 dark:text-indigo-100/60">
-          The proxy activates access from the WayForPay Service URL callback by matching this email.
+          After payment, access is activated automatically when WayForPay sends the callback with the same email.
         </p>
       </section>
 
@@ -161,69 +136,30 @@ export default function Billing() {
         </div>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-2">
-        {PAID_PLANS.map((plan) => {
-          const isCurrent = currentPlanId === plan.id && !billing?.plan.paymentRequired;
-
-          return (
-            <div
-              key={plan.id}
-              className={cn(
-                "flex flex-col rounded-lg border bg-white p-5 dark:bg-white/[0.03]",
-                isCurrent
-                  ? "border-indigo-400 dark:border-indigo-400/60"
-                  : "border-zinc-200 dark:border-white/10",
-              )}
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h2 className="text-lg font-semibold text-zinc-950 dark:text-white">
-                    {plan.name}
-                  </h2>
-                  <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                    {plan.description}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-2xl font-semibold text-zinc-950 dark:text-white">
-                    {plan.price}
-                  </p>
-                  <p className="text-xs text-zinc-500">30 days</p>
-                </div>
-              </div>
-
-              <div className="mt-5 space-y-2 text-sm text-zinc-700 dark:text-zinc-300">
-                <p className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-emerald-500" />
-                  {plan.aiRequests}
-                </p>
-                <p className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-emerald-500" />
-                  {plan.storage}
-                </p>
-              </div>
-
-              <Button
-                className="mt-6"
-                asChild={Boolean(wayforpayUrl)}
-                disabled={!wayforpayUrl}
-              >
-                {wayforpayUrl ? (
-                  <a href={wayforpayUrl} target="_blank" rel="noreferrer">
-                    <CreditCard />
-                    {isCurrent ? "Manage subscription" : "Subscribe with WayForPay"}
-                    <ExternalLink />
-                  </a>
-                ) : (
-                  <>
-                    <CreditCard />
-                    Configure WayForPay URL
-                  </>
-                )}
-              </Button>
-            </div>
-          );
-        })}
+      <section className="overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-white/10 dark:bg-white/[0.03]">
+        <div className="flex flex-col gap-3 border-b border-zinc-200 p-4 dark:border-white/10 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
+              WayForPay subscription
+            </h2>
+            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+              Choose Starter or Pro in the embedded payment page below.
+            </p>
+          </div>
+          <Button variant="outline" asChild>
+            <a href={wayforpayUrl} target="_blank" rel="noreferrer">
+              <ExternalLink />
+              Open page
+            </a>
+          </Button>
+        </div>
+        <iframe
+          title="WayForPay subscription payment"
+          src={wayforpayUrl}
+          className="h-[760px] w-full bg-white"
+          loading="lazy"
+          referrerPolicy="strict-origin-when-cross-origin"
+        />
       </section>
     </div>
   );
