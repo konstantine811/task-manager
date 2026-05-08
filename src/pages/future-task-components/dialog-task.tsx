@@ -30,6 +30,7 @@ import { createTask } from "@/components/dnd/utils/createTask";
 import { TimePickerInputs } from "@/components/dnd/time-picker-inputs";
 import LabelTooltip from "@/components/ui-abc/dialog/task/label-tooltip";
 import Dialog from "@/components/ui-abc/dialog/dialog";
+import { getSecondsSinceMidnight } from "@/utils/time.util";
 
 const DialogFeatureTask = ({
   onChangeTask,
@@ -75,6 +76,7 @@ const DialogFeatureTask = ({
     setTitle("");
     setPriority(Priority.LOW);
     setTime(0);
+    setTimeDone(0);
   }
 
   useEffect(() => {
@@ -87,6 +89,12 @@ const DialogFeatureTask = ({
       reset();
     }
   }, [task]);
+
+  useEffect(() => {
+    if (isOpen && !task) {
+      setTime(getSecondsSinceMidnight());
+    }
+  }, [isOpen, task]);
 
   useEffect(() => {
     if (isOpen) {
@@ -222,17 +230,17 @@ const DialogFeatureTask = ({
                 onChange={(time) => {
                   setTime(time);
                 }}
-                time={task ? task.time : 0}
+                time={time}
               />
             </LabelTooltip>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-4 sm:gap-4">
             <LabelTooltip
               label={t(
-                "task_manager.dialog_create_task.task.time.wasted.label",
+                "task_manager.dialog_create_task.task.time.duration.label",
               )}
               tooltip={t(
-                "task_manager.dialog_create_task.task.time.wasted.description",
+                "task_manager.dialog_create_task.task.time.duration.description",
               )}
             >
               <TimePickerInputs

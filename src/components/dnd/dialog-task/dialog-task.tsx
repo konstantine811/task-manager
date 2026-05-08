@@ -42,6 +42,7 @@ import { WEEK_DAYS } from "@/config/data-config";
 import DialogTaskHeader from "./dialog-task-header";
 import DialogTaskIntro from "./dialog-task-intro";
 import { ChevronDown } from "lucide-react";
+import { getSecondsSinceMidnight } from "@/utils/time.util";
 
 type ScheduleType = "weekdays" | "interval_days" | "times_per_week";
 
@@ -346,8 +347,13 @@ const DialogTask = ({
                       const nextIsDetermined = checked === true;
                       setIsDetermined((prev) => {
                         if (prev === nextIsDetermined) return prev;
-                        setTime(0);
-                        setWastedTime(0);
+                        if (nextIsDetermined) {
+                          setTime(getSecondsSinceMidnight());
+                          setWastedTime(0);
+                        } else {
+                          setTime(0);
+                          setWastedTime(0);
+                        }
                         return nextIsDetermined;
                       });
                     }}
@@ -375,14 +381,10 @@ const DialogTask = ({
                     <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 md:gap-4">
                       <LabelTooltip
                         label={t(
-                          task
-                            ? "task_manager.dialog_create_task.task.time.wasted.label"
-                            : "task_manager.dialog_create_task.task.time.duration.label",
+                          "task_manager.dialog_create_task.task.time.duration.label",
                         )}
                         tooltip={t(
-                          task
-                            ? "task_manager.dialog_create_task.task.time.wasted.description"
-                            : "task_manager.dialog_create_task.task.time.duration.description",
+                          "task_manager.dialog_create_task.task.time.duration.description",
                         )}
                       >
                         <TimePickerInputs
