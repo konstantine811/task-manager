@@ -97,6 +97,18 @@ service cloud.firestore {
       ]);
     }
 
+    match /node-writer/shared {
+      match /folders/{folderId} {
+        allow read: if true;
+        allow create, update, delete: if signedIn();
+      }
+
+      match /projects/{projectId} {
+        allow read: if true;
+        allow create, update, delete: if signedIn();
+      }
+    }
+
     match /template-tasks/{uid} {
       allow read: if canReadAppData(uid);
       allow create, update: if canWriteAppData(uid) && safeUserDocWrite();

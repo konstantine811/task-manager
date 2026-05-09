@@ -110,6 +110,11 @@ service firebase.storage {
         request.resource.contentType.matches("image/.*");
     }
 
+    match /node-writer/shared/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdminEmail();
+    }
+
     match /task-manager-life-focus/{uid}/daily-journal-images/{date}/{fileName} {
       allow read: if canReadAppData(uid);
       allow create, update: if canWriteAppData(uid) && isImageUpload() && hasStorageCapacity(uid);
