@@ -11,6 +11,13 @@ import { toast } from "sonner";
 
 const WAYFORPAY_SUBSCRIPTION_URL =
   "https://secure.wayforpay.com/sub/s1a4266d903dc";
+const ADMIN_EMAILS = new Set([
+  "constainabrams@gmail.com",
+  "constainabrams@gmial.com",
+]);
+
+const normalizeEmail = (email: string | null | undefined) =>
+  email?.trim().toLowerCase() ?? "";
 
 const formatDate = (value: string | null) => {
   if (!value) return "—";
@@ -40,7 +47,10 @@ export default function Billing() {
   const wayforpayUrl =
     import.meta.env.VITE_WAYFORPAY_SUBSCRIPTION_URL?.trim() ||
     WAYFORPAY_SUBSCRIPTION_URL;
-  const isAdmin = Boolean(billing?.plan.adminAccess);
+  const isAdminEmail = ADMIN_EMAILS.has(
+    normalizeEmail(billing?.email ?? user?.email),
+  );
+  const isAdmin = Boolean(billing?.plan.adminAccess) || isAdminEmail;
 
   const statusLabel = useMemo(() => {
     if (!billing) return "Loading";
@@ -273,6 +283,7 @@ export default function Billing() {
             src={wayforpayUrl}
             className="h-[760px] w-full bg-white"
             loading="lazy"
+            allow="payment"
             referrerPolicy="strict-origin-when-cross-origin"
           />
         </section>

@@ -81,7 +81,8 @@ service cloud.firestore {
         "timerState",
         "timeZone",
         "timeZoneOffsetMinutes",
-        "goals"
+        "goals",
+        "goalProgressEvents"
       ]);
     }
 
@@ -103,31 +104,36 @@ service cloud.firestore {
     }
 
     match /daily-tasks/{uid}/days/{date} {
-      allow read, list: if canReadAppData(uid) && validDayId(date);
+      allow get: if canReadAppData(uid) && validDayId(date);
+      allow list: if canReadAppData(uid);
       allow create, update: if canWriteAppData(uid) && validDayId(date) && safeDayDocWrite();
       allow delete: if false;
     }
 
     match /planned-tasks/{uid}/days/{date} {
-      allow read, list: if canReadAppData(uid) && validDayId(date);
+      allow get: if canReadAppData(uid) && validDayId(date);
+      allow list: if canReadAppData(uid);
       allow create, update: if canWriteAppData(uid) && validDayId(date) && safeDayDocWrite();
       allow delete: if canWriteAppData(uid) && validDayId(date);
     }
 
     match /daily-analytics/{uid}/days/{date} {
-      allow read, list: if canReadAppData(uid) && validDayId(date);
+      allow get: if canReadAppData(uid) && validDayId(date);
+      allow list: if canReadAppData(uid);
       allow create, update: if canWriteAppData(uid) && validDayId(date) && safeDayDocWrite();
       allow delete: if false;
     }
 
     match /daily-journal/{uid}/days/{date} {
-      allow read, list: if canReadAppData(uid) && validDayId(date);
+      allow get: if canReadAppData(uid) && validDayId(date);
+      allow list: if canReadAppData(uid);
       allow create, update: if canWriteAppData(uid) && validDayId(date) && safeDayDocWrite();
       allow delete: if canWriteAppData(uid) && validDayId(date);
     }
 
     match /task-instances/{uid}/days/{date} {
-      allow read, list: if canReadAppData(uid) && validDayId(date);
+      allow get: if canReadAppData(uid) && validDayId(date);
+      allow list: if canReadAppData(uid);
       allow create, update: if canWriteAppData(uid) && validDayId(date) && safeDayDocWrite();
       allow delete: if false;
     }
