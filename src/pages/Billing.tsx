@@ -1,9 +1,13 @@
 import { Button } from "@/components/ui/button";
 import {
+  fetchAdminBillingUsers,
   fetchBillingMe,
   updateUserTrial,
 } from "@/services/billing/proxy-client";
-import type { BillingMeResponse } from "@/services/billing/proxy-client";
+import type {
+  AdminBillingUser,
+  BillingMeResponse,
+} from "@/services/billing/proxy-client";
 import { useAuth } from "@/hooks/useAuth";
 import { ExternalLink, Loader2, RefreshCw, ShieldCheck, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -24,6 +28,26 @@ const formatBytes = (bytes: number) => {
   return `${(mb / 1024).toFixed(1)} GB`;
 };
 
+const adminUserStatusLabel = (user: AdminBillingUser) => {
+  if (user.status === "admin") return "Адмін";
+  if (user.status === "paid-active") return "Оплачено";
+  if (user.status === "trial-active") return "Пробний";
+  return "Завершено";
+};
+
+const adminUserStatusClass = (user: AdminBillingUser) => {
+  if (user.status === "paid-active") {
+    return "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-200";
+  }
+  if (user.status === "admin") {
+    return "border-indigo-500/30 bg-indigo-500/10 text-indigo-700 dark:text-indigo-200";
+  }
+  if (user.status === "trial-active") {
+    return "border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-200";
+  }
+  return "border-zinc-300 bg-zinc-100 text-zinc-600 dark:border-white/10 dark:bg-white/[0.06] dark:text-zinc-300";
+};
+
 export default function Billing() {
   const { user } = useAuth();
   const [billing, setBilling] = useState<BillingMeResponse | null>(null);
@@ -34,8 +58,14 @@ export default function Billing() {
   const [adminAmount, setAdminAmount] = useState("1");
   const [adminSaving, setAdminSaving] = useState(false);
   const [adminResult, setAdminResult] = useState<BillingMeResponse | null>(null);
+  const [adminUsers, setAdminUsers] = useState<AdminBillingUser[]>([]);
+  const [adminUsersLoading, setAdminUsersLoading] = useState(false);
+  const [adminUsersError, setAdminUsersError] = useState<string | null>(null);
   const wayforpayUrl = import.meta.env.VITE_WAYFORPAY_SUBSCRIPTION_URL?.trim();
   const isAdmin = Boolean(billing?.plan.adminAccess);
+  const activePaidCount = adminUsers.filter(
+    (adminUser) => adminUser.status === "paid-active",
+  ).length;
 
   const statusLabel = useMemo(() => {
     if (!billing) return "Завантаження";
@@ -62,6 +92,34 @@ export default function Billing() {
     void loadBilling();
   }, [user]);
 
+  const loadAdminUsers = async () => {
+    if (!user || !isAdmin) return;
+
+    setAdminUsersLoading(true);
+    setAdminUsersError(null);
+    try {
+      const result = await fetchAdminBillingUsers(user);
+      setAdminUsers(result.users);
+    } catch (err) {
+      setAdminUsersError(
+        err instanceof Error
+          ? err.message
+          : "Не вдалося завантажити список підписок.",
+      );
+    } finally {
+      setAdminUsersLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isAdmin) {
+      void loadAdminUsers();
+    } else {
+      setAdminUsers([]);
+      setAdminUsersError(null);
+    }
+  }, [isAdmin, user]);
+
   const handleAdminTrialUpdate = async () => {
     if (!user || !adminEmail.trim()) return;
 
@@ -85,6 +143,7 @@ export default function Billing() {
             },
       );
       setAdminResult(result);
+      void loadAdminUsers();
       toast.success("Пробний період оновлено.");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Не вдалося оновити пробний період.");
@@ -145,11 +204,21 @@ export default function Billing() {
 
       {isAdmin && (
         <section className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-white/10 dark:bg-white/[0.03]">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center gap-2">
             <ShieldCheck className="h-4 w-4 text-emerald-500" />
             <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
               Керування пробним періодом
             </h2>
+            </div>
+            <Button
+              variant="outline"
+              onClick={loadAdminUsers}
+              disabled={adminUsersLoading}
+            >
+              {adminUsersLoading ? <Loader2 className="animate-spin" /> : <RefreshCw />}
+              Оновити список
+            </Button>
           </div>
 
           <div className="mt-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_160px_140px_auto]">
@@ -200,6 +269,91 @@ export default function Billing() {
               {formatDate(adminResult.plan.trialEndsAt)}
             </div>
           )}
+        </section>
+      )}
+
+      {isAdmin && (
+        <section className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-white/10 dark:bg-white/[0.03]">
+          <div className="flex flex-col gap-1 md:flex-row md:items-end md:justify-between">
+            <div>
+              <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
+                Підписки користувачів
+              </h2>
+              <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                Усього записів: {adminUsers.length} · активних оплат: {activePaidCount}
+              </p>
+            </div>
+          </div>
+
+          {adminUsersError && (
+            <div className="mt-4 rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200">
+              {adminUsersError}
+            </div>
+          )}
+
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full min-w-[860px] text-left text-sm">
+              <thead className="border-b border-zinc-200 text-xs uppercase tracking-wide text-zinc-500 dark:border-white/10">
+                <tr>
+                  <th className="py-2 pr-4 font-medium">Користувач</th>
+                  <th className="py-2 pr-4 font-medium">Статус</th>
+                  <th className="py-2 pr-4 font-medium">Тариф</th>
+                  <th className="py-2 pr-4 font-medium">Оплачено до</th>
+                  <th className="py-2 pr-4 font-medium">Trial до</th>
+                  <th className="py-2 pr-4 font-medium">Провайдер</th>
+                  <th className="py-2 font-medium">Оновлено</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-200 dark:divide-white/10">
+                {adminUsersLoading && adminUsers.length === 0 ? (
+                  <tr>
+                    <td className="py-4 text-zinc-600 dark:text-zinc-400" colSpan={7}>
+                      Завантаження...
+                    </td>
+                  </tr>
+                ) : adminUsers.length === 0 ? (
+                  <tr>
+                    <td className="py-4 text-zinc-600 dark:text-zinc-400" colSpan={7}>
+                      Записів підписок поки немає.
+                    </td>
+                  </tr>
+                ) : (
+                  adminUsers.map((adminUser) => (
+                    <tr key={adminUser.userId}>
+                      <td className="py-3 pr-4">
+                        <div className="font-medium text-zinc-950 dark:text-white">
+                          {adminUser.email ?? "Без пошти"}
+                        </div>
+                        <div className="mt-0.5 max-w-[220px] truncate text-xs text-zinc-500">
+                          {adminUser.userId}
+                        </div>
+                      </td>
+                      <td className="py-3 pr-4">
+                        <span className={`inline-flex rounded-full border px-2 py-1 text-xs font-medium ${adminUserStatusClass(adminUser)}`}>
+                          {adminUserStatusLabel(adminUser)}
+                        </span>
+                      </td>
+                      <td className="py-3 pr-4 text-zinc-700 dark:text-zinc-300">
+                        {adminUser.plan.id}
+                      </td>
+                      <td className="py-3 pr-4 text-zinc-700 dark:text-zinc-300">
+                        {formatDate(adminUser.plan.accessEndsAt)}
+                      </td>
+                      <td className="py-3 pr-4 text-zinc-700 dark:text-zinc-300">
+                        {formatDate(adminUser.plan.trialEndsAt)}
+                      </td>
+                      <td className="py-3 pr-4 text-zinc-700 dark:text-zinc-300">
+                        {adminUser.billingProvider ?? adminUser.subscriptionStatus ?? "—"}
+                      </td>
+                      <td className="py-3 text-zinc-700 dark:text-zinc-300">
+                        {formatDate(adminUser.updatedAt)}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </section>
       )}
 

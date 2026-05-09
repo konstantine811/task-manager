@@ -31,6 +31,30 @@ export type BillingMeResponse = {
   usage: BillingUsage;
 };
 
+export type AdminBillingUserStatus =
+  | "admin"
+  | "paid-active"
+  | "trial-active"
+  | "expired";
+
+export type AdminBillingUser = {
+  userId: string;
+  email: string | null;
+  plan: BillingPlan;
+  status: AdminBillingUserStatus;
+  billingProvider: string | null;
+  subscriptionStatus: string | null;
+  wayforpayOrderReference: string | null;
+  updatedAt: string | null;
+  createdAt: string | null;
+};
+
+export type AdminBillingUsersResponse = {
+  users: AdminBillingUser[];
+  total: number;
+  activePaid: number;
+};
+
 export type LiqPayCheckoutResponse = {
   provider: "liqpay";
   checkoutUrl: string;
@@ -101,6 +125,15 @@ export async function fetchBillingMe(user: User): Promise<BillingMeResponse> {
     headers: await getAuthHeaders(user),
   });
   return readJsonOrThrow<BillingMeResponse>(response);
+}
+
+export async function fetchAdminBillingUsers(
+  user: User,
+): Promise<AdminBillingUsersResponse> {
+  const response = await fetch(`${getProxyUrl()}/api/admin/users`, {
+    headers: await getAuthHeaders(user),
+  });
+  return readJsonOrThrow<AdminBillingUsersResponse>(response);
 }
 
 export async function createBillingCheckout(
