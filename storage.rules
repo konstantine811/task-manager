@@ -22,18 +22,22 @@ service firebase.storage {
       return firestore.get(/databases/(default)/documents/billingUsers/$(uid));
     }
 
+    function hasBillingProfile(uid) {
+      return firestore.exists(/databases/(default)/documents/billingUsers/$(uid));
+    }
+
     function hasTimestampField(doc, field) {
       return field in doc.data && doc.data[field] is timestamp;
     }
 
     function hasActiveTrial(uid) {
-      return firestore.exists(/databases/(default)/documents/billingUsers/$(uid)) &&
+      return hasBillingProfile(uid) &&
         hasTimestampField(billingDoc(uid), "trialEndsAt") &&
         billingDoc(uid).data.trialEndsAt > request.time;
     }
 
     function hasActivePaidAccess(uid) {
-      return firestore.exists(/databases/(default)/documents/billingUsers/$(uid)) &&
+      return hasBillingProfile(uid) &&
         hasTimestampField(billingDoc(uid), "accessEndsAt") &&
         billingDoc(uid).data.accessEndsAt > request.time;
     }
@@ -41,7 +45,7 @@ service firebase.storage {
     function hasAdminAccess(uid) {
       return isAdminEmail() ||
         (
-          firestore.exists(/databases/(default)/documents/billingUsers/$(uid)) &&
+          hasBillingProfile(uid) &&
           "adminAccess" in billingDoc(uid).data &&
           billingDoc(uid).data.adminAccess == true
         );
@@ -50,6 +54,18 @@ service firebase.storage {
     function hasAppAccess(uid) {
       return isOwner(uid) &&
         (hasAdminAccess(uid) || hasActiveTrial(uid) || hasActivePaidAccess(uid));
+    }
+
+    function hasLegacyOwnerAccess(uid) {
+      return isOwner(uid) && !hasBillingProfile(uid);
+    }
+
+    function canReadAppData(uid) {
+      return isOwner(uid);
+    }
+
+    function canWriteAppData(uid) {
+      return hasAppAccess(uid) || hasLegacyOwnerAccess(uid);
     }
 
     function planStorageLimitBytes(planId) {
@@ -61,7 +77,9 @@ service firebase.storage {
     }
 
     function billingPlanId(uid) {
-      return "planId" in billingDoc(uid).data
+      return !hasBillingProfile(uid)
+        ? "free"
+        : "planId" in billingDoc(uid).data
         ? billingDoc(uid).data.planId
         : "plan" in billingDoc(uid).data &&
         billingDoc(uid).data.plan is map &&
@@ -73,7 +91,8 @@ service firebase.storage {
     }
 
     function currentStorageBytes(uid) {
-      return "storageBytes" in billingDoc(uid).data &&
+      return hasBillingProfile(uid) &&
+        "storageBytes" in billingDoc(uid).data &&
         billingDoc(uid).data.storageBytes is number
         ? billingDoc(uid).data.storageBytes
         : 0;
@@ -92,14 +111,14 @@ service firebase.storage {
     }
 
     match /task-manager-life-focus/{uid}/daily-journal-images/{date}/{fileName} {
-      allow read: if hasAppAccess(uid);
-      allow create, update: if hasAppAccess(uid) && isImageUpload() && hasStorageCapacity(uid);
+      allow read: if canReadAppData(uid);
+      allow create, update: if canWriteAppData(uid) && isImageUpload() && hasStorageCapacity(uid);
       allow delete: if isOwner(uid);
     }
 
     match /{uid}/daily-journal-images/{date}/{fileName} {
-      allow read: if hasAppAccess(uid);
-      allow create, update: if hasAppAccess(uid) && isImageUpload() && hasStorageCapacity(uid);
+      allow read: if canReadAppData(uid);
+      allow create, update: if canWriteAppData(uid) && isImageUpload() && hasStorageCapacity(uid);
       allow delete: if isOwner(uid);
     }
 
