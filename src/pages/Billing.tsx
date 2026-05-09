@@ -9,16 +9,6 @@ import { ExternalLink, Loader2, RefreshCw, ShieldCheck, Sparkles } from "lucide-
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
-const WAYFORPAY_SUBSCRIPTION_URL =
-  "https://secure.wayforpay.com/sub/s1a4266d903dc";
-const ADMIN_EMAILS = new Set([
-  "constainabrams@gmail.com",
-  "constainabrams@gmial.com",
-]);
-
-const normalizeEmail = (email: string | null | undefined) =>
-  email?.trim().toLowerCase() ?? "";
-
 const formatDate = (value: string | null) => {
   if (!value) return "—";
   return new Intl.DateTimeFormat(undefined, {
@@ -44,13 +34,8 @@ export default function Billing() {
   const [adminAmount, setAdminAmount] = useState("1");
   const [adminSaving, setAdminSaving] = useState(false);
   const [adminResult, setAdminResult] = useState<BillingMeResponse | null>(null);
-  const wayforpayUrl =
-    import.meta.env.VITE_WAYFORPAY_SUBSCRIPTION_URL?.trim() ||
-    WAYFORPAY_SUBSCRIPTION_URL;
-  const isAdminEmail = ADMIN_EMAILS.has(
-    normalizeEmail(billing?.email ?? user?.email),
-  );
-  const isAdmin = Boolean(billing?.plan.adminAccess) || isAdminEmail;
+  const wayforpayUrl = import.meta.env.VITE_WAYFORPAY_SUBSCRIPTION_URL?.trim();
+  const isAdmin = Boolean(billing?.plan.adminAccess);
 
   const statusLabel = useMemo(() => {
     if (!billing) return "Loading";
@@ -260,7 +245,7 @@ export default function Billing() {
         </div>
       </section>
 
-      {!isAdmin && (
+      {!isAdmin && wayforpayUrl && (
         <section className="overflow-hidden rounded-lg border border-zinc-200 bg-white dark:border-white/10 dark:bg-white/[0.03]">
           <div className="flex flex-col gap-3 border-b border-zinc-200 p-4 dark:border-white/10 md:flex-row md:items-center md:justify-between">
             <div>
@@ -286,6 +271,12 @@ export default function Billing() {
             allow="payment"
             referrerPolicy="strict-origin-when-cross-origin"
           />
+        </section>
+      )}
+
+      {!isAdmin && !wayforpayUrl && (
+        <section className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-400/30 dark:bg-amber-500/10 dark:text-amber-100">
+          WayForPay subscription URL is not configured.
         </section>
       )}
     </div>
