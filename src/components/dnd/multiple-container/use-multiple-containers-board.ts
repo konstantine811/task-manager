@@ -26,6 +26,7 @@ import { mergeOrAddTask } from "../utils/merge-task-by-title";
 import type { MultipleContainersProps } from "./multiple-containers.types";
 import type { DailyTaskTimerSyncState } from "@/types/task-timer-sync.model";
 import { persistTaskTimeDoneForDay } from "@/services/firebase/taskManagerData";
+import { syncSocialFocusFromTask } from "@/services/firebase/social";
 import { DailyTimerDayContext } from "@/components/dnd/context/daily-timer-day-context";
 import { TaskManagerContext } from "@/components/dnd/context/create-context";
 
@@ -101,6 +102,7 @@ export function useMultipleContainersBoard({
   const lastSyncedTimerSigRef = useRef<string | null>(null);
   const lastAppliedRemoteTimerSigRef = useRef<string | null>(null);
   const lastPlayingDayForSyncRef = useRef<string | null>(null);
+  const lastSocialFocusSigRef = useRef<string | null>(null);
 
   const mouseSensor = useSensor(MouseSensor);
   const touchSensor = useSensor(TouchSensor, {
@@ -182,6 +184,30 @@ export function useMultipleContainersBoard({
       lastPlayingDayForSyncRef.current = playingDayId;
     }
   }, [playingTask, startedAt, playingDayId]);
+
+  useEffect(() => {
+    let source: "timer" | "lastDone" | "idle" = "idle";
+    let task: ItemTask | null = null;
+
+    if (playingTask && startedAt) {
+      source = "timer";
+      task = playingTask;
+    } else {
+      const doneTasks = items
+        .flatMap((container) => container.tasks)
+        .filter((candidate) => candidate.isDone);
+      task = doneTasks[doneTasks.length - 1] ?? null;
+      source = task ? "lastDone" : "idle";
+    }
+
+    const sig = `${source}:${task ? String(task.id) : ""}:${task?.title ?? ""}:${task?.priority ?? ""}`;
+    if (sig === lastSocialFocusSigRef.current) return;
+    lastSocialFocusSigRef.current = sig;
+
+    void syncSocialFocusFromTask(task, source).catch((error) => {
+      console.warn("Failed to sync social focus:", error);
+    });
+  }, [items, playingTask, startedAt]);
 
   useEffect(() => {
     if (!taskTimeDone) return;

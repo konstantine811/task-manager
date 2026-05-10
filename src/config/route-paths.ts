@@ -11,6 +11,7 @@ export const ROUTES = {
   BILLING: "/app/billing",
   PROFILE: "/app/profile",
   DOCS: "/app/docs",
+  SOCIAL: "/app/social",
 } as const;
 
 export const getTodayDailyRoute = () =>

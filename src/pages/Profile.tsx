@@ -31,6 +31,7 @@ import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "re
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
+import { SocialFocusSection } from "@/pages/Social";
 
 const formatDate = (value?: string | null) => {
   if (!value) return "-";
@@ -405,6 +406,8 @@ export default function Profile() {
           </button>
         </section>
       </section>
+
+      <SocialFocusSection showHeader={false} />
 
       <section className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-white/10 dark:bg-white/[0.03]">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">

@@ -17,7 +17,8 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const isAccountRoute =
     location.pathname === ROUTES.BILLING ||
     location.pathname === ROUTES.PROFILE ||
-    location.pathname === ROUTES.DOCS;
+    location.pathname === ROUTES.DOCS ||
+    location.pathname === ROUTES.SOCIAL;
 
   useEffect(() => {
     let cancelled = false;

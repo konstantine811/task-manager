@@ -13,6 +13,7 @@ const Analytics = lazy(() => import("@/pages/Analytics"));
 const Billing = lazy(() => import("@/pages/Billing"));
 const Profile = lazy(() => import("@/pages/Profile"));
 const Documentation = lazy(() => import("@/pages/Documentation"));
+const Social = lazy(() => import("@/pages/Social"));
 const TaskManager = lazy(() => import("@/pages/TaskManager"));
 
 function TaskManagerLayout() {
@@ -58,6 +59,7 @@ export const routes = [
       { path: "billing", element: <Billing /> },
       { path: "profile", element: <Profile /> },
       { path: "docs", element: <Documentation /> },
+      { path: "social", element: <Social /> },
     ],
   },
 ];

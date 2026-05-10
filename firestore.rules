@@ -189,6 +189,53 @@ service cloud.firestore {
       allow create, update, delete: if hasAdminAccess(request.auth.uid);
     }
 
+    match /socialProfiles/{uid} {
+      allow read: if signedIn() && (isOwner(uid) || resource.data.visibility == "public");
+      allow create, update: if isOwner(uid) && request.resource.data.keys().hasOnly([
+        "uid",
+        "email",
+        "emailLower",
+        "displayName",
+        "photoURL",
+        "visibility",
+        "showOnMap",
+        "trackCurrentLocation",
+        "city",
+        "focusStatus",
+        "activeTaskTitle",
+        "showTaskTitle",
+        "priority",
+        "locationLat",
+        "locationLng",
+        "updatedAt",
+        "createdAt"
+      ]);
+      allow delete: if isOwner(uid);
+    }
+
+    match /friendRequests/{requestId} {
+      allow read: if signedIn() &&
+        (resource.data.fromUid == request.auth.uid || resource.data.toUid == request.auth.uid);
+      allow create: if signedIn() &&
+        request.resource.data.fromUid == request.auth.uid &&
+        request.resource.data.toUid is string &&
+        request.resource.data.toUid != request.auth.uid &&
+        request.resource.data.status == "pending";
+      allow update: if signedIn() &&
+        resource.data.toUid == request.auth.uid &&
+        request.resource.data.keys().hasOnly([
+          "fromUid",
+          "toUid",
+          "fromEmail",
+          "toEmail",
+          "status",
+          "createdAt",
+          "updatedAt"
+        ]);
+      allow delete: if signedIn() &&
+        (resource.data.fromUid == request.auth.uid || resource.data.toUid == request.auth.uid);
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

@@ -550,6 +550,17 @@ html:not(.dark) .life-focus-page-bg .custom-checkbox:checked {
   background: #22c55e;
 }
 
+/* Mapbox popup shell: remove the default white wrapper around our Life Focus card. */
+.life-focus-map-popup .mapboxgl-popup-content {
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
+}
+.life-focus-map-popup .mapboxgl-popup-tip {
+  display: none;
+}
+
 /* Life Focus table - subtle borders, soft header */
 .life-focus-table {
   background: rgba(24, 24, 27, 0.4);
