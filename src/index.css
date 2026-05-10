@@ -1025,6 +1025,7 @@ html:not(.dark) .life-focus-dialog .life-focus-time-drum-colon {
 
 /* Prevent mobile Safari auto-zoom on focus for text inputs. */
 @media (hover: none) and (pointer: coarse) {
+  input,
   input[type="text"],
   input[type="search"],
   input[type="email"],

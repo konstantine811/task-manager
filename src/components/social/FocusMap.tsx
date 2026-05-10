@@ -23,6 +23,10 @@ const getInitials = (profile: SocialProfile) => {
 };
 
 function MarkerCard({ profile }: { profile: SocialProfile }) {
+  const taskTitleLabel =
+    profile.focusStatus === "У фокус-сесії"
+      ? "Зараз виконує"
+      : "Остання виконана";
   const activeTaskLabel =
     profile.showTaskTitle && profile.activeTaskTitle
       ? profile.activeTaskTitle
@@ -44,7 +48,7 @@ function MarkerCard({ profile }: { profile: SocialProfile }) {
         </div>
       </div>
       <p className="mt-3 text-xs font-medium uppercase tracking-wide text-zinc-500">
-        Зараз виконує
+        {taskTitleLabel}
       </p>
       <p className="mt-1 text-sm text-zinc-700 dark:text-zinc-300">
         {activeTaskLabel}

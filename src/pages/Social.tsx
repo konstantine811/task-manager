@@ -194,6 +194,10 @@ export function SocialFocusSection({ showHeader = true }: { showHeader?: boolean
   }, [user]);
 
   const canAppearOnMap = profile?.visibility === "public" && profile.showOnMap;
+  const taskTitleLabel =
+    profile?.focusStatus === "У фокус-сесії"
+      ? "Активна задача"
+      : "Остання виконана задача";
 
   const visibleMapProfiles = useMemo(() => {
     if (!profile || !canAppearOnMap) return publicProfiles;
@@ -522,7 +526,7 @@ export function SocialFocusSection({ showHeader = true }: { showHeader?: boolean
             </label>
             <label className="flex flex-col gap-1.5 text-sm">
               <span className="font-medium text-zinc-700 dark:text-zinc-300">
-                Активна задача
+                {taskTitleLabel}
               </span>
               <input
                 value={profile.activeTaskTitle}
