@@ -1,7 +1,10 @@
 import { useEffect, useRef } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router";
 import { LifeFocusNav } from "@/components/landing";
-import { markEnteredAppThisSession } from "@/config/app-session";
+import {
+  hasEnteredAppThisSession,
+  markEnteredAppThisSession,
+} from "@/config/app-session";
 import TaskNavMenu from "./TaskNavMenu";
 import { ROUTES } from "@/config/route-paths";
 import { DateTemplate } from "@/config/data-config";
@@ -14,7 +17,8 @@ export interface TaskManagerOutletContext {
 const TaskManager = () => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const didForceDailyOnEntryRef = useRef(false);
+  const shouldForceDailyOnEntryRef = useRef(!hasEnteredAppThisSession());
+  const didHandleEntryRedirectRef = useRef(false);
   const outletConext: TaskManagerOutletContext = {
     className: "",
   };
@@ -24,10 +28,13 @@ const TaskManager = () => {
   }, []);
 
   useEffect(() => {
-    if (didForceDailyOnEntryRef.current) return;
-    didForceDailyOnEntryRef.current = true;
+    if (didHandleEntryRedirectRef.current) return;
+    didHandleEntryRedirectRef.current = true;
 
-    if (pathname === ROUTES.APP || pathname.startsWith(ROUTES.TEMPLATE)) {
+    if (
+      shouldForceDailyOnEntryRef.current &&
+      (pathname === ROUTES.APP || pathname.startsWith(ROUTES.TEMPLATE))
+    ) {
       const today = format(new Date(), DateTemplate.dayMonthYear);
       navigate(`${ROUTES.DAILY}/${today}`, { replace: true });
     }

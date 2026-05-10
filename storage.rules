@@ -121,6 +121,17 @@ service firebase.storage {
       allow delete: if isOwner(uid);
     }
 
+    match /task-manager-life-focus/{uid}/profile/avatar {
+      allow read: if canReadAppData(uid);
+      allow create, update: if isOwner(uid) && isImageUpload();
+      allow delete: if isOwner(uid);
+    }
+
+    match /app-docs/guide/{fileName} {
+      allow read: if signedIn();
+      allow create, update, delete: if hasAdminAccess(request.auth.uid) && isImageUpload();
+    }
+
     match /{uid}/daily-journal-images/{date}/{fileName} {
       allow read: if canReadAppData(uid);
       allow create, update: if canWriteAppData(uid) && isImageUpload() && hasStorageCapacity(uid);

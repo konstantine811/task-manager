@@ -9,6 +9,8 @@ export const ROUTES = {
   DAILY_ID: "/app/daily/:id",
   ANALYTICS: "/app/analytics",
   BILLING: "/app/billing",
+  PROFILE: "/app/profile",
+  DOCS: "/app/docs",
 } as const;
 
 export const getTodayDailyRoute = () =>

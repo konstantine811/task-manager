@@ -210,6 +210,8 @@
       "daily": "Daily Tasks",
       "analytics": "Analytics",
       "billing": "Plan",
+      "profile": "Profile",
+      "docs": "Guide",
       "goals": "Goals",
       "home": "Home"
     }

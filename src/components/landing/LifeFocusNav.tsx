@@ -1,5 +1,13 @@
 import { Link, useLocation, useNavigate } from "react-router";
-import { Infinity, ArrowRight, LogOut, Moon, Sun, CreditCard } from "lucide-react";
+import {
+  Infinity,
+  ArrowRight,
+  LogOut,
+  Moon,
+  Sun,
+  BookOpen,
+  UserCircle,
+} from "lucide-react";
 import { useThemeStore } from "@/storage/themeStore";
 import { ThemeType } from "@/config/theme-colors.config";
 import { ROUTES, getTodayDailyRoute } from "@/config/routes";
@@ -24,7 +32,8 @@ export function LifeFocusNav({ variant = "landing" }: LifeFocusNavProps) {
     { to: ROUTES.TEMPLATE, key: "template" },
     { to: ROUTES.DAILY, key: "daily" },
     { to: ROUTES.ANALYTICS, key: "analytics" },
-    { to: ROUTES.BILLING, key: "billing" },
+    { to: ROUTES.DOCS, key: "docs" },
+    { to: ROUTES.PROFILE, key: "profile" },
   ];
   const isDailyOrTemplatePage =
     pathname.startsWith(ROUTES.DAILY) || pathname.startsWith(ROUTES.TEMPLATE);
@@ -80,7 +89,8 @@ export function LifeFocusNav({ variant = "landing" }: LifeFocusNavProps) {
                       : "text-zinc-600 hover:bg-zinc-200/80 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-white/5 dark:hover:text-white",
                   )}
                 >
-                  {item.key === "billing" && <CreditCard className="h-3.5 w-3.5" />}
+                  {item.key === "docs" && <BookOpen className="h-3.5 w-3.5" />}
+                  {item.key === "profile" && <UserCircle className="h-3.5 w-3.5" />}
                   {t(`pages.task.${item.key}`)}
                 </Link>
               );
@@ -90,18 +100,32 @@ export function LifeFocusNav({ variant = "landing" }: LifeFocusNavProps) {
 
         <div className="flex items-center gap-4 min-w-0">
           {variant === "app" && isAuthenticated && (
-            <Link
-              to={ROUTES.BILLING}
-              className={cn(
-                "flex h-8 w-8 items-center justify-center rounded-lg text-zinc-600 transition-colors hover:bg-zinc-200 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-white md:hidden",
-                pathname.startsWith(ROUTES.BILLING) &&
-                  "bg-indigo-500/15 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-200",
-              )}
-              aria-label={t("pages.task.billing")}
-              title={t("pages.task.billing")}
-            >
-              <CreditCard className="h-4 w-4" />
-            </Link>
+            <div className="flex items-center gap-1 md:hidden">
+              <Link
+                to={ROUTES.DOCS}
+                className={cn(
+                  "flex h-8 w-8 items-center justify-center rounded-lg text-zinc-600 transition-colors hover:bg-zinc-200 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-white",
+                  pathname.startsWith(ROUTES.DOCS) &&
+                    "bg-indigo-500/15 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-200",
+                )}
+                aria-label={t("pages.task.docs")}
+                title={t("pages.task.docs")}
+              >
+                <BookOpen className="h-4 w-4" />
+              </Link>
+              <Link
+                to={ROUTES.PROFILE}
+                className={cn(
+                  "flex h-8 w-8 items-center justify-center rounded-lg text-zinc-600 transition-colors hover:bg-zinc-200 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-white",
+                  pathname.startsWith(ROUTES.PROFILE) &&
+                    "bg-indigo-500/15 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-200",
+                )}
+                aria-label={t("pages.task.profile")}
+                title={t("pages.task.profile")}
+              >
+                <UserCircle className="h-4 w-4" />
+              </Link>
+            </div>
           )}
           <button
             type="button"
@@ -138,10 +162,12 @@ export function LifeFocusNav({ variant = "landing" }: LifeFocusNavProps) {
             <button
               type="button"
               onClick={handleLogout}
-              className="flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors font-medium"
+              aria-label={t("nav.logout")}
+              title={t("nav.logout")}
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-600 transition-colors hover:bg-zinc-200 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-white md:h-auto md:w-auto md:gap-2 md:rounded-none md:bg-transparent md:text-xs md:font-medium md:hover:bg-transparent"
             >
               <LogOut className="w-3 h-3" />
-              {t("nav.logout")}
+              <span className="hidden md:inline">{t("nav.logout")}</span>
             </button>
           )}
         </div>

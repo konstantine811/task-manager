@@ -184,6 +184,11 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    match /appDocs/{docId} {
+      allow read: if signedIn();
+      allow create, update, delete: if hasAdminAccess(request.auth.uid);
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

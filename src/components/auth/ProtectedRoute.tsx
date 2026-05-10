@@ -14,12 +14,15 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const location = useLocation();
   const [billingLoading, setBillingLoading] = useState(true);
   const [paymentRequired, setPaymentRequired] = useState(false);
-  const isBillingRoute = location.pathname === ROUTES.BILLING;
+  const isAccountRoute =
+    location.pathname === ROUTES.BILLING ||
+    location.pathname === ROUTES.PROFILE ||
+    location.pathname === ROUTES.DOCS;
 
   useEffect(() => {
     let cancelled = false;
 
-    if (loading || !user || isBillingRoute) {
+    if (loading || !user || isAccountRoute) {
       setBillingLoading(false);
       setPaymentRequired(false);
       return;
@@ -46,7 +49,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     return () => {
       cancelled = true;
     };
-  }, [isBillingRoute, loading, user]);
+  }, [isAccountRoute, loading, user]);
 
   if (loading) {
     return <PageLoader />;
@@ -56,11 +59,11 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     return <Navigate to={ROUTES.HOME} state={{ from: location }} replace />;
   }
 
-  if (!isBillingRoute && billingLoading) {
+  if (!isAccountRoute && billingLoading) {
     return <PageLoader />;
   }
 
-  if (!isBillingRoute && paymentRequired) {
+  if (!isAccountRoute && paymentRequired) {
     return <Navigate to={ROUTES.BILLING} state={{ from: location }} replace />;
   }
 
