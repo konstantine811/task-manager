@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import { trackAppEvent } from "@/lib/telemetry";
 
 const visibilityOptions: Array<{
   value: SocialVisibility;
@@ -208,6 +209,12 @@ export function SocialFocusSection({ showHeader = true }: { showHeader?: boolean
     key: K,
     value: SocialProfile[K],
   ) => {
+    if (key === "visibility" && value === "public") {
+      trackAppEvent("social_enabled", { source: "visibility" });
+    }
+    if (key === "showOnMap" && value === true) {
+      trackAppEvent("map_enabled", { source: "show_on_map" });
+    }
     setProfile((current) => (current ? { ...current, [key]: value } : current));
   };
 
@@ -225,6 +232,9 @@ export function SocialFocusSection({ showHeader = true }: { showHeader?: boolean
   };
 
   const handleTrackCurrentLocationChange = (enabled: boolean) => {
+    if (enabled) {
+      trackAppEvent("map_enabled", { source: "current_location" });
+    }
     setProfile((current) =>
       current
         ? {
@@ -305,6 +315,12 @@ export function SocialFocusSection({ showHeader = true }: { showHeader?: boolean
       );
       setPublicProfiles(await loadPublicMapProfiles());
       setSavedOnce(true);
+      trackAppEvent("social_profile_updated", {
+        visibility: savedProfile.visibility,
+        show_on_map: savedProfile.showOnMap,
+        tracks_location: savedProfile.trackCurrentLocation,
+        shows_task_title: savedProfile.showTaskTitle,
+      });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Не вдалося оновити соціальний профіль.");
     } finally {

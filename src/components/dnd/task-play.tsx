@@ -11,6 +11,7 @@ import { useTaskManager } from "./context/use-task-manger-context";
 import { useDailyTimerDayId } from "./context/daily-timer-day-context";
 import { initializeSfx, playSfx } from "@/services/audio/sfx";
 import { useSoundEnabledStore } from "@/storage/soundEnabled";
+import { trackAppEvent } from "@/lib/telemetry";
 
 const TaskPlay = ({
   task,
@@ -40,10 +41,31 @@ const TaskPlay = ({
 
   const handleClick = () => {
     if (isPlaying) {
+      trackAppEvent("timer_stopped", {
+        priority: task.priority,
+        planned: Boolean(task.isPlanned),
+        determined: Boolean(task.isDetermined),
+        duration_bucket:
+          startedAt && Date.now() - startedAt >= 15 * 60 * 1000
+            ? "15m_plus"
+            : "under_15m",
+      });
       stopPlayingTask();
     } else if (!templated && activeDayId) {
+      trackAppEvent("timer_started", {
+        priority: task.priority,
+        planned: Boolean(task.isPlanned),
+        determined: Boolean(task.isDetermined),
+        source: "daily",
+      });
       setPlayingTask(task, { dayId: activeDayId });
     } else {
+      trackAppEvent("timer_started", {
+        priority: task.priority,
+        planned: Boolean(task.isPlanned),
+        determined: Boolean(task.isDetermined),
+        source: templated ? "template" : "unknown",
+      });
       setPlayingTask(task);
     }
   };

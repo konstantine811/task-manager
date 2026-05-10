@@ -12,6 +12,8 @@ interface ImportMetaEnv {
   readonly VITE_FIREBASE_FUNCTIONS_REGION?: string;
   readonly VITE_AI_PROXY_URL?: string;
   readonly VITE_WAYFORPAY_SUBSCRIPTION_URL?: string;
+  readonly VITE_MAPBOX_TOKEN?: string;
+  readonly VITE_SENTRY_DSN?: string;
 }
 
 interface ImportMeta {

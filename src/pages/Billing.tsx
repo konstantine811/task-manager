@@ -9,6 +9,7 @@ import type {
   BillingMeResponse,
 } from "@/services/billing/proxy-client";
 import { useAuth } from "@/hooks/useAuth";
+import { trackAppEvent } from "@/lib/telemetry";
 import { ExternalLink, Loader2, RefreshCw, ShieldCheck, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -411,7 +412,17 @@ export default function Billing() {
               </p>
             </div>
             <Button asChild>
-              <a href={wayforpayUrl} target="_blank" rel="noreferrer">
+              <a
+                href={wayforpayUrl}
+                target="_blank"
+                rel="noreferrer"
+                onClick={() =>
+                  trackAppEvent("payment_clicked", {
+                    source: "billing",
+                    plan: billing?.plan.id,
+                  })
+                }
+              >
                 <ExternalLink />
                 Перейти до оплати
               </a>

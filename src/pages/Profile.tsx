@@ -4,6 +4,7 @@ import { storage } from "@/config/firebase.config";
 import { LocalStorageKey } from "@/config/local-storage.config";
 import { ROUTES } from "@/config/routes";
 import { useAuth } from "@/hooks/useAuth";
+import { trackAppEvent } from "@/lib/telemetry";
 import { LanguageType } from "@/i18n";
 import { cn } from "@/lib/utils";
 import { fetchBillingMe, type BillingMeResponse } from "@/services/billing/proxy-client";
@@ -428,7 +429,17 @@ export default function Profile() {
 
           {wayforpayUrl && !billing?.plan.adminAccess && (
             <Button asChild>
-              <a href={wayforpayUrl} target="_blank" rel="noreferrer">
+              <a
+                href={wayforpayUrl}
+                target="_blank"
+                rel="noreferrer"
+                onClick={() =>
+                  trackAppEvent("payment_clicked", {
+                    source: "profile",
+                    plan: billing?.plan.id,
+                  })
+                }
+              >
                 <ExternalLink />
                 Оплатити
               </a>

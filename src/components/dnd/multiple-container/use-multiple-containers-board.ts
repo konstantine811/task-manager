@@ -29,6 +29,7 @@ import { persistTaskTimeDoneForDay } from "@/services/firebase/taskManagerData";
 import { syncSocialFocusFromTask } from "@/services/firebase/social";
 import { DailyTimerDayContext } from "@/components/dnd/context/daily-timer-day-context";
 import { TaskManagerContext } from "@/components/dnd/context/create-context";
+import { trackAppEvent } from "@/lib/telemetry";
 
 type UseMultipleContainersBoardParams = Pick<
   MultipleContainersProps,
@@ -379,7 +380,15 @@ export function useMultipleContainersBoard({
         }));
         queueMicrotask(() => {
           onChangeTasks(updated);
-          if (doneTask) onTaskDone?.(doneTask);
+          if (doneTask) {
+            trackAppEvent("daily_task_completed", {
+              priority: doneTask.priority,
+              planned: Boolean(doneTask.isPlanned),
+              determined: Boolean(doneTask.isDetermined),
+              had_timer: flushTimer,
+            });
+            onTaskDone?.(doneTask);
+          }
           if (undoneTask) onTaskUndone?.(undoneTask);
         });
         return updated;

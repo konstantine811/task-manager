@@ -5,12 +5,14 @@ import { routes } from "./config/routes";
 import useSetTheme from "./hooks/useSetTheme";
 import { PushNotificationsBootstrap } from "./services/notifications/push";
 import { PageLoader } from "./components/ui/page-loader";
+import { AppTelemetry } from "./components/telemetry/AppTelemetry";
 
 function App() {
   useSetTheme();
 
   return (
     <>
+      <AppTelemetry />
       <PushNotificationsBootstrap />
       <Suspense fallback={<PageLoader />}>
         <Routes>
