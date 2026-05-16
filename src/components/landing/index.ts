@@ -4,5 +4,6 @@ export { HeroSection } from "./HeroSection";
 export { AppMockup } from "./AppMockup";
 export { FeaturesGrid } from "./FeaturesGrid";
 export { SocialProof } from "./SocialProof";
+export { PricingSection } from "./PricingSection";
 export { CTAFooter } from "./CTAFooter";
 export { LandingFooter } from "./LandingFooter";

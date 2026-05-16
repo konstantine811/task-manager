@@ -44,7 +44,7 @@ export type AdminBillingUser = {
   status: AdminBillingUserStatus;
   billingProvider: string | null;
   subscriptionStatus: string | null;
-  wayforpayOrderReference: string | null;
+  portmoneOrderReference: string | null;
   updatedAt: string | null;
   createdAt: string | null;
 };
@@ -55,13 +55,10 @@ export type AdminBillingUsersResponse = {
   activePaid: number;
 };
 
-export type LiqPayCheckoutResponse = {
-  provider: "liqpay";
+export type BillingCheckoutResponse = {
+  provider: "portmone";
+  orderReference: string;
   checkoutUrl: string;
-  method: "POST";
-  data: string;
-  signature: string;
-  orderId: string;
 };
 
 export type StorageCapacityResponse = {
@@ -139,13 +136,13 @@ export async function fetchAdminBillingUsers(
 export async function createBillingCheckout(
   user: User,
   plan: Exclude<BillingPlanId, "free">,
-): Promise<LiqPayCheckoutResponse> {
+): Promise<BillingCheckoutResponse> {
   const response = await fetch(`${getProxyUrl()}/api/billing/checkout`, {
     method: "POST",
     headers: await getAuthHeaders(user),
     body: JSON.stringify({ plan }),
   });
-  return readJsonOrThrow<LiqPayCheckoutResponse>(response);
+  return readJsonOrThrow<BillingCheckoutResponse>(response);
 }
 
 export async function checkStorageCapacity(

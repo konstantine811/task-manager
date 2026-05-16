@@ -3,6 +3,7 @@ import { ThemeType } from "@/config/theme-colors.config";
 import { storage } from "@/config/firebase.config";
 import { LocalStorageKey } from "@/config/local-storage.config";
 import { ROUTES } from "@/config/routes";
+import { paymentProviderName } from "@/config/legal";
 import { useAuth } from "@/hooks/useAuth";
 import { trackAppEvent } from "@/lib/telemetry";
 import { LanguageType } from "@/i18n";
@@ -97,7 +98,6 @@ export default function Profile() {
   const [billing, setBilling] = useState<BillingMeResponse | null>(null);
   const [billingError, setBillingError] = useState<string | null>(null);
   const photoInputRef = useRef<HTMLInputElement | null>(null);
-  const wayforpayUrl = import.meta.env.VITE_WAYFORPAY_SUBSCRIPTION_URL?.trim();
 
   useEffect(() => {
     setDisplayName(user?.displayName ?? "");
@@ -427,12 +427,10 @@ export default function Profile() {
             </p>
           </div>
 
-          {wayforpayUrl && !billing?.plan.adminAccess && (
+          {!billing?.plan.adminAccess && (
             <Button asChild>
               <a
-                href={wayforpayUrl}
-                target="_blank"
-                rel="noreferrer"
+                href={ROUTES.BILLING}
                 onClick={() =>
                   trackAppEvent("payment_clicked", {
                     source: "profile",
@@ -510,7 +508,7 @@ export default function Profile() {
         </div>
 
         <p className="mt-4 text-xs leading-5 text-zinc-500 dark:text-zinc-500">
-          Оплата та відписка зараз проходять через WayForPay. Після завершення
+          Оплата та відписка зараз проходять через {paymentProviderName}. Після завершення
           валідації мерчанта можна буде додати повне скасування підписки прямо тут.
         </p>
       </section>

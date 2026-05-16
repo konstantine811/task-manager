@@ -12,6 +12,10 @@ export const ROUTES = {
   PROFILE: "/app/profile",
   DOCS: "/app/docs",
   SOCIAL: "/app/social",
+  OFFER: "/offer",
+  PRIVACY: "/privacy",
+  CONTACTS: "/contacts",
+  PAYMENT_RESULT: "/payment-result",
 } as const;
 
 export const getTodayDailyRoute = () =>

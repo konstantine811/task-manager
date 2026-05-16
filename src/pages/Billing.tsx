@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import {
+  createBillingCheckout,
   fetchAdminBillingUsers,
   fetchBillingMe,
   updateUserTrial,
@@ -9,9 +10,11 @@ import type {
   BillingMeResponse,
 } from "@/services/billing/proxy-client";
 import { useAuth } from "@/hooks/useAuth";
+import { paymentProviderName, pricingPlans } from "@/config/legal";
 import { trackAppEvent } from "@/lib/telemetry";
-import { ExternalLink, Loader2, RefreshCw, ShieldCheck, Sparkles } from "lucide-react";
+import { Loader2, RefreshCw, ShieldCheck, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router";
 import { toast } from "sonner";
 
 const formatDate = (value: string | null) => {
@@ -62,7 +65,8 @@ export default function Billing() {
   const [adminUsers, setAdminUsers] = useState<AdminBillingUser[]>([]);
   const [adminUsersLoading, setAdminUsersLoading] = useState(false);
   const [adminUsersError, setAdminUsersError] = useState<string | null>(null);
-  const wayforpayUrl = import.meta.env.VITE_WAYFORPAY_SUBSCRIPTION_URL?.trim();
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [checkoutPlan, setCheckoutPlan] = useState<"starter" | "pro" | null>(null);
   const isAdmin = Boolean(billing?.plan.adminAccess);
   const activePaidCount = adminUsers.filter(
     (adminUser) => adminUser.status === "paid-active",
@@ -153,6 +157,25 @@ export default function Billing() {
     }
   };
 
+  const handleCheckout = async (plan: "starter" | "pro") => {
+    if (!user || !termsAccepted) return;
+
+    setCheckoutPlan(plan);
+    try {
+      const checkout = await createBillingCheckout(user, plan);
+      trackAppEvent("payment_clicked", {
+        source: "billing",
+        plan,
+        orderReference: checkout.orderReference,
+      });
+      window.location.assign(checkout.checkoutUrl);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Не вдалося створити оплату.");
+    } finally {
+      setCheckoutPlan(null);
+    }
+  };
+
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-6 md:px-6 md:py-8">
       <div className="flex flex-col gap-3 border-b border-zinc-200 pb-5 dark:border-white/10 md:flex-row md:items-end md:justify-between">
@@ -165,7 +188,7 @@ export default function Billing() {
             Підписка
           </h1>
           <p className="mt-1 max-w-2xl text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-            Керуй лімітами AI, сховищем і доступом через оплату WayForPay.
+            Керуй лімітами AI, сховищем і доступом через оплату {paymentProviderName}.
           </p>
         </div>
         <Button variant="outline" onClick={loadBilling} disabled={loading || !user}>
@@ -192,13 +215,13 @@ export default function Billing() {
       ) : (
         <section className="rounded-lg border border-indigo-300/70 bg-indigo-50 p-4 dark:border-indigo-400/30 dark:bg-indigo-500/10">
           <p className="text-sm font-medium text-indigo-950 dark:text-indigo-100">
-            Використай цю пошту на сторінці оплати WayForPay
+            Використай цю пошту на сторінці оплати {paymentProviderName}
           </p>
           <p className="mt-1 text-sm text-indigo-900/80 dark:text-indigo-100/75">
             Пошта: <span className="font-semibold">{billing?.email ?? user?.email ?? "—"}</span>
           </p>
           <p className="mt-2 text-xs leading-5 text-indigo-900/70 dark:text-indigo-100/60">
-            Після оплати доступ активується автоматично, коли WayForPay надішле підтвердження з тією самою поштою.
+            Після оплати доступ активується автоматично, коли {paymentProviderName} надішле підтвердження з тією самою поштою.
           </p>
         </section>
       )}
@@ -400,40 +423,78 @@ export default function Billing() {
         </div>
       </section>
 
-      {!isAdmin && wayforpayUrl && (
+      {!isAdmin && (
         <section className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-white/10 dark:bg-white/[0.03]">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
-                Підписка через WayForPay
-              </h2>
-              <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                Оплата відкриється в окремій вкладці. На сторінці WayForPay обери Starter або Pro і вкажи пошту з цього акаунта.
-              </p>
-            </div>
-            <Button asChild>
-              <a
-                href={wayforpayUrl}
-                target="_blank"
-                rel="noreferrer"
-                onClick={() =>
-                  trackAppEvent("payment_clicked", {
-                    source: "billing",
-                    plan: billing?.plan.id,
-                  })
-                }
+          <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
+            Доступні тарифи
+          </h2>
+          <div className="mt-4 grid gap-3 md:grid-cols-3">
+            {pricingPlans.map((plan) => (
+              <div
+                key={plan.id}
+                className="rounded-md border border-zinc-200 bg-zinc-50 p-3 dark:border-white/10 dark:bg-white/[0.04]"
               >
-                <ExternalLink />
-                Перейти до оплати
-              </a>
-            </Button>
+                <p className="text-sm font-medium text-zinc-950 dark:text-white">
+                  {plan.name}
+                </p>
+                <p className="mt-1 text-lg font-semibold text-zinc-950 dark:text-white">
+                  {plan.price}
+                </p>
+                <p className="mt-1 text-xs text-zinc-500">за {plan.period}</p>
+              </div>
+            ))}
           </div>
         </section>
       )}
 
-      {!isAdmin && !wayforpayUrl && (
-        <section className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-400/30 dark:bg-amber-500/10 dark:text-amber-100">
-          URL сторінки оплати WayForPay не налаштований.
+      {!isAdmin && (
+        <section className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-white/10 dark:bg-white/[0.03]">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
+                Підписка через {paymentProviderName}
+              </h2>
+              <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                Оплата відкриється в окремій вкладці. На сторінці {paymentProviderName} обери Starter або Pro і вкажи пошту з цього акаунта.
+              </p>
+              <label className="mt-4 flex max-w-2xl items-start gap-3 text-sm text-zinc-700 dark:text-zinc-300">
+                <input
+                  type="checkbox"
+                  checked={termsAccepted}
+                  onChange={(event) => setTermsAccepted(event.target.checked)}
+                  className="mt-1 h-4 w-4 rounded border-zinc-300"
+                />
+                <span>
+                  Я погоджуюся з{" "}
+                  <Link to="/offer" className="font-medium text-indigo-600 hover:text-indigo-500">
+                    договором оферти
+                  </Link>{" "}
+                  та{" "}
+                  <Link to="/privacy" className="font-medium text-indigo-600 hover:text-indigo-500">
+                    політикою конфіденційності
+                  </Link>
+                  .
+                </span>
+              </label>
+            </div>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Button
+                onClick={() => handleCheckout("starter")}
+                disabled={!termsAccepted || checkoutPlan !== null}
+              >
+                {checkoutPlan === "starter" ? <Loader2 className="animate-spin" /> : null}
+                Оплатити Starter
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => handleCheckout("pro")}
+                disabled={!termsAccepted || checkoutPlan !== null}
+              >
+                {checkoutPlan === "pro" ? <Loader2 className="animate-spin" /> : null}
+                Оплатити Pro
+              </Button>
+            </div>
+          </div>
         </section>
       )}
     </div>

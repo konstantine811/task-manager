@@ -15,6 +15,8 @@ const Profile = lazy(() => import("@/pages/Profile"));
 const Documentation = lazy(() => import("@/pages/Documentation"));
 const Social = lazy(() => import("@/pages/Social"));
 const TaskManager = lazy(() => import("@/pages/TaskManager"));
+const LegalPage = lazy(() => import("@/pages/LegalPage"));
+const PaymentResult = lazy(() => import("@/pages/PaymentResult"));
 
 function TaskManagerLayout() {
   return (
@@ -45,6 +47,38 @@ export const routes = [
     element: (
       <Suspense fallback={<PageLoader />}>
         <Landing />
+      </Suspense>
+    ),
+  },
+  {
+    path: "/offer",
+    element: (
+      <Suspense fallback={<PageLoader />}>
+        <LegalPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: "/privacy",
+    element: (
+      <Suspense fallback={<PageLoader />}>
+        <LegalPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: "/contacts",
+    element: (
+      <Suspense fallback={<PageLoader />}>
+        <LegalPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: "/payment-result",
+    element: (
+      <Suspense fallback={<PageLoader />}>
+        <PaymentResult />
       </Suspense>
     ),
   },

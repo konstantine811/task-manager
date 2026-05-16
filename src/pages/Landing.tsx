@@ -6,6 +6,7 @@ import {
   HeroSection,
   FeaturesGrid,
   SocialProof,
+  PricingSection,
   CTAFooter,
   LandingFooter,
 } from "@/components/landing";
@@ -41,6 +42,7 @@ export default function Landing() {
         <HeroSection />
         <SocialProof />
         <FeaturesGrid />
+        <PricingSection />
         <CTAFooter />
       </main>
       <LandingFooter />
