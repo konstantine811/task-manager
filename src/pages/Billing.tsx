@@ -5,6 +5,10 @@ import {
   fetchBillingMe,
   updateUserTrial,
 } from "@/services/billing/proxy-client";
+import {
+  isPortmoneCheckoutConfigured,
+  startPortmoneCheckout,
+} from "@/services/billing/portmone-checkout";
 import type {
   AdminBillingUser,
   BillingMeResponse,
@@ -162,6 +166,20 @@ export default function Billing() {
 
     setCheckoutPlan(plan);
     try {
+      if (isPortmoneCheckoutConfigured()) {
+        const orderReference = startPortmoneCheckout({
+          plan,
+          userId: user.uid,
+          email: billing?.email ?? user.email,
+        });
+        trackAppEvent("payment_clicked", {
+          source: "billing",
+          plan,
+          orderReference,
+        });
+        return;
+      }
+
       const checkout = await createBillingCheckout(user, plan);
       trackAppEvent("payment_clicked", {
         source: "billing",
@@ -455,7 +473,7 @@ export default function Billing() {
                 Підписка через {paymentProviderName}
               </h2>
               <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                Оплата відкриється в окремій вкладці. На сторінці {paymentProviderName} обери Starter або Pro і вкажи пошту з цього акаунта.
+                Оплата відкриється на захищеній сторінці {paymentProviderName}. Для тесту можна використати тестову картку Portmone.
               </p>
               <label className="mt-4 flex max-w-2xl items-start gap-3 text-sm text-zinc-700 dark:text-zinc-300">
                 <input

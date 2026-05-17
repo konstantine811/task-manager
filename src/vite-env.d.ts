@@ -14,6 +14,10 @@ interface ImportMetaEnv {
   readonly VITE_STARTER_PRICE_UAH?: string;
   readonly VITE_PRO_PRICE_UAH?: string;
   readonly VITE_PUBLIC_SITE_URL?: string;
+  readonly VITE_PORTMONE_PAYEE_ID?: string;
+  readonly VITE_PORTMONE_GATEWAY_URL?: string;
+  readonly VITE_PORTMONE_STARTER_AMOUNT_UAH?: string;
+  readonly VITE_PORTMONE_PRO_AMOUNT_UAH?: string;
   readonly VITE_MERCHANT_LEGAL_NAME?: string;
   readonly VITE_MERCHANT_TAX_ID?: string;
   readonly VITE_MERCHANT_LEGAL_ADDRESS?: string;
