@@ -31,7 +31,7 @@ import {
 } from "lucide-react";
 import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
 import { SocialFocusSection } from "@/pages/Social";
 
@@ -427,7 +427,14 @@ export default function Profile() {
             </p>
           </div>
 
-          {!billing?.plan.adminAccess && (
+          {billing?.plan.adminAccess ? (
+            <Button asChild variant="outline">
+              <Link to={ROUTES.BILLING}>
+                <ExternalLink />
+                Керувати користувачами
+              </Link>
+            </Button>
+          ) : (
             <Button asChild>
               <a
                 href={ROUTES.BILLING}
