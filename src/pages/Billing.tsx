@@ -58,8 +58,9 @@ export default function Billing() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [adminEmail, setAdminEmail] = useState("");
-  const [adminMode, setAdminMode] = useState<"expired" | "hours" | "days">("expired");
+  const [adminMode, setAdminMode] = useState<"expired" | "hours" | "days" | "date">("expired");
   const [adminAmount, setAdminAmount] = useState("1");
+  const [adminTrialEndsAt, setAdminTrialEndsAt] = useState("");
   const [adminSaving, setAdminSaving] = useState(false);
   const [adminResult, setAdminResult] = useState<BillingMeResponse | null>(null);
   const [adminUsers, setAdminUsers] = useState<AdminBillingUser[]>([]);
@@ -129,8 +130,16 @@ export default function Billing() {
     if (!user || !adminEmail.trim()) return;
 
     const amount = Number(adminAmount);
-    if (adminMode !== "expired" && (!Number.isFinite(amount) || amount <= 0)) {
+    if (
+      adminMode !== "expired" &&
+      adminMode !== "date" &&
+      (!Number.isFinite(amount) || amount <= 0)
+    ) {
       toast.error("Вкажи додатну тривалість.");
+      return;
+    }
+    if (adminMode === "date" && !adminTrialEndsAt) {
+      toast.error("Вкажи дату завершення пробного періоду.");
       return;
     }
 
@@ -142,6 +151,8 @@ export default function Billing() {
         user,
         adminMode === "expired"
           ? { email: adminEmail.trim(), expired: true }
+          : adminMode === "date"
+            ? { email: adminEmail.trim(), trialEndsAt: new Date(adminTrialEndsAt).toISOString() }
           : {
               email: adminEmail.trim(),
               trialDaysFromNow: adminMode === "hours" ? amount / 24 : amount,
@@ -233,7 +244,7 @@ export default function Billing() {
             </Button>
           </div>
 
-          <div className="mt-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_160px_140px_auto]">
+          <div className="mt-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_160px_140px_220px_auto]">
             <input
               value={adminEmail}
               onChange={(event) => setAdminEmail(event.target.value)}
@@ -244,13 +255,14 @@ export default function Billing() {
             <select
               value={adminMode}
               onChange={(event) =>
-                setAdminMode(event.target.value as "expired" | "hours" | "days")
+                setAdminMode(event.target.value as "expired" | "hours" | "days" | "date")
               }
               className="h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none focus:border-indigo-500 dark:border-white/10 dark:bg-white/[0.04] dark:text-white"
             >
               <option value="expired">Завершити зараз</option>
               <option value="hours">Додати години</option>
               <option value="days">Додати дні</option>
+              <option value="date">Встановити дату</option>
             </select>
             <input
               value={adminAmount}
@@ -258,7 +270,14 @@ export default function Billing() {
               type="number"
               min="0.1"
               step="0.1"
-              disabled={adminMode === "expired"}
+              disabled={adminMode === "expired" || adminMode === "date"}
+              className="h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none focus:border-indigo-500 disabled:opacity-50 dark:border-white/10 dark:bg-white/[0.04] dark:text-white"
+            />
+            <input
+              value={adminTrialEndsAt}
+              onChange={(event) => setAdminTrialEndsAt(event.target.value)}
+              type="datetime-local"
+              disabled={adminMode !== "date"}
               className="h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none focus:border-indigo-500 disabled:opacity-50 dark:border-white/10 dark:bg-white/[0.04] dark:text-white"
             />
             <Button
