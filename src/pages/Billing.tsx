@@ -5,10 +5,6 @@ import {
   fetchBillingMe,
   updateUserTrial,
 } from "@/services/billing/proxy-client";
-import {
-  isPortmoneCheckoutConfigured,
-  startPortmoneCheckout,
-} from "@/services/billing/portmone-checkout";
 import type {
   AdminBillingUser,
   BillingMeResponse,
@@ -166,20 +162,6 @@ export default function Billing() {
 
     setCheckoutPlan(plan);
     try {
-      if (isPortmoneCheckoutConfigured()) {
-        const orderReference = startPortmoneCheckout({
-          plan,
-          userId: user.uid,
-          email: billing?.email ?? user.email,
-        });
-        trackAppEvent("payment_clicked", {
-          source: "billing",
-          plan,
-          orderReference,
-        });
-        return;
-      }
-
       const checkout = await createBillingCheckout(user, plan);
       trackAppEvent("payment_clicked", {
         source: "billing",
