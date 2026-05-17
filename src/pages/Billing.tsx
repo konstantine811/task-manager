@@ -203,25 +203,13 @@ export default function Billing() {
         </div>
       )}
 
-      {isAdmin ? (
+      {isAdmin && (
         <section className="rounded-lg border border-emerald-400/50 bg-emerald-50 p-4 dark:border-emerald-400/40 dark:bg-emerald-500/10">
           <p className="text-sm font-medium text-emerald-950 dark:text-emerald-100">
             Адмін-доступ увімкнено
           </p>
           <p className="mt-1 text-sm text-emerald-900/75 dark:text-emerald-100/70">
             Цей акаунт має повний доступ без підписки.
-          </p>
-        </section>
-      ) : (
-        <section className="rounded-lg border border-indigo-300/70 bg-indigo-50 p-4 dark:border-indigo-400/30 dark:bg-indigo-500/10">
-          <p className="text-sm font-medium text-indigo-950 dark:text-indigo-100">
-            Використай цю пошту на сторінці оплати {paymentProviderName}
-          </p>
-          <p className="mt-1 text-sm text-indigo-900/80 dark:text-indigo-100/75">
-            Пошта: <span className="font-semibold">{billing?.email ?? user?.email ?? "—"}</span>
-          </p>
-          <p className="mt-2 text-xs leading-5 text-indigo-900/70 dark:text-indigo-100/60">
-            Після оплати доступ активується автоматично, коли {paymentProviderName} надішле підтвердження з тією самою поштою.
           </p>
         </section>
       )}
