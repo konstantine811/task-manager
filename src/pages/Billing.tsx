@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { PaymentCardLogos } from "@/components/payment/PaymentCardLogos";
 import {
   createBillingCheckout,
   fetchAdminBillingUsers,
@@ -464,6 +465,7 @@ export default function Billing() {
               <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
                 Оплата відкриється на захищеній сторінці {paymentProviderName}. Для тесту можна використати тестову картку Portmone.
               </p>
+              <PaymentCardLogos className="mt-3" />
               <label className="mt-4 flex max-w-2xl items-start gap-3 text-sm text-zinc-700 dark:text-zinc-300">
                 <input
                   type="checkbox"

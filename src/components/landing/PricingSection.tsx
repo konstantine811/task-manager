@@ -1,7 +1,8 @@
 import { Check, CreditCard } from "lucide-react";
 import { pricingPlans, paymentProviderName } from "@/config/legal";
+import { PaymentCardLogos } from "@/components/payment/PaymentCardLogos";
 
-const paymentMethods = ["Visa", "Mastercard", "ПРОСТІР", "Google Pay", "Apple Pay"];
+const paymentMethods = ["ПРОСТІР", "Google Pay", "Apple Pay"];
 
 export function PricingSection() {
   return (
@@ -48,7 +49,8 @@ export function PricingSection() {
         ))}
       </div>
 
-      <div className="mt-6 flex flex-wrap gap-2">
+      <div className="mt-6 flex flex-wrap items-center gap-2">
+        <PaymentCardLogos />
         {paymentMethods.map((method) => (
           <span
             key={method}
