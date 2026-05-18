@@ -84,6 +84,20 @@ export type AdminTrialRequest =
 
 export type AdminTrialResponse = BillingMeResponse;
 
+export type AdminAccessRequest =
+  | {
+      email: string;
+      plan: Exclude<BillingPlanId, "free">;
+      accessDaysFromNow: number;
+    }
+  | {
+      email: string;
+      plan: Exclude<BillingPlanId, "free">;
+      accessEndsAt: string;
+    };
+
+export type AdminAccessResponse = BillingMeResponse;
+
 const getProxyUrl = () => {
   const url = import.meta.env.VITE_AI_PROXY_URL?.trim();
   if (!url) {
@@ -167,4 +181,16 @@ export async function updateUserTrial(
     body: JSON.stringify(payload),
   });
   return readJsonOrThrow<AdminTrialResponse>(response);
+}
+
+export async function updateUserAccess(
+  user: User,
+  payload: AdminAccessRequest,
+): Promise<AdminAccessResponse> {
+  const response = await fetch(`${getProxyUrl()}/api/admin/users/access`, {
+    method: "POST",
+    headers: await getAuthHeaders(user),
+    body: JSON.stringify(payload),
+  });
+  return readJsonOrThrow<AdminAccessResponse>(response);
 }

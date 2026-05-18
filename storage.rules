@@ -52,8 +52,7 @@ service firebase.storage {
     }
 
     function hasAppAccess(uid) {
-      return isOwner(uid) &&
-        (hasAdminAccess(uid) || hasActiveTrial(uid) || hasActivePaidAccess(uid));
+      return isOwner(uid);
     }
 
     function hasLegacyOwnerAccess(uid) {
@@ -77,6 +76,12 @@ service firebase.storage {
     }
 
     function billingPlanId(uid) {
+      return hasAdminAccess(uid) || hasActivePaidAccess(uid)
+        ? rawBillingPlanId(uid)
+        : "free";
+    }
+
+    function rawBillingPlanId(uid) {
       return !hasBillingProfile(uid)
         ? "free"
         : "planId" in billingDoc(uid).data

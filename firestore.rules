@@ -52,8 +52,7 @@ service cloud.firestore {
     }
 
     function hasAppAccess(uid) {
-      return isOwner(uid) &&
-        (hasAdminAccess(uid) || hasActiveTrial(uid) || hasActivePaidAccess(uid));
+      return isOwner(uid);
     }
 
     function hasLegacyOwnerAccess(uid) {

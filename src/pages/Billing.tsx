@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import {
   fetchAdminBillingUsers,
   fetchBillingMe,
-  updateUserTrial,
+  updateUserAccess,
 } from "@/services/billing/proxy-client";
 import type {
   AdminBillingUser,
@@ -65,9 +65,10 @@ export default function Billing() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [adminEmail, setAdminEmail] = useState("");
-  const [adminMode, setAdminMode] = useState<"expired" | "hours" | "days" | "date">("expired");
-  const [adminAmount, setAdminAmount] = useState("1");
-  const [adminTrialEndsAt, setAdminTrialEndsAt] = useState("");
+  const [adminPlan, setAdminPlan] = useState<"starter" | "pro">("pro");
+  const [adminMode, setAdminMode] = useState<"days" | "date">("days");
+  const [adminAmount, setAdminAmount] = useState("30");
+  const [adminAccessEndsAt, setAdminAccessEndsAt] = useState("");
   const [adminSaving, setAdminSaving] = useState(false);
   const [adminResult, setAdminResult] = useState<BillingMeResponse | null>(null);
   const [adminUsers, setAdminUsers] = useState<AdminBillingUser[]>([]);
@@ -140,16 +141,12 @@ export default function Billing() {
     if (!user || !adminEmail.trim()) return;
 
     const amount = Number(adminAmount);
-    if (
-      adminMode !== "expired" &&
-      adminMode !== "date" &&
-      (!Number.isFinite(amount) || amount <= 0)
-    ) {
+    if (adminMode !== "date" && (!Number.isFinite(amount) || amount <= 0)) {
       toast.error("Вкажи додатну тривалість.");
       return;
     }
-    if (adminMode === "date" && !adminTrialEndsAt) {
-      toast.error("Вкажи дату завершення пробного періоду.");
+    if (adminMode === "date" && !adminAccessEndsAt) {
+      toast.error("Вкажи дату завершення доступу.");
       return;
     }
 
@@ -157,15 +154,18 @@ export default function Billing() {
     setAdminResult(null);
 
     try {
-      const result = await updateUserTrial(
+      const result = await updateUserAccess(
         user,
-        adminMode === "expired"
-          ? { email: adminEmail.trim(), expired: true }
-          : adminMode === "date"
-            ? { email: adminEmail.trim(), trialEndsAt: new Date(adminTrialEndsAt).toISOString() }
+        adminMode === "date"
+          ? {
+              email: adminEmail.trim(),
+              plan: adminPlan,
+              accessEndsAt: new Date(adminAccessEndsAt).toISOString(),
+            }
           : {
               email: adminEmail.trim(),
-              trialDaysFromNow: adminMode === "hours" ? amount / 24 : amount,
+              plan: adminPlan,
+              accessDaysFromNow: amount,
             },
       );
       setAdminResult(result);
@@ -248,7 +248,7 @@ export default function Billing() {
             </Button>
           </div>
 
-          <div className="mt-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_160px_140px_220px_auto]">
+          <div className="mt-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_140px_160px_140px_220px_auto]">
             <input
               value={adminEmail}
               onChange={(event) => setAdminEmail(event.target.value)}
@@ -257,14 +257,18 @@ export default function Billing() {
               className="h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none focus:border-indigo-500 dark:border-white/10 dark:bg-white/[0.04] dark:text-white"
             />
             <select
-              value={adminMode}
-              onChange={(event) =>
-                setAdminMode(event.target.value as "expired" | "hours" | "days" | "date")
-              }
+              value={adminPlan}
+              onChange={(event) => setAdminPlan(event.target.value as "starter" | "pro")}
               className="h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none focus:border-indigo-500 dark:border-white/10 dark:bg-white/[0.04] dark:text-white"
             >
-              <option value="expired">Завершити доступ</option>
-              <option value="hours">Активувати на години</option>
+              <option value="pro">Pro</option>
+              <option value="starter">Starter</option>
+            </select>
+            <select
+              value={adminMode}
+              onChange={(event) => setAdminMode(event.target.value as "days" | "date")}
+              className="h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none focus:border-indigo-500 dark:border-white/10 dark:bg-white/[0.04] dark:text-white"
+            >
               <option value="days">Активувати на дні</option>
               <option value="date">Активувати до дати</option>
             </select>
@@ -272,14 +276,14 @@ export default function Billing() {
               value={adminAmount}
               onChange={(event) => setAdminAmount(event.target.value)}
               type="number"
-              min="0.1"
-              step="0.1"
-              disabled={adminMode === "expired" || adminMode === "date"}
+              min="1"
+              step="1"
+              disabled={adminMode === "date"}
               className="h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none focus:border-indigo-500 disabled:opacity-50 dark:border-white/10 dark:bg-white/[0.04] dark:text-white"
             />
             <input
-              value={adminTrialEndsAt}
-              onChange={(event) => setAdminTrialEndsAt(event.target.value)}
+              value={adminAccessEndsAt}
+              onChange={(event) => setAdminAccessEndsAt(event.target.value)}
               type="datetime-local"
               disabled={adminMode !== "date"}
               className="h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none focus:border-indigo-500 disabled:opacity-50 dark:border-white/10 dark:bg-white/[0.04] dark:text-white"
