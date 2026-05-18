@@ -1,8 +1,7 @@
-import { Check, CreditCard } from "lucide-react";
-import { pricingPlans, paymentProviderName } from "@/config/legal";
-import { PaymentCardLogos } from "@/components/payment/PaymentCardLogos";
+import { Check, HeartHandshake } from "lucide-react";
+import { pricingPlans } from "@/config/legal";
 
-const paymentMethods = ["ПРОСТІР", "Google Pay", "Apple Pay"];
+const paymentMethods = ["IBAN", "Mono/Privat", "Wise", "Manual Pro"];
 
 export function PricingSection() {
   return (
@@ -10,16 +9,17 @@ export function PricingSection() {
       <div className="mb-10 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
           <h2 className="text-3xl font-medium tracking-tight text-zinc-900 dark:text-white">
-            Тарифи у гривні
+            Безкоштовно зараз, Pro після підтримки
           </h2>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-            Підсумкова сума платежу показується до переходу на захищену сторінку оплати.
-            Комісії сервісу включені у вартість тарифу.
+            Life Focus можна використовувати без обов'язкової оплати. Платні ліміти
+            активуються вручну після донату або переказу, поки автоматичний платіжний
+            шлюз недоступний.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
-          <CreditCard className="h-4 w-4" />
-          Оплата через {paymentProviderName}
+          <HeartHandshake className="h-4 w-4" />
+          Pay later / manual activation
         </div>
       </div>
 
@@ -50,7 +50,6 @@ export function PricingSection() {
       </div>
 
       <div className="mt-6 flex flex-wrap items-center gap-2">
-        <PaymentCardLogos />
         {paymentMethods.map((method) => (
           <span
             key={method}

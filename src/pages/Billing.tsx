@@ -1,7 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { PaymentCardLogos } from "@/components/payment/PaymentCardLogos";
 import {
-  createBillingCheckout,
   fetchAdminBillingUsers,
   fetchBillingMe,
   updateUserTrial,
@@ -11,9 +9,17 @@ import type {
   BillingMeResponse,
 } from "@/services/billing/proxy-client";
 import { useAuth } from "@/hooks/useAuth";
-import { paymentProviderName, pricingPlans } from "@/config/legal";
-import { trackAppEvent } from "@/lib/telemetry";
-import { Loader2, RefreshCw, ShieldCheck, Sparkles } from "lucide-react";
+import { pricingPlans, supportPaymentInfo } from "@/config/legal";
+import {
+  Copy,
+  ExternalLink,
+  Landmark,
+  Loader2,
+  Mail,
+  RefreshCw,
+  ShieldCheck,
+  Sparkles,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
 import { toast } from "sonner";
@@ -36,8 +42,8 @@ const formatBytes = (bytes: number) => {
 const adminUserStatusLabel = (user: AdminBillingUser) => {
   if (user.status === "admin") return "Адмін";
   if (user.status === "paid-active") return "Оплачено";
-  if (user.status === "trial-active") return "Пробний";
-  return "Завершено";
+  if (user.status === "trial-active") return "Ручний доступ";
+  return "Free";
 };
 
 const adminUserStatusClass = (user: AdminBillingUser) => {
@@ -67,18 +73,21 @@ export default function Billing() {
   const [adminUsers, setAdminUsers] = useState<AdminBillingUser[]>([]);
   const [adminUsersLoading, setAdminUsersLoading] = useState(false);
   const [adminUsersError, setAdminUsersError] = useState<string | null>(null);
-  const [termsAccepted, setTermsAccepted] = useState(false);
-  const [checkoutPlan, setCheckoutPlan] = useState<"starter" | "pro" | null>(null);
   const isAdmin = Boolean(billing?.plan.adminAccess);
   const activePaidCount = adminUsers.filter(
     (adminUser) => adminUser.status === "paid-active",
   ).length;
+  const supportLinks = [
+    { label: "Mono банка", href: supportPaymentInfo.monoJarUrl },
+    { label: "Privat", href: supportPaymentInfo.privatUrl },
+    { label: "Wise", href: supportPaymentInfo.wiseUrl },
+  ].filter((item) => item.href);
 
   const statusLabel = useMemo(() => {
     if (!billing) return "Завантаження";
     if (billing.plan.adminAccess) return "Адмін-доступ";
-    if (billing.plan.paymentRequired) return "Пробний період завершено";
-    if (billing.plan.id === "free") return "Пробний період активний";
+    if (billing.plan.paymentRequired) return "Free доступ";
+    if (billing.plan.id === "free") return "Free доступ";
     return `${billing.plan.id === "starter" ? "Starter" : "Pro"} активний`;
   }, [billing]);
 
@@ -161,30 +170,24 @@ export default function Billing() {
       );
       setAdminResult(result);
       void loadAdminUsers();
-      toast.success("Пробний період оновлено.");
+      toast.success("Доступ оновлено.");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Не вдалося оновити пробний період.");
+      toast.error(err instanceof Error ? err.message : "Не вдалося оновити доступ.");
     } finally {
       setAdminSaving(false);
     }
   };
 
-  const handleCheckout = async (plan: "starter" | "pro") => {
-    if (!user || !termsAccepted) return;
-
-    setCheckoutPlan(plan);
+  const copySupportValue = async (label: string, value: string) => {
+    if (!value || value.startsWith("[")) {
+      toast.error(`${label} ще не налаштовано.`);
+      return;
+    }
     try {
-      const checkout = await createBillingCheckout(user, plan);
-      trackAppEvent("payment_clicked", {
-        source: "billing",
-        plan,
-        orderReference: checkout.orderReference,
-      });
-      window.location.assign(checkout.checkoutUrl);
+      await navigator.clipboard.writeText(value);
+      toast.success(`${label} скопійовано.`);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Не вдалося створити оплату.");
-    } finally {
-      setCheckoutPlan(null);
+      toast.error(err instanceof Error ? err.message : "Не вдалося скопіювати.");
     }
   };
 
@@ -200,7 +203,7 @@ export default function Billing() {
             Підписка
           </h1>
           <p className="mt-1 max-w-2xl text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-            Керуй лімітами AI, сховищем і доступом через оплату {paymentProviderName}.
+            Застосунок працює безкоштовно. Pro зараз активується вручну після донату або переказу.
           </p>
         </div>
         <Button variant="outline" onClick={loadBilling} disabled={loading || !user}>
@@ -232,7 +235,7 @@ export default function Billing() {
             <div className="flex items-center gap-2">
             <ShieldCheck className="h-4 w-4 text-emerald-500" />
             <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
-              Керування пробним періодом
+              Ручна активація доступу
             </h2>
             </div>
             <Button
@@ -260,10 +263,10 @@ export default function Billing() {
               }
               className="h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm text-zinc-950 outline-none focus:border-indigo-500 dark:border-white/10 dark:bg-white/[0.04] dark:text-white"
             >
-              <option value="expired">Завершити зараз</option>
-              <option value="hours">Додати години</option>
-              <option value="days">Додати дні</option>
-              <option value="date">Встановити дату</option>
+              <option value="expired">Завершити доступ</option>
+              <option value="hours">Активувати на години</option>
+              <option value="days">Активувати на дні</option>
+              <option value="date">Активувати до дати</option>
             </select>
             <input
               value={adminAmount}
@@ -296,7 +299,7 @@ export default function Billing() {
                 {adminResult.email ?? adminEmail}
               </span>
               {" · "}
-              {adminResult.plan.paymentRequired ? "Пробний період завершено" : "Пробний період активний"}
+              {adminResult.plan.paymentRequired ? "Доступ завершено" : "Доступ активний"}
               {" · до "}
               {formatDate(adminResult.plan.trialEndsAt)}
             </div>
@@ -331,7 +334,7 @@ export default function Billing() {
                   <th className="py-2 pr-4 font-medium">Статус</th>
                   <th className="py-2 pr-4 font-medium">Тариф</th>
                   <th className="py-2 pr-4 font-medium">Оплачено до</th>
-                  <th className="py-2 pr-4 font-medium">Trial до</th>
+                  <th className="py-2 pr-4 font-medium">Ручний доступ до</th>
                   <th className="py-2 pr-4 font-medium">Провайдер</th>
                   <th className="py-2 font-medium">Оновлено</th>
                 </tr>
@@ -398,7 +401,7 @@ export default function Billing() {
             {statusLabel}
           </p>
           <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-            Пробний період до: {formatDate(billing?.plan.trialEndsAt ?? null)}
+            Ручний доступ до: {formatDate(billing?.plan.trialEndsAt ?? null)}
           </p>
           <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
             Оплачений доступ до: {formatDate(billing?.plan.accessEndsAt ?? null)}
@@ -460,50 +463,81 @@ export default function Billing() {
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
-                Підписка через {paymentProviderName}
+                {supportPaymentInfo.title}
               </h2>
               <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                Оплата відкриється на захищеній сторінці {paymentProviderName}. Для тесту можна використати тестову картку Portmone.
+                {supportPaymentInfo.description}
               </p>
-              <PaymentCardLogos className="mt-3" />
-              <label className="mt-4 flex max-w-2xl items-start gap-3 text-sm text-zinc-700 dark:text-zinc-300">
-                <input
-                  type="checkbox"
-                  checked={termsAccepted}
-                  onChange={(event) => setTermsAccepted(event.target.checked)}
-                  className="mt-1 h-4 w-4 rounded border-zinc-300"
-                />
-                <span>
-                  Я погоджуюся з{" "}
-                  <Link to="/offer" className="font-medium text-indigo-600 hover:text-indigo-500">
-                    договором оферти
-                  </Link>{" "}
-                  та{" "}
-                  <Link to="/privacy" className="font-medium text-indigo-600 hover:text-indigo-500">
-                    політикою конфіденційності
-                  </Link>
-                  .
-                </span>
-              </label>
+              <p className="mt-3 max-w-2xl text-sm text-zinc-600 dark:text-zinc-400">
+                Після переказу напиши на {supportPaymentInfo.email} з email свого акаунта,
+                сумою та бажаним тарифом. Доступ буде активовано вручну після перевірки.
+              </p>
+              <p className="mt-3 text-xs leading-5 text-zinc-500">
+                Підтримуючи проєкт, ти погоджуєшся з{" "}
+                <Link to="/offer" className="font-medium text-indigo-600 hover:text-indigo-500">
+                  договором оферти
+                </Link>{" "}
+                та{" "}
+                <Link to="/privacy" className="font-medium text-indigo-600 hover:text-indigo-500">
+                  політикою конфіденційності
+                </Link>
+                .
+              </p>
             </div>
-            <div className="flex flex-col gap-2 sm:flex-row">
+            <div className="flex flex-col gap-2 sm:min-w-64">
               <Button
-                onClick={() => handleCheckout("starter")}
-                disabled={!termsAccepted || checkoutPlan !== null}
+                variant="outline"
+                onClick={() => copySupportValue("IBAN", supportPaymentInfo.iban)}
               >
-                {checkoutPlan === "starter" ? <Loader2 className="animate-spin" /> : null}
-                Оплатити Starter
+                <Landmark />
+                Скопіювати IBAN
               </Button>
               <Button
                 variant="outline"
-                onClick={() => handleCheckout("pro")}
-                disabled={!termsAccepted || checkoutPlan !== null}
+                onClick={() =>
+                  copySupportValue("Призначення платежу", supportPaymentInfo.paymentPurpose)
+                }
               >
-                {checkoutPlan === "pro" ? <Loader2 className="animate-spin" /> : null}
-                Оплатити Pro
+                <Copy />
+                Призначення платежу
+              </Button>
+              <Button asChild>
+                <a href={`mailto:${supportPaymentInfo.email}`}>
+                  <Mail />
+                  Написати після оплати
+                </a>
               </Button>
             </div>
           </div>
+
+          {(supportLinks.length > 0 || supportPaymentInfo.cryptoWallet) && (
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+              {supportLinks.map((item) => (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center justify-between rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-100 dark:border-white/10 dark:bg-white/[0.04] dark:text-zinc-200 dark:hover:bg-white/[0.07]"
+                >
+                  {item.label}
+                  <ExternalLink className="h-4 w-4" />
+                </a>
+              ))}
+              {supportPaymentInfo.cryptoWallet && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    copySupportValue("Криптогаманець", supportPaymentInfo.cryptoWallet)
+                  }
+                  className="flex items-center justify-between rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-left text-sm font-medium text-zinc-800 hover:bg-zinc-100 dark:border-white/10 dark:bg-white/[0.04] dark:text-zinc-200 dark:hover:bg-white/[0.07]"
+                >
+                  Криптогаманець
+                  <Copy className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+          )}
         </section>
       )}
     </div>

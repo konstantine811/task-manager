@@ -13,15 +13,28 @@ export const merchantInfo = {
     (typeof window !== "undefined" ? window.location.origin : "https://life-focus.app"),
 };
 
-export const paymentProviderName = "Portmone";
+export const supportPaymentInfo = {
+  title: "Підтримати Life Focus",
+  description:
+    "Зараз застосунок можна використовувати безкоштовно. Якщо він допомагає тобі тримати фокус, можна підтримати розробку вручну, а ми активуємо Pro після підтвердження переказу.",
+  email: import.meta.env.VITE_SUPPORT_PAYMENT_EMAIL?.trim() || merchantInfo.email,
+  iban: import.meta.env.VITE_SUPPORT_PAYMENT_IBAN?.trim() || merchantInfo.iban,
+  monoJarUrl: import.meta.env.VITE_SUPPORT_MONO_JAR_URL?.trim() || "",
+  privatUrl: import.meta.env.VITE_SUPPORT_PRIVAT_URL?.trim() || "",
+  wiseUrl: import.meta.env.VITE_SUPPORT_WISE_URL?.trim() || "",
+  cryptoWallet: import.meta.env.VITE_SUPPORT_CRYPTO_WALLET?.trim() || "",
+  paymentPurpose:
+    import.meta.env.VITE_SUPPORT_PAYMENT_PURPOSE?.trim() ||
+    "Підтримка Life Focus, email акаунта: [ваш email]",
+};
 
 export const pricingPlans = [
   {
     id: "free",
-    name: "Пробний доступ",
+    name: "Free",
     price: "0 грн",
-    period: "14 днів",
-    description: "Базовий старт для знайомства із сервісом.",
+    period: "назавжди",
+    description: "Базовий доступ без обов'язкової оплати.",
     features: ["Шаблони задач", "План на день", "Базова аналітика"],
   },
   {
@@ -29,15 +42,15 @@ export const pricingPlans = [
     name: "Starter",
     price: import.meta.env.VITE_STARTER_PRICE_UAH?.trim() || "[вкажіть ціну] грн",
     period: "місяць",
-    description: "Для регулярного планування та помірного використання AI.",
-    features: ["AI-запити в межах тарифу", "Сховище в межах тарифу", "Аналітика за період"],
+    description: "Ручна активація після донату або переказу.",
+    features: ["Більше AI-запитів", "Більше сховища", "Підтримка розвитку сервісу"],
   },
   {
     id: "pro",
     name: "Pro",
     price: import.meta.env.VITE_PRO_PRICE_UAH?.trim() || "[вкажіть ціну] грн",
     period: "місяць",
-    description: "Для активної роботи з шаблонами, аналітикою та AI.",
+    description: "Для активної роботи і тих, хто хоче підтримати продукт сильніше.",
     features: ["Більший ліміт AI", "Більше сховище", "Пріоритетні поліпшення сервісу"],
   },
 ] as const;

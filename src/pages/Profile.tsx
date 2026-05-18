@@ -3,7 +3,7 @@ import { ThemeType } from "@/config/theme-colors.config";
 import { storage } from "@/config/firebase.config";
 import { LocalStorageKey } from "@/config/local-storage.config";
 import { ROUTES } from "@/config/routes";
-import { paymentProviderName } from "@/config/legal";
+import { supportPaymentInfo } from "@/config/legal";
 import { useAuth } from "@/hooks/useAuth";
 import { trackAppEvent } from "@/lib/telemetry";
 import { LanguageType } from "@/i18n";
@@ -67,8 +67,8 @@ const getInitials = (name: string | null | undefined, email: string | null | und
 const getPlanLabel = (billing: BillingMeResponse | null) => {
   if (!billing) return "Завантаження";
   if (billing.plan.adminAccess) return "Адмін-доступ";
-  if (billing.plan.paymentRequired) return "Потрібна оплата";
-  if (billing.plan.id === "free") return "Пробний доступ";
+  if (billing.plan.paymentRequired) return "Free доступ";
+  if (billing.plan.id === "free") return "Free доступ";
   return billing.plan.id === "starter" ? "Starter" : "Pro";
 };
 
@@ -466,7 +466,7 @@ export default function Profile() {
             </p>
           </div>
           <div className="rounded-md border border-zinc-200 bg-zinc-50 p-3 dark:border-white/10 dark:bg-white/[0.04]">
-            <p className="text-xs uppercase text-zinc-500">Trial до</p>
+            <p className="text-xs uppercase text-zinc-500">Ручний доступ до</p>
             <p className="mt-1 font-medium text-zinc-950 dark:text-white">
               {formatDate(billing?.plan.trialEndsAt)}
             </p>
@@ -515,8 +515,8 @@ export default function Profile() {
         </div>
 
         <p className="mt-4 text-xs leading-5 text-zinc-500 dark:text-zinc-500">
-          Оплата та відписка зараз проходять через {paymentProviderName}. Після завершення
-          валідації мерчанта можна буде додати повне скасування підписки прямо тут.
+          Зараз Life Focus працює без обов'язкової оплати. Pro активується вручну після
+          підтримки проєкту через {supportPaymentInfo.email}.
         </p>
       </section>
 
