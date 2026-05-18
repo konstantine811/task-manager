@@ -191,6 +191,22 @@ export default function Billing() {
     }
   };
 
+  const handleSupportEmailClick = async () => {
+    await copySupportValue("Email підтримки", supportPaymentInfo.email);
+
+    const subject = encodeURIComponent("Підтримка Life Focus");
+    const body = encodeURIComponent(
+      [
+        `Email акаунта: ${user?.email ?? ""}`,
+        "Тариф: Pro",
+        "Сума:",
+        "Коментар:",
+      ].join("\n"),
+    );
+
+    window.location.href = `mailto:${supportPaymentInfo.email}?subject=${subject}&body=${body}`;
+  };
+
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-6 md:px-6 md:py-8">
       <div className="flex flex-col gap-3 border-b border-zinc-200 pb-5 dark:border-white/10 md:flex-row md:items-end md:justify-between">
@@ -505,11 +521,9 @@ export default function Billing() {
                 <Copy />
                 Призначення платежу
               </Button>
-              <Button asChild>
-                <a href={`mailto:${supportPaymentInfo.email}`}>
-                  <Mail />
-                  Написати після оплати
-                </a>
+              <Button onClick={handleSupportEmailClick}>
+                <Mail />
+                Скопіювати email
               </Button>
             </div>
           </div>
